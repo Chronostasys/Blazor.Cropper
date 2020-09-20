@@ -18,8 +18,9 @@
     <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> OnDragStart(TouchToMouse(args))"
         class="img" draggable="false"  style="@cropedImgStyle" src="@imgUrl" />
 </div>
-<img draggable="false"  src="@url" />
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<center>
+    <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="GetData">Done</button>
+</center>
 
 @code {
     [Parameter]
@@ -50,7 +51,6 @@
         get=>$"height:{MaxHeight}px;";
     }
     private string cropperStyle = "";
-    private int currentCount = 0;
     string imgUrl = "";
     string cropedImgStyle = "clip: rect(0, 150px, 150px, 0);";
     bool dragging = false;
@@ -68,11 +68,11 @@
     double unsavedCropW;
     double unsavedCropH;
     bool outOfBox = false;
+    IBrowserFile prevFile;
     protected override async Task OnAfterRenderAsync(bool first)
     {
         if (first)
         {
-            OnCrop = new EventCallback<Stream>();
             MaxWidth = await JSRuntime.InvokeAsync<double>("getWidth");
         }
         await base.OnAfterRenderAsync(first);
@@ -80,6 +80,14 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        if (prevFile==ImageFile)
+        {
+            return;
+        }
+        else
+        {
+            prevFile = ImageFile;
+        }
         image?.Dispose();
         var format = "image/png";
         var resizedImageFile = await ImageFile.RequestImageFileAsync(format, 500, 500);
@@ -126,12 +134,11 @@
         }
     }
 
-    private async Task IncrementCount()
+    private async Task GetData()
     {
         var deltaX = 0;
         var deltaY = 0;
         var i = 0d;
-        MaxWidth = await JSRuntime.InvokeAsync<double>("getWidth");
         if (image.Width/image.Height>MaxWidth/MaxHeight)
         {
             i = MaxWidth/image.Width;
@@ -142,10 +149,14 @@
             i = MaxHeight/image.Height;
             deltaX = -(int)(MaxWidth/i-image.Width)/2;
         }
-        currentCount++;
         var stream = new MemoryStream();
-        await image.SaveAsync(stream,new PngEncoder());
+        await image.Clone(ctx=>
+            ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))))
+            .SaveAsync(stream,new PngEncoder());
+        await stream.FlushAsync();
+        stream.Position = 0;
         await OnCrop.InvokeAsync(stream);
+        
         @* using var ci = image.Clone(ctx=>ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
         var b64 = ci.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance);
         url = b64; *@
