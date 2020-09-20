@@ -1,0 +1,16 @@
+﻿@page "/cropper"
+
+<h1>Cropper</h1>
+<InputFile OnChange="OnInputFileChange"></InputFile>
+@if (file!=null)
+{
+    <Cropper ImageFile="file"></Cropper>
+}
+
+@code {
+    IBrowserFile file;
+    void OnInputFileChange(InputFileChangeEventArgs args)
+    {
+        file = args.File;
+    }
+}
