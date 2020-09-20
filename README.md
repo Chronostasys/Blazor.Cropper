@@ -17,7 +17,7 @@ function getWidth() {
     return document.getElementById("blazor_cropper").clientWidth;
 }
 ```
-Then, you can install our nuget pkg and use it like follow:
+Then, you can install our [nuget pkg](https://www.nuget.org/packages/Chronos.Blazor.Cropper) and use it like follow:
 ```razor
 @page "/cropper"
 
