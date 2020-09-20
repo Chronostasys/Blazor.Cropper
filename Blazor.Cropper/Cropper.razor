@@ -1,0 +1,615 @@
+﻿@inject IJSRuntime JSRuntime;
+<div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" @ontouchmove:stopPropagation="reSizing|dragging"
+    @ontouchmove="args=> OnSizeChanging(TouchToMouse(args))" @ontouchend="args=>OnSizeChangeEnd(TouchToMouse(args))"
+    @onmousemove="OnSizeChanging" @onmouseup="OnSizeChangeEnd" >
+    <img class="imgbac" draggable="false" src="@imgUrl" />
+    @* 裁剪框  *@
+    <div draggable="false" id="mainBox"
+        style="@cropperStyle">
+        <div id="left-up" class="minBox left-up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.UpLeft)" @onmousedown="args=> OnResizeStart(args,MoveDir.UpLeft)"></div>
+        <div id="up" class="minBox up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Up)" @onmousedown="args=> OnResizeStart(args,MoveDir.Up)"></div>
+        <div id="right-up" class="minBox right-up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.UpRight)" @onmousedown="args=> OnResizeStart(args,MoveDir.UpRight)"></div>
+        <div id="left" class="minBox left" @onmousedown="args=> OnResizeStart(args,MoveDir.Left)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Left)"></div>
+        <div id="right" class="minBox right" @onmousedown="args=> OnResizeStart(args,MoveDir.Right)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Right)"></div>
+        <div id="left-down" class="minBox left-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownLeft)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.DownLeft)"></div>
+        <div id="down" class="minBox down" @onmousedown="args=> OnResizeStart(args,MoveDir.Down)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Down)"></div>
+        <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.DownRight)"></div>
+    </div>
+    <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> OnDragStart(TouchToMouse(args))"
+        class="img" draggable="false"  style="@cropedImgStyle" src="@imgUrl" />
+</div>
+<img draggable="false"  src="@url" />
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    [Parameter]
+    public double InitCropWidth{ get; set; } = 150;
+    [Parameter]
+    public double InitCropHeight { get; set; } = 150;
+    [Parameter]
+    public double MaxHeight { get; set; } = 500;
+    [Parameter]
+    public double MaxWidth { get; set; } = 500;
+    [Parameter]
+    public bool RequireProportion{ get; set; } = false;
+    [Parameter]
+    public double Proportion{ get; set; } = 1;
+    [Parameter]
+    public IBrowserFile ImageFile{get;set;}
+    [Parameter]
+    public EventCallback<Stream> OnCrop { get; set; }
+    double prevPosX = 0;
+    double prevPosY = 0;
+    double layoutX=0;
+    double layoutY=0;
+    double offsetX;
+    double offsetY;
+    double width;
+    double height;
+    string imglistStyle{
+        get=>$"height:{MaxHeight}px;";
+    }
+    private string cropperStyle = "";
+    private int currentCount = 0;
+    string imgUrl = "";
+    string cropedImgStyle = "clip: rect(0, 150px, 150px, 0);";
+    bool dragging = false;
+    bool reSizing = false;
+    MoveDir dir = MoveDir.UnKnown;
+    double minval = 30;
+    Image image;
+    string url;
+    double minposX;
+    double minposY;
+    double imgw;
+    double imgh;
+    double unsavedX;
+    double unsavedY;
+    double unsavedCropW;
+    double unsavedCropH;
+    bool outOfBox = false;
+    protected override async Task OnAfterRenderAsync(bool first)
+    {
+        if (first)
+        {
+            OnCrop = new EventCallback<Stream>();
+            MaxWidth = await JSRuntime.InvokeAsync<double>("getWidth");
+        }
+        await base.OnAfterRenderAsync(first);
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        image?.Dispose();
+        var format = "image/png";
+        var resizedImageFile = await ImageFile.RequestImageFileAsync(format, 500, 500);
+        var buffer = new byte[resizedImageFile.Size];
+        await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
+        image = Image.Load(buffer);
+        var i = 0d;
+        width = image.Width;
+        height = image.Height;
+        if (image.Width/image.Height>MaxWidth/MaxHeight)
+        {
+            i = MaxWidth/image.Width;
+            prevPosY = (MaxHeight-image.Height*i)/2;
+            prevPosX = 0;
+        }
+        else
+        {
+            i = MaxHeight/image.Height;
+            prevPosX = (MaxWidth-image.Width*i)/2;
+            prevPosY = 0;
+        }
+        minposX = prevPosX;
+        minposY = prevPosY;
+        imgw = image.Width*i;
+        imgh = image.Height*i;
+        cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
+        cropedImgStyle = $"clip: rect({prevPosY-layoutY}px, {prevPosX-layoutX+InitCropWidth}px, {prevPosY-layoutY+InitCropHeight}px, {prevPosX-layoutX}px);";
+        imgUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+    }
+    private MouseEventArgs TouchToMouse(TouchEventArgs args)
+    {
+        try
+        {
+            return new MouseEventArgs()
+            {
+                ClientX = args.Touches[0].ClientX,
+                ClientY = args.Touches[0].ClientY
+            };
+        }
+        catch (System.Exception)
+        {
+            outOfBox = true;
+            return new MouseEventArgs();
+        }
+    }
+
+    private async Task IncrementCount()
+    {
+        var deltaX = 0;
+        var deltaY = 0;
+        var i = 0d;
+        MaxWidth = await JSRuntime.InvokeAsync<double>("getWidth");
+        if (image.Width/image.Height>MaxWidth/MaxHeight)
+        {
+            i = MaxWidth/image.Width;
+            deltaY = -(int)(MaxHeight/i-image.Height)/2;
+        }
+        else
+        {
+            i = MaxHeight/image.Height;
+            deltaX = -(int)(MaxWidth/i-image.Width)/2;
+        }
+        currentCount++;
+        var stream = new MemoryStream();
+        await image.SaveAsync(stream,new PngEncoder());
+        await OnCrop.InvokeAsync(stream);
+        @* using var ci = image.Clone(ctx=>ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
+        var b64 = ci.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance);
+        url = b64; *@
+    }
+
+    void OnDragStart(MouseEventArgs args)
+    {
+        outOfBox = false;
+        if (reSizing)
+        {
+            return;
+        }
+        cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
+        offsetX = args.ClientX;
+        offsetY = args.ClientY;
+        dragging = true;
+    }
+    void OnDragging(MouseEventArgs args)
+    {
+        if (dragging&&!reSizing)
+        {
+            var x = prevPosX-offsetX+args.ClientX;
+            var y = prevPosY-offsetY+args.ClientY;
+            if (y<minposY)
+            {
+                outOfBox = true;
+                y = minposY;
+            }
+            if (x<minposX)
+            {
+                outOfBox = true;
+                x = minposX;
+            }
+            if (y+InitCropHeight>(minposY+imgh))
+            {
+                outOfBox = true;
+                y = (minposY+imgh) - InitCropHeight;
+            }
+            if(x+InitCropWidth>(minposX+imgw))
+            {
+                outOfBox = true;
+                x = (minposX+imgw) - InitCropWidth;
+            }
+            unsavedX = x;
+            unsavedY = y;
+            cropperStyle = $"top:{y}px;left:{x}px;height:{InitCropHeight}px;width:{InitCropWidth}px";
+            cropedImgStyle = $"clip: rect({y-layoutY}px, {x-layoutX+InitCropWidth}px, {y-layoutY+InitCropHeight}px, {x-layoutX}px);";
+        }
+    }
+    void OnDragEnd(MouseEventArgs args)
+    {
+        dragging = false;
+        OnDragging(args);
+        if (outOfBox)
+        {
+            prevPosX = unsavedX;
+            prevPosY = unsavedY;
+            return;
+        }
+        prevPosX = prevPosX-offsetX+args.ClientX;
+        prevPosY = prevPosY-offsetY+args.ClientY;
+    }
+    void OnResizeStart(MouseEventArgs args, MoveDir dir)
+    {
+        outOfBox = false;
+        this.dir = dir;
+        if (dragging)
+        {
+            return;
+        }
+        cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
+        offsetX = args.ClientX;
+        offsetY = args.ClientY;
+        reSizing = true;
+    }
+    void OnSizeChanging(MouseEventArgs args)
+    {
+        if (reSizing&&!dragging)
+        {
+            var delta = args.ClientY - offsetY;
+            var deltaX = args.ClientX - offsetX;
+            var ytemp = prevPosY;
+            var tempCropHeight =  InitCropHeight;
+            var xtemp = prevPosX;
+            var tempCropWidth =  InitCropWidth;
+            switch (dir)
+            {
+                case MoveDir.Up:
+                {
+                    ytemp = prevPosY+delta;
+                    tempCropHeight =  InitCropHeight-delta;
+                    if (RequireProportion)
+                    {
+                        tempCropWidth = tempCropHeight/Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.Down:
+                {
+                    tempCropHeight =  InitCropHeight+delta;
+                    if (RequireProportion)
+                    {
+                        tempCropWidth = tempCropHeight/Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.Left:
+                {
+                    xtemp = prevPosX + deltaX;
+                    tempCropWidth =  InitCropWidth-deltaX;
+                    if (RequireProportion)
+                    {
+                        tempCropHeight = tempCropWidth*Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.Right:
+                {
+                    tempCropWidth =  InitCropWidth+deltaX;
+                    if (RequireProportion)
+                    {
+                        tempCropHeight = tempCropWidth*Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.UpLeft:
+                {
+                    ytemp = prevPosY+delta;
+                    tempCropHeight =  InitCropHeight-delta;
+                    tempCropWidth =  InitCropWidth-deltaX;
+                    if (RequireProportion)
+                    {
+                        tempCropWidth = tempCropHeight/Proportion;
+                        deltaX = InitCropWidth - tempCropWidth;
+                    }
+                    xtemp = prevPosX + deltaX;
+                    break;
+                }
+                case MoveDir.UpRight:
+                {
+                    ytemp = prevPosY+delta;
+                    tempCropHeight =  InitCropHeight-delta;
+                    tempCropWidth =  InitCropWidth+deltaX;
+                    if (RequireProportion)
+                    {
+                        tempCropWidth = tempCropHeight/Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.DownLeft:
+                {
+                    tempCropHeight =  InitCropHeight+delta;
+                    tempCropWidth =  InitCropWidth-deltaX;
+                    if (RequireProportion)
+                    {
+                        tempCropWidth = tempCropHeight/Proportion;
+                        deltaX = InitCropWidth - tempCropWidth;
+                    }
+                    xtemp = prevPosX + deltaX;
+                    break;
+                }
+                case MoveDir.DownRight:
+                {
+                    tempCropHeight =  InitCropHeight+delta;
+                    tempCropWidth =  InitCropWidth+deltaX;
+                    if (RequireProportion)
+                    {
+                        tempCropWidth = tempCropHeight/Proportion;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            if (ytemp<minposY)
+            {
+                outOfBox = true;
+                ytemp = minposY;
+            }
+            if (xtemp<minposX)
+            {
+                outOfBox = true;
+                xtemp = minposX;
+            }
+            if (ytemp+tempCropHeight>(minposY+imgh))
+            {
+                outOfBox = true;
+                tempCropHeight = (minposY+imgh) - ytemp;
+                if (RequireProportion)
+                {
+                    tempCropWidth = tempCropHeight/Proportion;
+                }
+            }
+            if (xtemp+tempCropWidth>(minposX+imgw))
+            {
+                outOfBox = true;
+                tempCropWidth = (minposX+imgw) - xtemp;
+                if (RequireProportion)
+                {
+                    tempCropHeight = tempCropWidth/Proportion;
+                }
+            }
+            if (tempCropHeight<minval)
+            {
+                tempCropHeight=minval;
+                ytemp = unsavedY;
+                xtemp = unsavedX;
+            }
+            if (tempCropWidth<minval)
+            {
+                tempCropWidth = minval;
+                ytemp = unsavedY;
+                xtemp = unsavedX;
+            }
+            unsavedX = xtemp;
+            unsavedY = ytemp;
+            unsavedCropH = tempCropHeight;
+            unsavedCropW = tempCropWidth;
+            cropperStyle = $"top:{ytemp}px;left:{xtemp}px;height:{tempCropHeight}px;width:{tempCropWidth}px";
+            cropedImgStyle = $"clip: rect({ytemp-layoutY}px, {xtemp-layoutX+tempCropWidth}px, {ytemp-layoutY+tempCropHeight}px, {xtemp-layoutX}px);";
+        }
+        OnDragging(args);
+    }
+    void OnSizeChangeEnd(MouseEventArgs args)
+    {
+        if (reSizing)
+        {
+            reSizing = false;
+            OnSizeChanging(args);
+            var delta = args.ClientY - offsetY;
+            var deltaX = args.ClientX - offsetX;
+            if (outOfBox)
+            {
+                InitCropHeight = unsavedCropH;
+                InitCropWidth = unsavedCropW;
+                prevPosY = unsavedY;
+                prevPosX = unsavedX;
+                return;
+            }
+            switch (dir)
+            {
+                case MoveDir.Up:
+                {
+                    prevPosY = prevPosY+delta;
+                    InitCropHeight-=delta;
+                    if (RequireProportion)
+                    {
+                        InitCropWidth = InitCropHeight/Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.Down:
+                {
+                    InitCropHeight+=delta;
+                    if (RequireProportion)
+                    {
+                        InitCropWidth = InitCropHeight/Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.Left:
+                {
+                    prevPosX += deltaX;
+                    InitCropWidth -=deltaX;
+                    if (RequireProportion)
+                    {
+                        InitCropHeight = InitCropWidth*Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.Right:
+                {
+                    InitCropWidth+=deltaX;
+                    if (RequireProportion)
+                    {
+                        InitCropHeight = InitCropWidth*Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.UpLeft:
+                {
+                    prevPosY = prevPosY+delta;
+                    InitCropHeight-=delta;
+                    if (RequireProportion)
+                    {
+                        var ori = InitCropWidth;
+                        InitCropWidth = InitCropHeight/Proportion;
+                        deltaX = ori - InitCropWidth;
+                        prevPosX += deltaX;
+                    }
+                    else
+                    {
+                        prevPosX += deltaX;
+                        InitCropWidth -=deltaX;
+                    }
+                    break;
+                }
+                case MoveDir.UpRight:
+                {
+                    prevPosY = prevPosY+delta;
+                    InitCropHeight-=delta;
+                    InitCropWidth+=deltaX;
+                    if (RequireProportion)
+                    {
+                        InitCropWidth = InitCropHeight/Proportion;
+                    }
+                    break;
+                }
+                case MoveDir.DownLeft:
+                {
+                    InitCropHeight+=delta;
+                    prevPosX += deltaX;
+                    InitCropWidth -=deltaX;
+                    if (RequireProportion)
+                    {
+                        var ori = InitCropWidth;
+                        InitCropWidth = InitCropHeight/Proportion;
+                        deltaX = ori - InitCropWidth;
+                        prevPosX += deltaX;
+                    }
+                    else
+                    {
+                        prevPosX += deltaX;
+                        InitCropWidth -=deltaX;
+                    }
+                    break;
+                }
+                case MoveDir.DownRight:
+                {
+                    InitCropHeight+=delta;
+                    InitCropWidth+=deltaX;
+                    if (RequireProportion)
+                    {
+                        InitCropWidth = InitCropHeight/Proportion;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            } 
+            if (InitCropHeight<minval)
+            {
+                InitCropHeight = minval;
+            }
+            if (InitCropWidth<minval)
+            {
+                InitCropWidth = minval;
+            }
+        }
+        if (dragging)
+        {
+            OnDragEnd(args);
+        }
+    }
+    enum MoveDir
+    {
+        Up,
+        Down,
+        Left,
+        Right,
+        UpLeft,
+        UpRight,
+        DownLeft,
+        DownRight,
+        UnKnown
+    }
+}
+<style>
+.unSelectAble{
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    touch-action: none;
+    -ms-touch-action: none;
+}
+
+.image-list{
+    position: relative;
+    width: 100%;
+    background-color: grey;
+    margin: 20px;
+}
+
+.imgbac{
+    opacity: 0.5;
+    position: absolute;
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+.img{
+    position: absolute;
+    clip: rect(0, 150px, 150px, 0);
+    cursor: move;
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+#mainBox {
+    border: 1px solid white;
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    cursor: move!important;
+}
+
+.minBox {
+    position: absolute;
+    height: 12px;
+    width: 12px;
+    background-color: white;
+}
+
+.left-up {
+    top: -4px;
+    left: -4px;
+    cursor: nw-resize;
+}
+
+.up {
+    left: 50%;
+    margin-left: -4px;
+    top: -4px;
+    cursor: n-resize;
+}
+
+.right-up {
+    right: -4px;
+    top: -4px;
+    cursor: ne-resize;
+}
+
+.left {
+    top: 50%;
+    margin-top: -4px;
+    left: -4px;
+    cursor: w-resize;
+}
+
+.right {
+    top: 50%;
+    margin-top: -4px;
+    right: -4px;
+    cursor: w-resize;
+}
+
+.left-down {
+    bottom: -4px;
+    left: -4px;
+    cursor: sw-resize;
+}
+
+.down {
+    bottom: -4px;
+    left: 50%;
+    margin-left: -4px;
+    cursor: s-resize;
+}
+
+.right-down {
+    bottom: -4px;
+    right: -4px;
+    cursor: se-resize;
+}
+</style>
