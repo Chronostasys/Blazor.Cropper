@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30509.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.Cropper", "Blazor.Cropper\Blazor.Cropper.csproj", "{0C39E089-B794-4247-BFC0-F2F9A0E86CBB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C39E089-B794-4247-BFC0-F2F9A0E86CBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C39E089-B794-4247-BFC0-F2F9A0E86CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C39E089-B794-4247-BFC0-F2F9A0E86CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C39E089-B794-4247-BFC0-F2F9A0E86CBB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {44EE4787-C137-41C7-B094-F82D60E6AE64}
+	EndGlobalSection
+EndGlobal
