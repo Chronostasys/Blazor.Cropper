@@ -1,5 +1,5 @@
 ﻿@inject IJSRuntime JSRuntime;
-<div id="blazor_cropper" class="image-list unSelectAble" style="@(imglistStyle+((reSizing|dragging)?touchMoveDisableStyle:blank))" @ontouchmove:stopPropagation="reSizing|dragging"
+<div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" @ontouchmove:stopPropagation="reSizing|dragging"
     @ontouchmove="args=> OnSizeChanging(TouchToMouse(args))" @ontouchend="args=>OnSizeChangeEnd(TouchToMouse(args))"
     @onmousemove="OnSizeChanging" @onmouseup="OnSizeChangeEnd" >
     <img class="imgbac" draggable="false" src="@imgUrl" />
@@ -39,8 +39,6 @@
     public IBrowserFile ImageFile{get;set;}
     [Parameter]
     public EventCallback<Stream> OnCrop { get; set; }
-    string touchMoveDisableStyle = "touch-action: none;-ms-touch-action: none;";
-    string blank = "";
     double prevPosX = 0;
     double prevPosY = 0;
     double layoutX=0;
@@ -533,6 +531,8 @@
     -moz-user-select: none;
     -o-user-select: none;
     user-select: none;
+    touch-action: none;
+    -ms-touch-action: none;
 }
 
 .image-list{
