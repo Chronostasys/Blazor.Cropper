@@ -4,7 +4,7 @@ A blazor library provide a component to crop image
 ![](imgs/1.gif) ![](imgs/2.gif) ![](imgs/3.gif)
 
 It is:
-- almost full c#(with only 3 lines of js)
+- almost full c#
 - mobile compatible
 - lighweight
 - support proportion
@@ -21,40 +21,56 @@ to use it, you should first paste following code into your index.html:
 Then, you can install our [nuget pkg](https://www.nuget.org/packages/Chronos.Blazor.Cropper) and use it like follow:
 ```razor
 @page "/cropper"
+@inject IJSRuntime JSRuntime;
 
 <h1>Cropper</h1>
-<InputFile OnChange="OnInputFileChange"></InputFile>
-@if (!string.IsNullOrEmpty(imgUrl))
+<InputFile id="input1" OnChange="OnInputFileChange"></InputFile>
+@if (parsing)
+{
+    <center>
+        <h2>@prompt</h2>
+    </center>
+}
+@if (!string.IsNullOrEmpty(imgUrl)&&!parsing)
 {
     <center>
         <h2>Crop Result:</h2>
-        <img src="@imgUrl"/>
-    </center>   
+        <img src="@imgUrl" />
+    </center>
 }
-@if (file!=null)
+@if (file != null)
 {
-    <Cropper ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
+    <Cropper InputId="input1" ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
 }
 @code {
     IBrowserFile file;
     string imgUrl = "";
+    Image image;
+    string prompt = "Image cropped! Parsing to base64...";
+    bool parsing = false;
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
+        image?.Dispose();
         file = args.File;
     }
-    async Task OnCropedAsync(Stream stream)
+    async Task OnCropedAsync(ImageCroppedEventArgs args)
     {
-        var bytes = new byte[stream.Length];
-        await stream.ReadAsync(bytes,0,(int)stream.Length);
-        var format = "image/png";
-        imgUrl = $"data:{format};base64,{Convert.ToBase64String(bytes)}";
+        parsing = true;
+        base.StateHasChanged();
+        await Task.Delay(10);// a hack, otherwise prompt won't show
+        image?.Dispose();
+        await JSRuntime.InvokeVoidAsync("console.log", "converted!");
+        image = args.Image;
+        imgUrl = args.Image.ToBase64String(args.Format);
+        parsing = false;
     }
 }
+
 
 ```
 For more details, see [the sample project](CropperSample).  
 To build it, simply clone it and run it in visual studio. The running result should be like this:  
 ![](2020-09-20-22-00-04.png)  
 ## Note
-In many cases, I found It's really slow to convert image data to base64 format and set it as img src(many times slower than image crop process). So I stronly recommend you to avoid doing this in blazor.
+In many cases, I found It's really slow to convert image data to base64 format and set it as img src in blazor(many times slower than image crop process). So I stronly recommend you to avoid doing this in blazor.
 
