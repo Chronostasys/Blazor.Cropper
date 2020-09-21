@@ -3,7 +3,13 @@
 
 <h1>Cropper</h1>
 <InputFile id="input1" OnChange="OnInputFileChange"></InputFile>
-@if (!string.IsNullOrEmpty(imgUrl))
+@if (parsing)
+{
+    <center>
+        <h2>@prompt</h2>
+    </center>
+}
+@if (!string.IsNullOrEmpty(imgUrl)&&!parsing)
 {
     <center>
         <h2>Crop Result:</h2>
@@ -18,16 +24,22 @@
     IBrowserFile file;
     string imgUrl = "";
     Image image;
+    string prompt = "Image cropped! Parsing to base64...";
+    bool parsing = false;
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
         image?.Dispose();
         file = args.File;
     }
-    void OnCropedAsync(ImageCroppedEventArgs args)
+    async Task OnCropedAsync(ImageCroppedEventArgs args)
     {
+        parsing = true;
+        base.StateHasChanged();
+        await Task.Delay(10);// a hack, otherwise prompt won't show
         image?.Dispose();
-        JSRuntime.InvokeVoidAsync("console.log", "converted!");
+        await JSRuntime.InvokeVoidAsync("console.log", "converted!");
         image = args.Image;
         imgUrl = args.Image.ToBase64String(args.Format);
+        parsing = false;
     }
 }
