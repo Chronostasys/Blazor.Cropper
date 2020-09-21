@@ -20,8 +20,8 @@
     {
         file = args.File;
     }
-    async Task OnCropedAsync(Image img)
+    void OnCropedAsync(ImageCroppedEventArgs args)
     {
-        imgUrl = img.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance);
+        imgUrl = args.Image.ToBase64String(args.Format);
     }
 }

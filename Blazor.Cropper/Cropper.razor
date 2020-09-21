@@ -38,7 +38,7 @@
     [Parameter]
     public IBrowserFile ImageFile{get;set;}
     [Parameter]
-    public EventCallback<Image> OnCrop { get; set; }
+    public EventCallback<ImageCroppedEventArgs> OnCrop { get; set; }
     double prevPosX = 0;
     double prevPosY = 0;
     double layoutX=0;
@@ -69,7 +69,7 @@
     double unsavedCropH;
     bool outOfBox = false;
     IBrowserFile prevFile;
-    SixLabors.ImageSharp.Formats.IImageFormat format;
+    IImageFormat format;
     protected override async Task OnAfterRenderAsync(bool first)
     {
         if (first)
@@ -152,7 +152,10 @@
         var stream = new MemoryStream();
         var ci = image.Clone(ctx=>
             ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
-        await OnCrop.InvokeAsync(ci);
+        await OnCrop.InvokeAsync(new ImageCroppedEventArgs{
+            Image = ci,
+            Format = format
+        });
         
         @* using var ci = image.Clone(ctx=>ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
         var b64 = ci.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance);
