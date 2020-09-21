@@ -169,6 +169,10 @@ DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
 
+# LimFx configs
+limfxbasicinfo.json
+limfxinfo.json
+
 # Click-Once directory
 publish/
 

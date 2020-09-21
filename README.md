@@ -9,7 +9,9 @@ It is:
 - lighweight
 - support proportion
 - **GIF crop support**(only for files smaller than 1mb)
+- open source on [github](https://github.com/Chronostasys/Blazor.Cropper)  
 
+If you find Blazor.Cropper helpful, you could **star this repo**, it's really important to me.  
 
 For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.
 
