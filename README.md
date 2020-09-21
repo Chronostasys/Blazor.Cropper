@@ -6,7 +6,7 @@ It is:
 - mobile compatible
 - lighweight
 - support proportion
-- fast
+- **GIF crop support**(only for files smaller than 1mb)
 
 For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.
 
