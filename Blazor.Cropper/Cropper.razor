@@ -100,19 +100,27 @@
         if (image.Width/image.Height>MaxWidth/MaxHeight)
         {
             i = MaxWidth/image.Width;
-            prevPosY = (MaxHeight-image.Height*i)/2;
+            prevPosY = Math.Abs(MaxHeight-image.Height*i)/2;
             prevPosX = 0;
         }
         else
         {
             i = MaxHeight/image.Height;
-            prevPosX = (MaxWidth-image.Width*i)/2;
+            prevPosX = Math.Abs(MaxWidth-image.Width*i)/2;
             prevPosY = 0;
         }
         minposX = prevPosX;
         minposY = prevPosY;
         imgw = image.Width*i;
         imgh = image.Height*i;
+        if (InitCropHeight>imgh)
+        {
+            InitCropHeight = imgh;
+        }
+        if (InitCropWidth>imgw)
+        {
+            InitCropWidth=imgw;
+        }
         cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
         cropedImgStyle = $"clip: rect({prevPosY-layoutY}px, {prevPosX-layoutX+InitCropWidth}px, {prevPosY-layoutY+InitCropHeight}px, {prevPosX-layoutX}px);";
         imgUrl = image.ToBase64String(format);
