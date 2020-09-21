@@ -1,7 +1,9 @@
 # Blazor.Cropper
 A blazor library provide a component to crop image  
 ![](imgs/base.gif)=>  
-![](imgs/1.gif) ![](imgs/2.gif) ![](imgs/3.gif)
+![](imgs/1.gif) ![](imgs/2.gif) ![](imgs/3.gif)  
+
+Live demo: [http://49.234.6.167/cropper](http://49.234.6.167/cropper)
 
 It is:
 - almost full c#
