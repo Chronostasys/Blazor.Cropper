@@ -16,12 +16,15 @@
 @code {
     IBrowserFile file;
     string imgUrl = "";
+    Image image;
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
+        image?.Dispose();
         file = args.File;
     }
     void OnCropedAsync(ImageCroppedEventArgs args)
     {
+        image = args.Image;
         imgUrl = args.Image.ToBase64String(args.Format);
     }
 }

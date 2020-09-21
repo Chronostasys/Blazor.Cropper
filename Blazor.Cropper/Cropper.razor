@@ -39,6 +39,8 @@
     public IBrowserFile ImageFile{get;set;}
     [Parameter]
     public EventCallback<ImageCroppedEventArgs> OnCrop { get; set; }
+    [Parameter]
+    public bool AnimeGifEnable { get; set; } = true;
     double prevPosX = 0;
     double prevPosY = 0;
     double layoutX=0;
@@ -90,21 +92,28 @@
             prevFile = ImageFile;
         }
         image?.Dispose();
-        var resizedImageFile = await ImageFile.RequestImageFileAsync(ImageFile.ContentType, 500, 500);
+        var ext = ImageFile.Name.Split('.').Last().ToLower();
+        var resizedImageFile = ImageFile;
+        if (ext!="gif"||!AnimeGifEnable||resizedImageFile.Size>1048576)
+        {
+            resizedImageFile = await ImageFile.RequestImageFileAsync($"image/{ext}", 200, 200);
+        }
         var buffer = new byte[resizedImageFile.Size];
         await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
         image = Image.Load(buffer, out format);
         var i = 0d;
         width = image.Width;
         height = image.Height;
-        if (image.Width/image.Height>MaxWidth/MaxHeight)
+        if ((double)image.Width/(double)image.Height>MaxWidth/MaxHeight)
         {
+            await JSRuntime.InvokeVoidAsync("console.log","1");
             i = MaxWidth/image.Width;
-            prevPosY = Math.Abs(MaxHeight-image.Height*i)/2;
+            prevPosY = (MaxHeight-image.Height*i)/2;
             prevPosX = 0;
         }
         else
         {
+            await JSRuntime.InvokeVoidAsync("console.log","2");
             i = MaxHeight/image.Height;
             prevPosX = Math.Abs(MaxWidth-image.Width*i)/2;
             prevPosY = 0;
