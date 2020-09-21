@@ -1,4 +1,5 @@
 ﻿@page "/cropper"
+@inject IJSRuntime JSRuntime;
 
 <h1>Cropper</h1>
 <InputFile OnChange="OnInputFileChange"></InputFile>
@@ -6,10 +7,10 @@
 {
     <center>
         <h2>Crop Result:</h2>
-        <img src="@imgUrl"/>
-    </center>   
+        <img src="@imgUrl" />
+    </center>
 }
-@if (file!=null)
+@if (file != null)
 {
     <Cropper ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
 }
@@ -24,6 +25,7 @@
     }
     void OnCropedAsync(ImageCroppedEventArgs args)
     {
+        JSRuntime.InvokeVoidAsync("console.log", "converted!");
         image = args.Image;
         imgUrl = args.Image.ToBase64String(args.Format);
     }
