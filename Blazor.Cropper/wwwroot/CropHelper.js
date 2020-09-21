@@ -20,6 +20,13 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
     
     return blob;
 }
+function setImg(id) {
+    var input = document.getElementById(id);
+    var src = URL.createObjectURL(input.files[0]);
+    document.getElementById('dimg').setAttribute('src',src);
+    document.getElementById('oriimg').setAttribute('src',src);
+    
+}
 window.addEventListener('resize', (ev) => {
     try {
         DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidth');

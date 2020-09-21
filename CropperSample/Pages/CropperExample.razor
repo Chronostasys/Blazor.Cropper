@@ -2,7 +2,7 @@
 @inject IJSRuntime JSRuntime;
 
 <h1>Cropper</h1>
-<InputFile OnChange="OnInputFileChange"></InputFile>
+<InputFile id="input1" OnChange="OnInputFileChange"></InputFile>
 @if (!string.IsNullOrEmpty(imgUrl))
 {
     <center>
@@ -12,7 +12,7 @@
 }
 @if (file != null)
 {
-    <Cropper ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
+    <Cropper InputId="input1" ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
 }
 @code {
     IBrowserFile file;
@@ -25,6 +25,7 @@
     }
     void OnCropedAsync(ImageCroppedEventArgs args)
     {
+        image?.Dispose();
         JSRuntime.InvokeVoidAsync("console.log", "converted!");
         image = args.Image;
         imgUrl = args.Image.ToBase64String(args.Format);

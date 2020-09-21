@@ -2,7 +2,7 @@
 <div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" @ontouchmove:stopPropagation="reSizing|dragging"
     @ontouchmove="args=> OnSizeChanging(TouchToMouse(args))" @ontouchend="args=>OnSizeChangeEnd(TouchToMouse(args))"
     @onmousemove="OnSizeChanging" @onmouseup="OnSizeChangeEnd" >
-    <img id="oriimg" class="imgbac" draggable="false" src="@imgUrl" />
+    <img id="oriimg" class="imgbac" draggable="false" src="" />
     @* 裁剪框  *@
     <div draggable="false" id="mainBox"
         style="@cropperStyle">
@@ -16,7 +16,7 @@
         <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.DownRight)"></div>
     </div>
     <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> OnDragStart(TouchToMouse(args))"
-        class="img" draggable="false"  style="@cropedImgStyle" src="@imgUrl" />
+        class="img" draggable="false"  style="@cropedImgStyle" src="" />
 </div>
 <center>
     <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="GetData">Done</button>
@@ -28,10 +28,6 @@
     [Parameter]
     public double InitCropHeight { get; set; } = 150;
     [Parameter]
-    public double MaxHeight { get; set; } = 500;
-    [Parameter]
-    public double MaxWidth { get; set; } = 500;
-    [Parameter]
     public bool RequireProportion{ get; set; } = false;
     [Parameter]
     public double Proportion{ get; set; } = 1;
@@ -41,6 +37,15 @@
     public EventCallback<ImageCroppedEventArgs> OnCrop { get; set; }
     [Parameter]
     public bool AnimeGifEnable { get; set; } = true;
+    [Parameter]
+    public string InputId{get;set;}
+    [Parameter]
+    public double MaxHeight{get;set;} = 200;
+    [Parameter]
+    public double MaxWidth{get;set;} = 200;
+    
+    double imgRealHeight = 500;
+    double imgRealWidth = 500;
     double prevPosX = 0;
     double prevPosY = 0;
     double layoutX=0;
@@ -50,7 +55,7 @@
     double width;
     double height;
     string imglistStyle{
-        get=>$"height:{MaxHeight}px;";
+        get=>$"height:{imgRealHeight}px;";
     }
     private string cropperStyle = "";
     string imgUrl = "";
@@ -79,8 +84,8 @@
         {
             action = ()=> SetWidth();
             var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
-            MaxWidth = t[0];
-            MaxHeight = t[1];
+            imgRealWidth = t[0];
+            imgRealHeight = t[1];
         }
         await base.OnAfterRenderAsync(first);
     }
@@ -92,8 +97,8 @@
     public async Task SetWidth()
     {
         var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
-        MaxWidth = t[0];
-        MaxHeight = t[1];
+        imgRealWidth = t[0];
+        imgRealHeight = t[1];
         InitStyles();
     }
     void InitStyles()
@@ -101,16 +106,16 @@
         var i = 0d;
         width = image.Width;
         height = image.Height;
-        if ((double)image.Width / (double)image.Height > MaxWidth / MaxHeight)
+        if ((double)image.Width / (double)image.Height > imgRealWidth / imgRealHeight)
         {
-            i = MaxWidth / image.Width;
-            prevPosY = (MaxHeight - image.Height * i) / 2;
+            i = imgRealWidth / image.Width;
+            prevPosY = (imgRealHeight - image.Height * i) / 2;
             prevPosX = 0;
         }
         else
         {
-            i = MaxHeight / image.Height;
-            prevPosX = Math.Abs(MaxWidth - image.Width * i) / 2;
+            i = imgRealHeight / image.Height;
+            prevPosX = Math.Abs(imgRealWidth - image.Width * i) / 2;
             prevPosY = 0;
         }
         minposX = prevPosX;
@@ -152,7 +157,8 @@
 
         InitStyles();
 
-        imgUrl = image.ToBase64String(format);
+        @* imgUrl = image.ToBase64String(format); *@
+        await JSRuntime.InvokeVoidAsync("setImg",InputId);
     }
     private MouseEventArgs TouchToMouse(TouchEventArgs args)
     {
@@ -176,21 +182,40 @@
         var deltaX = 0;
         var deltaY = 0;
         var i = 0d;
-        if (image.Width/image.Height>MaxWidth/MaxHeight)
+        if ((double)image.Width/(double)image.Height>imgRealWidth/imgRealHeight)
         {
-            i = MaxWidth/image.Width;
-            deltaY = -(int)(MaxHeight/i-image.Height)/2;
+            i = imgRealWidth/image.Width;
+            deltaY = -(int)(imgRealHeight/i-image.Height)/2;
         }
         else
         {
-            i = MaxHeight/image.Height;
-            deltaX = -(int)(MaxWidth/i-image.Width)/2;
+            i = imgRealHeight/image.Height;
+            deltaX = -(int)(imgRealWidth/i-image.Width)/2;
         }
         //var s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)(prevPosX / i + deltaX), (int)(prevPosY / i + deltaY),
         //    (int)(InitCropWidth / i), (int)(InitCropHeight / i), 0, 0, InitCropWidth, InitCropHeight,"image/png");
         //await JSRuntime.InvokeVoidAsync("console.log", s);
-        var ci = image.Clone(ctx =>
-            ctx.Crop(new Rectangle((int)(prevPosX / i + deltaX), (int)(prevPosY / i + deltaY), (int)(InitCropWidth / i), (int)(InitCropHeight / i))));
+        var resizeProp = 1d;
+        var cw = (InitCropWidth / i);
+        var ch = (InitCropHeight / i);
+        if (cw>MaxWidth||ch>MaxHeight)
+        {
+            if (MaxWidth/MaxHeight>(double)cw/(double)ch)
+            {
+                resizeProp = MaxHeight/ch;
+            }
+            else
+            {
+                resizeProp = MaxWidth/cw;
+            }
+        }
+        var ci = image.Clone(ctx =>{
+            ctx.Crop(new Rectangle((int)(prevPosX / i + deltaX), (int)(prevPosY / i + deltaY), (int)cw, (int)ch));
+            if (resizeProp!=1d)
+            {
+                ctx.Resize(new Size((int)(cw*resizeProp),(int)(ch*resizeProp)));
+            }
+        });
         //var ci = Image.Load(Convert.FromBase64String(s.Split(',').Last()));
         await OnCrop.InvokeAsync(new ImageCroppedEventArgs{
             Image = ci,
