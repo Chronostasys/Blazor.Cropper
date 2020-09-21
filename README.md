@@ -14,11 +14,9 @@ It is:
 For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.
 
 ## Usage
-to use it, you should first paste follow js code into your index.html:  
-```js
-function getWidth() {
-    return document.getElementById("blazor_cropper").clientWidth;
-}
+to use it, you should first paste following code into your index.html:  
+```html
+<script src="_content/Chronos.Blazor.Cropper/CropHelper.js"></script>
 ```
 Then, you can install our [nuget pkg](https://www.nuget.org/packages/Chronos.Blazor.Cropper) and use it like follow:
 ```razor
@@ -57,4 +55,6 @@ Then, you can install our [nuget pkg](https://www.nuget.org/packages/Chronos.Bla
 For more details, see [the sample project](CropperSample).  
 To build it, simply clone it and run it in visual studio. The running result should be like this:  
 ![](2020-09-20-22-00-04.png)  
+## Note
+In many cases, I found It's really slow to convert image data to base64 format and set it as img src(many times slower than image crop process). So I stronly recommend you to avoid doing this in blazor.
 
