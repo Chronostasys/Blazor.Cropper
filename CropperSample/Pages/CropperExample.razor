@@ -20,11 +20,8 @@
     {
         file = args.File;
     }
-    async Task OnCropedAsync(Stream stream)
+    async Task OnCropedAsync(Image img)
     {
-        var bytes = new byte[stream.Length];
-        await stream.ReadAsync(bytes,0,(int)stream.Length);
-        var format = "image/png";
-        imgUrl = $"data:{format};base64,{Convert.ToBase64String(bytes)}";
+        imgUrl = img.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance);
     }
 }

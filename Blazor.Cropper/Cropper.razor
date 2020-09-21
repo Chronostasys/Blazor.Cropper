@@ -38,7 +38,7 @@
     [Parameter]
     public IBrowserFile ImageFile{get;set;}
     [Parameter]
-    public EventCallback<Stream> OnCrop { get; set; }
+    public EventCallback<Image> OnCrop { get; set; }
     double prevPosX = 0;
     double prevPosY = 0;
     double layoutX=0;
@@ -69,6 +69,7 @@
     double unsavedCropH;
     bool outOfBox = false;
     IBrowserFile prevFile;
+    SixLabors.ImageSharp.Formats.IImageFormat format;
     protected override async Task OnAfterRenderAsync(bool first)
     {
         if (first)
@@ -89,11 +90,10 @@
             prevFile = ImageFile;
         }
         image?.Dispose();
-        var format = "image/png";
-        var resizedImageFile = await ImageFile.RequestImageFileAsync(format, 500, 500);
+        var resizedImageFile = await ImageFile.RequestImageFileAsync(ImageFile.ContentType, 500, 500);
         var buffer = new byte[resizedImageFile.Size];
         await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
-        image = Image.Load(buffer);
+        image = Image.Load(buffer, out format);
         var i = 0d;
         width = image.Width;
         height = image.Height;
@@ -115,7 +115,7 @@
         imgh = image.Height*i;
         cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
         cropedImgStyle = $"clip: rect({prevPosY-layoutY}px, {prevPosX-layoutX+InitCropWidth}px, {prevPosY-layoutY+InitCropHeight}px, {prevPosX-layoutX}px);";
-        imgUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        imgUrl = image.ToBase64String(format);
     }
     private MouseEventArgs TouchToMouse(TouchEventArgs args)
     {
@@ -150,12 +150,9 @@
             deltaX = -(int)(MaxWidth/i-image.Width)/2;
         }
         var stream = new MemoryStream();
-        await image.Clone(ctx=>
-            ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))))
-            .SaveAsync(stream,new PngEncoder());
-        await stream.FlushAsync();
-        stream.Position = 0;
-        await OnCrop.InvokeAsync(stream);
+        var ci = image.Clone(ctx=>
+            ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
+        await OnCrop.InvokeAsync(ci);
         
         @* using var ci = image.Clone(ctx=>ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
         var b64 = ci.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance);
