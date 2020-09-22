@@ -38,11 +38,11 @@
     [Parameter]
     public string InputId{get;set;}
     [Parameter]
-    public double MaxHeight{get;set;} = 200;
+    public double MaxCropedHeight{get;set;} = 200;
     [Parameter]
-    public double MaxWidth{get;set;} = 200;
-    
-    double imgRealHeight = 500;
+    public double MaxCropedWidth{get;set;} = 200;
+    [Parameter]
+    public double CropperHeight {get;set;}= 150;
     double imgRealWidth = 500;
     double prevPosX = 0;
     double prevPosY = 0;
@@ -53,7 +53,7 @@
     double width;
     double height;
     string imglistStyle{
-        get=>$"height:{imgRealHeight}px;";
+        get=>$"height:{CropperHeight}px;";
     }
     private string cropperStyle = "";
     string imgUrl = "";
@@ -94,7 +94,7 @@
             };
             var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
             imgRealWidth = t[0];
-            imgRealHeight = t[1];
+            CropperHeight = t[1];
         }
         await base.OnAfterRenderAsync(first);
     }
@@ -127,7 +127,7 @@
     {
         var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
         imgRealWidth = t[0];
-        imgRealHeight = t[1];
+        CropperHeight = t[1];
         InitStyles();
     }
     void InitStyles()
@@ -135,15 +135,15 @@
         var i = 0d;
         width = image.Width;
         height = image.Height;
-        if ((double)image.Width / (double)image.Height > imgRealWidth / imgRealHeight)
+        if ((double)image.Width / (double)image.Height > imgRealWidth / CropperHeight)
         {
             i = imgRealWidth / image.Width;
-            prevPosY = (imgRealHeight - image.Height * i) / 2;
+            prevPosY = (CropperHeight - image.Height * i) / 2;
             prevPosX = 0;
         }
         else
         {
-            i = imgRealHeight / image.Height;
+            i = CropperHeight / image.Height;
             prevPosX = Math.Abs(imgRealWidth - image.Width * i) / 2;
             prevPosY = 0;
         }
@@ -166,6 +166,19 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        if (RequireProportion)
+        {
+            if (InitCropHeight>InitCropWidth*Proportion)
+            {
+                InitCropHeight = InitCropWidth*Proportion;
+            }
+            else
+            {
+                InitCropWidth = InitCropHeight/Proportion;
+            }
+            cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
+            cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+        }
         if (prevFile==ImageFile)
         {
             return;
@@ -212,14 +225,14 @@
         var deltaX = 0;
         var deltaY = 0;
         var i = 0d;
-        if ((double)image.Width/(double)image.Height>imgRealWidth/imgRealHeight)
+        if ((double)image.Width/(double)image.Height>imgRealWidth/CropperHeight)
         {
             i = imgRealWidth/image.Width;
-            deltaY = -(int)(imgRealHeight/i-image.Height)/2;
+            deltaY = -(int)(CropperHeight/i-image.Height)/2;
         }
         else
         {
-            i = imgRealHeight/image.Height;
+            i = CropperHeight/image.Height;
             deltaX = -(int)(imgRealWidth/i-image.Width)/2;
         }
         //var s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)(prevPosX / i + deltaX), (int)(prevPosY / i + deltaY),
@@ -228,15 +241,15 @@
         var resizeProp = 1d;
         var cw = (InitCropWidth / i);
         var ch = (InitCropHeight / i);
-        if (cw>MaxWidth||ch>MaxHeight)
+        if (cw>MaxCropedWidth||ch>MaxCropedHeight)
         {
-            if (MaxWidth/MaxHeight>(double)cw/(double)ch)
+            if (MaxCropedWidth/MaxCropedHeight>(double)cw/(double)ch)
             {
-                resizeProp = MaxHeight/ch;
+                resizeProp = MaxCropedHeight/ch;
             }
             else
             {
-                resizeProp = MaxWidth/cw;
+                resizeProp = MaxCropedWidth/cw;
             }
         }
         var ci = image.Clone(ctx =>{

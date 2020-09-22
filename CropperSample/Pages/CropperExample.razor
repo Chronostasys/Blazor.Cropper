@@ -18,7 +18,26 @@
 }
 @if (file != null)
 {
-    <Cropper InputId="input1" ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
+    <div class="modal is-active">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Modal title</p>
+                <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
+            </header>
+            <section class="modal-card-body">
+                <Cropper MaxCropedHeight="128" MaxCropedWidth="128" Proportion="proportion==0?1:proportion" RequireProportion="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
+            </section>
+        </div>
+    </div>
+}
+<select @bind-value="enableProportion" @bind-value:event="onchange">
+    <option value="true">Enable proportion</option>
+    <option value="false">Disable proportion</option>
+</select>
+@if (bool.Parse(enableProportion))
+{
+    <input type="number" @bind-value="proportion" placeholder="proportion"/>
 }
 @code {
     IBrowserFile file;
@@ -26,6 +45,14 @@
     Image image;
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
+    string enableProportion = "false";
+    double proportion = 1d;
+    protected override void OnInitialized()
+    {
+        
+        base.OnInitialized();
+    }
+    
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
         image?.Dispose();
@@ -33,6 +60,7 @@
     }
     async Task OnCropedAsync(ImageCroppedEventArgs args)
     {
+        file = null;
         parsing = true;
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
