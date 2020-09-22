@@ -249,7 +249,11 @@
         //var ci = Image.Load(Convert.FromBase64String(s.Split(',').Last()));
         await OnCrop.InvokeAsync(new ImageCroppedEventArgs{
             Image = ci,
-            Format = format
+            Format = format,
+            X = prevPosX,
+            Y = prevPosY,
+            Width = InitCropWidth,
+            Height = InitCropHeight
         });
 
         @* using var ci = image.Clone(ctx=>ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
