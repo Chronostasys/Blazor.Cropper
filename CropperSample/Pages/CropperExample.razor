@@ -26,7 +26,7 @@
                 <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
             </header>
             <section class="modal-card-body">
-                <Cropper MaxCropedHeight="128" MaxCropedWidth="128" Proportion="proportion==0?1:proportion" RequireProportion="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" OnCrop="@OnCropedAsync"></Cropper>
+                <Cropper MaxCropedHeight="128" MaxCropedWidth="128" Proportion="proportion==0?1:proportion" RequireProportion="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" OnCrop="OnCropedAsync"></Cropper>
             </section>
         </div>
     </div>
