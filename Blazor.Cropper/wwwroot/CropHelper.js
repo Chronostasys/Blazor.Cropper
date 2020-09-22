@@ -29,8 +29,63 @@ function setImg(id) {
 }
 window.addEventListener('resize', (ev) => {
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidth');
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
     } catch (e) {
         console.error(e);
+    }
+})
+var serializeEvent = function (e) {
+    if (e) {
+        var o = {
+            altKey: e.altKey,
+            button: e.button,
+            buttons: e.buttons,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            ctrlKey: e.ctrlKey,
+            metaKey: e.metaKey,
+            movementX: e.movementX,
+            movementY: e.movementY,
+            offsetX: e.offsetX,
+            offsetY: e.offsetY,
+            pageX: e.pageX,
+            pageY: e.pageY,
+            screenX: e.screenX,
+            screenY: e.screenY,
+            shiftKey: e.shiftKey
+        };
+        return o;
+    }
+};
+document.addEventListener('mousemove', (ev)=>{
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
+    } catch (error) {
+        console.error(error);
+    }
+})
+document.addEventListener('mouseup', (ev)=>{
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
+    } catch (error) {
+        console.error(error);
+    }
+})
+document.addEventListener('touchmove', (ev)=>{
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
+            clientX:ev.touches[0].clientX,
+            clientY:ev.touches[0].clientY
+        });
+    } catch (error) {
+        console.error(error);
+    }
+})
+document.addEventListener('touchend', (ev)=>{
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
+        });
+    } catch (error) {
+        console.error(error);
     }
 })

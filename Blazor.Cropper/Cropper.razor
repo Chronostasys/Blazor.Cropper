@@ -1,7 +1,5 @@
 ﻿@inject IJSRuntime JSRuntime;
-<div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" @ontouchmove:stopPropagation="reSizing|dragging"
-    @ontouchmove="args=> OnSizeChanging(TouchToMouse(args))" @ontouchend="args=>OnSizeChangeEnd(TouchToMouse(args))"
-    @onmousemove="OnSizeChanging" @onmouseup="OnSizeChangeEnd" >
+<div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" >
     <img id="oriimg" class="imgbac" draggable="false" src="" />
     @* 裁剪框  *@
     <div draggable="false" id="mainBox"
@@ -77,24 +75,55 @@
     bool outOfBox = false;
     IBrowserFile prevFile;
     IImageFormat format;
-    static Action action;
+    static Action setaction;
+    static Action<MouseEventArgs> mouseMoveAction;
+    static Action<MouseEventArgs> touchMoveAction;
+    static Action<MouseEventArgs> touchEndAction;
+    static Action<MouseEventArgs> mouseUpAction;
     protected override async Task OnAfterRenderAsync(bool first)
     {
         if (first)
         {
-            action = ()=> SetWidth();
+            setaction = ()=> SetWidthHeight();
+            mouseMoveAction = OnSizeChanging;
+            mouseUpAction = OnSizeChangeEnd;
+            touchMoveAction = OnSizeChanging;
+            touchEndAction = (args)=>{
+                outOfBox = true;
+                OnSizeChangeEnd(args);
+            };
             var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
             imgRealWidth = t[0];
             imgRealHeight = t[1];
         }
         await base.OnAfterRenderAsync(first);
     }
-    [JSInvokable("SetWidth")]
-    public static void SetWidthCaller()
+    [JSInvokable("OnTouchEnd")]
+    public static void TouchEndCaller(MouseEventArgs args)
     {
-        action?.Invoke();
+        touchEndAction?.Invoke(args);
     }
-    public async Task SetWidth()
+    [JSInvokable("OnTouchMove")]
+    public static void TouchMoveCaller(MouseEventArgs args)
+    {
+        touchMoveAction?.Invoke(args);
+    }
+    [JSInvokable("OnMouseUp")]
+    public static void MouseUpCaller(MouseEventArgs args)
+    {
+        mouseUpAction?.Invoke(args);
+    }
+    [JSInvokable("OnMouseMove")]
+    public static void MouseMoveCaller(MouseEventArgs args)
+    {
+        mouseMoveAction?.Invoke(args);
+    }
+    [JSInvokable("SetWidthHeight")]
+    public static void SetWidthHeightCaller()
+    {
+        setaction?.Invoke();
+    }
+    public async Task SetWidthHeight()
     {
         var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
         imgRealWidth = t[0];
@@ -132,6 +161,7 @@
         }
         cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
         cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+        base.StateHasChanged();
     }
     protected override async Task OnParametersSetAsync()
     {
@@ -269,6 +299,7 @@
             unsavedY = y;
             cropperStyle = $"top:{y}px;left:{x}px;height:{InitCropHeight}px;width:{InitCropWidth}px";
             cropedImgStyle = $"clip: rect({y-layoutY}px, {x-layoutX+InitCropWidth}px, {y-layoutY+InitCropHeight}px, {x-layoutX}px);";
+            base.StateHasChanged();
         }
     }
     void OnDragEnd(MouseEventArgs args)
@@ -444,6 +475,7 @@
             cropedImgStyle = $"clip: rect({ytemp-layoutY}px, {xtemp-layoutX+tempCropWidth}px, {ytemp-layoutY+tempCropHeight}px, {xtemp-layoutX}px);";
         }
         OnDragging(args);
+        base.StateHasChanged();
     }
     void OnSizeChangeEnd(MouseEventArgs args)
     {
