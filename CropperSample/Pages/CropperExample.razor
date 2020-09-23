@@ -26,8 +26,23 @@
                 <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
             </header>
             <section class="modal-card-body">
-                <Cropper MaxCropedHeight="128" MaxCropedWidth="128" Proportion="proportion==0?1:proportion" RequireProportion="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" OnCrop="OnCropedAsync"></Cropper>
+                <Cropper MaxCropedHeight="128" MaxCropedWidth="128" 
+                    @ref="cropper"
+                    Proportion="proportion==0?1:proportion" 
+                    RequireProportion="bool.Parse(enableProportion)" 
+                    InputId="input1" 
+                    ImageFile="file"
+                    @bind-Ratio="ratio"
+                    OnLoad="OnCropperLoad"></Cropper>
             </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" @onclick="DoneCrop">Done</button>
+                @if (cropper!=null)
+                {
+                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)" @oninput="OnRatioChange"/>
+                }
+                
+            </footer>
         </div>
     </div>
 }
@@ -40,6 +55,7 @@
     <input type="number" @bind-value="proportion" placeholder="proportion"/>
 }
 @code {
+    Cropper cropper;
     IBrowserFile file;
     string imgUrl = "";
     Image image;
@@ -47,6 +63,11 @@
     bool parsing = false;
     string enableProportion = "false";
     double proportion = 1d;
+    double ratio = 1;
+    void OnRatioChange(ChangeEventArgs args)
+    {
+        ratio = int.Parse(args.Value.ToString())/100.0;
+    }
     protected override void OnInitialized()
     {
         
@@ -58,8 +79,13 @@
         image?.Dispose();
         file = args.File;
     }
-    async Task OnCropedAsync(ImageCroppedEventArgs args)
+    void OnCropperLoad()
     {
+        base.StateHasChanged();
+    }
+    async Task DoneCrop()
+    {
+        var args = cropper.GetCropedResult();
         file = null;
         parsing = true;
         base.StateHasChanged();

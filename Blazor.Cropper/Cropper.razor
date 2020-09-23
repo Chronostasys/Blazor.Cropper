@@ -37,11 +37,10 @@
     <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> OnDragStart(TouchToMouse(args))"
         class="img" draggable="false"  style="@(backgroundImgStyle+cropedImgStyle)" src="" @ontouchstart:stopPropagation />
 </div>
-<center>
-    <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="GetData">Done</button>
+@* <center>
     <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1.2);InitBox();}">Larger</button>
     <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1/1.2);InitBox();}">Smaller</button>
-</center>
+</center> *@
 
 @code {
 #region params
@@ -56,7 +55,7 @@
     [Parameter]
     public IBrowserFile ImageFile{get;set;}
     [Parameter]
-    public EventCallback<ImageCroppedEventArgs> OnCrop { get; set; }
+    public EventCallback OnLoad { get; set; }
     [Parameter]
     public bool AnimeGifEnable { get; set; } = true;
     [Parameter]
@@ -67,6 +66,14 @@
     public double MaxCropedWidth{get;set;} = 200;
     [Parameter]
     public double CropperHeight {get;set;}= 150;
+    [Parameter]
+    public double Ratio{get;set;} = 1.0;
+    [Parameter]
+    public EventCallback<double> RatioChanged{get;set;}
+#endregion
+#region public vars
+public double MaxRatio{get;private set;}
+public double MinRatio {get=>1.0;}
 #endregion
 #region vars
     double prevBacX = 0;
@@ -147,6 +154,12 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        JSRuntime.InvokeVoidAsync("console.log",Ratio);
+        if (MinRatio<=Ratio&&Ratio<=MaxRatio)
+        {
+            imgSize = Ratio*100;
+            InitBox();
+        }
         if (RequireProportion)
         {
             if (InitCropHeight>InitCropWidth*Proportion)
@@ -178,11 +191,11 @@
         var buffer = new byte[resizedImageFile.Size];
         await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
         image = Image.Load(buffer, out format);
-
         InitStyles();
-
+        MaxRatio = imgContainerWidth/imgRealW;
         @* imgUrl = image.ToBase64String(format); *@
         await JSRuntime.InvokeVoidAsync("setImg",InputId);
+        await OnLoad.InvokeAsync();
     }
     protected override async Task OnAfterRenderAsync(bool first)
     {
@@ -336,6 +349,7 @@
         {
             var i = distance/prevTouchPointDistance;
             ResizeBac(i);
+            RatioChanged.InvokeAsync(imgSize/100);
 
 
             
@@ -349,7 +363,7 @@
         prevTouchPointDistance = distance;
 
     }
-    public async Task SetWidthHeight()
+    async Task SetWidthHeight()
     {
         var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
         imgContainerWidth = t[0];
@@ -433,8 +447,7 @@
             return new MouseEventArgs();
         }
     }
-
-    private async Task GetData()
+    public ImageCroppedResult GetCropedResult()
     {
         var deltaX = 0;
         var deltaY = 0;
@@ -470,7 +483,6 @@
                 resizeProp = MaxCropedWidth/cw;
             }
         }
-        JSRuntime.InvokeVoidAsync("console.log",imgContainerHeight,imgContainerWidth,bacx,bacy,imgSize,prevPosX,prevPosY,layoutX,layoutX,image.Width,image.Height,i);
         var ci = image.Clone(ctx =>{
             ctx.Crop(new Rectangle((int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY), (int)(cw), (int)(ch)));
             if (resizeProp!=1d)
@@ -478,19 +490,14 @@
                 ctx.Resize(new Size((int)(cw*resizeProp),(int)(ch*resizeProp)));
             }
         });
-        //var ci = Image.Load(Convert.FromBase64String(s.Split(',').Last()));
-        await OnCrop.InvokeAsync(new ImageCroppedEventArgs{
+        return new ImageCroppedResult{
             Image = ci,
             Format = format,
             X = prevPosX,
             Y = prevPosY,
             Width = InitCropWidth,
             Height = InitCropHeight
-        });
-
-        @* using var ci = image.Clone(ctx=>ctx.Crop(new Rectangle((int)(prevPosX/i+deltaX),(int)(prevPosY/i+deltaY),(int)(InitCropWidth/i),(int)(InitCropHeight/i))));
-        var b64 = ci.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance);
-        url = b64; *@
+        };
     }
 
     void OnDragStart(MouseEventArgs args)
