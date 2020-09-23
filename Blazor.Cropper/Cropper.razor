@@ -154,10 +154,28 @@ public double MinRatio {get=>1.0;}
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        JSRuntime.InvokeVoidAsync("console.log",Ratio);
         if (MinRatio<=Ratio&&Ratio<=MaxRatio)
         {
+            var temp = imgSize;
             imgSize = Ratio*100;
+            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+            {
+                minposX = 0;
+                minposY = (imgContainerHeight - imgRealH) / 2;
+            }
+            else
+            {
+                minposY = 0;
+                minposX = (imgContainerWidth - imgRealW) / 2;
+            }
+            minposY += bacy;
+            minposX += bacx;
+            if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
+                ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
+            {
+                imgSize = temp;
+                await RatioChanged.InvokeAsync(imgSize/100);
+            }
             InitBox();
         }
         if (RequireProportion)
@@ -291,6 +309,8 @@ public double MinRatio {get=>1.0;}
             minposY = 0;
             minposX = (imgContainerWidth - imgRealW) / 2;
         }
+        minposY += bacy;
+        minposX += bacx;
         if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
             ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
         {
