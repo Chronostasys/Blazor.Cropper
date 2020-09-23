@@ -1,7 +1,7 @@
 ﻿@inject IJSRuntime JSRuntime;
 <div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" >
     <img id="oriimg" class="imgbac" draggable="false" src="" style="@backgroundImgStyle"
-        @ontouchend="async ()=>{
+        @ontouchend="()=>{
             if(onTwoFingerResizing||isBacMoving)
             {
                 isBacMoving = false;
@@ -15,6 +15,12 @@
         @ontouchstart="args=>{
             prevBacX = args.Touches[0].ClientX;
             prevBacY = args.Touches[0].ClientY;
+            isBacMoving = true;
+        }"
+        @onmousedown="args=>{
+            prevBacX = args.ClientX;
+            prevBacY = args.ClientY;
+            isBacMoving = true;
         }"/>
     @* 裁剪框  *@
     <div draggable="false" id="mainBox" @ontouchstart:stopPropagation
@@ -33,6 +39,8 @@
 </div>
 <center>
     <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="GetData">Done</button>
+    <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1.2);InitBox();}">Larger</button>
+    <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1/1.2);InitBox();}">Smaller</button>
 </center>
 
 @code {
@@ -181,8 +189,19 @@
         if (first)
         {
             setaction = ()=> SetWidthHeight();
-            mouseMoveAction = OnSizeChanging;
-            mouseUpAction = OnSizeChangeEnd;
+            mouseMoveAction = args=>{
+                OnSizeChanging(args);
+                OnResizeBackGroundImage(MouseToTouch(args));
+            };
+            mouseUpAction = args=>{
+                if(onTwoFingerResizing||isBacMoving)
+                {
+                    isBacMoving = false;
+                    onTwoFingerResizing=false;
+                    InitBox();
+                }
+                OnSizeChangeEnd(args);
+            };
             touchMoveAction = OnSizeChanging;
             touchEndAction = (args)=>{
                 outOfBox = true;
@@ -223,11 +242,56 @@
         setaction?.Invoke();
     }
 #endregion
-    public void OnResizeBackGroundImage(TouchEventArgs args)
+    TouchEventArgs MouseToTouch(MouseEventArgs args)
+    {
+        return new TouchEventArgs{
+            Touches = new []{
+                new TouchPoint{
+                    ClientX = args.ClientX,
+                    ClientY = args.ClientY
+                }
+            }
+        };
+    }
+    void ResizeBac(double i)
+    {
+        if (imgSize*i<100&&i<1)
+        {
+            return;
+        }
+        if ((imgRealW*i>imgContainerWidth)&&(imgRealH*i>imgContainerHeight)&&i>1)
+        {
+            return;
+        }
+        imgSize *= i;
+
+
+
+
+        if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+        {
+            minposX = 0;
+            minposY = (imgContainerHeight - imgRealH) / 2;
+        }
+        else
+        {
+            minposY = 0;
+            minposX = (imgContainerWidth - imgRealW) / 2;
+        }
+        if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
+            ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
+        {
+            imgSize /=i;
+        }
+    }
+    void OnResizeBackGroundImage(TouchEventArgs args)
     {
         if (args.Touches.Length == 1)
         {
-            isBacMoving = true;
+            if (!isBacMoving)
+            {
+                return;
+            }
             var dx = args.Touches[0].ClientX - prevBacX;
             var dy = args.Touches[0].ClientY - prevBacY;
             if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
@@ -271,34 +335,7 @@
         if (onTwoFingerResizing)
         {
             var i = distance/prevTouchPointDistance;
-            if (imgSize*i<100&&i<1)
-            {
-                return;
-            }
-            if ((imgRealW*i>imgContainerWidth)&&(imgRealH*i>imgContainerHeight)&&i>1)
-            {
-                return;
-            }
-            imgSize *= i;
-
-
-
-
-            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
-            {
-                minposX = 0;
-                minposY = (imgContainerHeight - imgRealH) / 2;
-            }
-            else
-            {
-                minposY = 0;
-                minposX = (imgContainerWidth - imgRealW) / 2;
-            }
-            if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
-                ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
-            {
-                imgSize /=i;
-            }
+            ResizeBac(i);
 
 
             
