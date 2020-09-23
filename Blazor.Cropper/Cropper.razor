@@ -173,7 +173,7 @@
         var resizedImageFile = ImageFile;
         if (ext!="gif"||!AnimeGifEnable||resizedImageFile.Size>1048576)
         {
-            resizedImageFile = await ImageFile.RequestImageFileAsync($"image/{ext}", 500, 500);
+            resizedImageFile = await ImageFile.RequestImageFileAsync($"image/{ext}", 5000, 5000);
         }
         var buffer = new byte[resizedImageFile.Size];
         await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
