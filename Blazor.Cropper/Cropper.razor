@@ -6,7 +6,7 @@
             {
                 isBacMoving = false;
                 onTwoFingerResizing=false;
-                Validate();
+                InitBox();
             }
         }"
         @ontouchmove:stopPropagation
@@ -230,10 +230,34 @@
             isBacMoving = true;
             var dx = args.Touches[0].ClientX - prevBacX;
             var dy = args.Touches[0].ClientY - prevBacY;
+            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+            {
+                minposX = 0;
+                minposY = (imgContainerHeight - imgRealH) / 2;
+            }
+            else
+            {
+                minposY = 0;
+                minposX = (imgContainerWidth - imgRealW) / 2;
+            }
+            minposY += bacy+dy;
+            minposX += bacx+dx;
             bacx += dx;
             bacy += dy;
             layoutX+=dx;
             layoutY+=dy;
+            if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX)
+            {
+                bacx-=dx;
+                layoutX -= dx;
+                minposX -=bacx;
+            }
+            if (prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
+            {
+                bacy-=dy;
+                layoutY-=dy;
+                minposY-=bacy;
+            }
             cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
             prevBacX = args.Touches[0].ClientX;
             prevBacY = args.Touches[0].ClientY;
@@ -256,6 +280,28 @@
                 return;
             }
             imgSize *= i;
+
+
+
+
+            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+            {
+                minposX = 0;
+                minposY = (imgContainerHeight - imgRealH) / 2;
+            }
+            else
+            {
+                minposY = 0;
+                minposX = (imgContainerWidth - imgRealW) / 2;
+            }
+            if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
+                ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
+            {
+                imgSize /=i;
+            }
+
+
+            
             @* bacy=-(imgSize-100)/100*imgRealH/2; *@
             @* bacy-=(imgSize-1)*imgContainerHeight/2; *@
         }
@@ -273,33 +319,29 @@
         imgContainerHeight = t[1];
         InitStyles();
     }
-    void Validate()
-    {
-        width = image.Width;
-        height = image.Height;
+    void InitBox(){
+        var prevPosX = 0d;
+        var prevPosY = 0d;
         if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
         {
-            minposX = (imgContainerHeight - imgRealH) / 2;
-            minposY = 0;
+            prevPosY = (imgContainerHeight - imgRealH) / 2;
+            prevPosX = 0;
         }
         else
         {
-            minposY = Math.Abs(imgContainerWidth - imgRealW) / 2;
-            minposX = 0;
+            prevPosX = Math.Abs(imgContainerWidth - imgRealW) / 2;
+            prevPosY = 0;
         }
-        minposY += bacy;
-        minposX += bacx;
-        if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
-            ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
-        {
-            InitStyles();
-        }
+        prevPosY += bacy;
+        prevPosX += bacx;
+        minposX = prevPosX;
+        minposY = prevPosY;
+        imgw = imgRealW;
+        imgh = imgRealH;
     }
     void InitStyles()
     {
         var i = 0d;
-        width = image.Width;
-        height = image.Height;
         if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
         {
             i = imgContainerWidth / image.Width;
