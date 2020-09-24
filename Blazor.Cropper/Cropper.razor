@@ -176,6 +176,12 @@ public double MinRatio {get=>1.0;}
                 imgSize = temp;
                 await RatioChanged.InvokeAsync(imgSize/100);
             }
+            else
+            {
+                bacy-=(imgSize-temp)/imgSize*imgRealH/2;
+                layoutY-=(imgSize-temp)/imgSize*imgRealH/2;
+                cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+            }
             InitBox();
         }
         if (RequireProportion)
@@ -316,6 +322,12 @@ public double MinRatio {get=>1.0;}
         {
             imgSize /=i;
         }
+        else
+        {
+            bacy-=(i-1)*imgRealH/2;
+            layoutY-=(i-1)*imgRealH/2;
+            cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+        }
     }
     void OnResizeBackGroundImage(TouchEventArgs args)
     {
@@ -369,11 +381,12 @@ public double MinRatio {get=>1.0;}
         {
             var i = distance/prevTouchPointDistance;
             ResizeBac(i);
+            
             RatioChanged.InvokeAsync(imgSize/100);
 
-
             
-            @* bacy=-(imgSize-100)/100*imgRealH/2; *@
+            
+            
             @* bacy-=(imgSize-1)*imgContainerHeight/2; *@
         }
         else
