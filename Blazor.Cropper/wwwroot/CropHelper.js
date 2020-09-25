@@ -8,6 +8,14 @@ function getWidthHeight() {
     a.push(e.clientHeight);
     return a;
 }
+function getOriImgSize(){
+    var a = [];
+    var e = document.getElementById("oriimg");
+    console.log(e.naturalWidth,e.naturalHeight);
+    a.push(e.naturalWidth);
+    a.push(e.naturalHeight);
+    return a;
+}
 async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format) {
     var blob =  await new Promise(function (resolve) {
         var canvas = document.createElement('canvas');
@@ -17,7 +25,6 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
         canvas.getContext('2d').drawImage(img, sx, sy, swidth, sheight, x, y, width, height);
         resolve(canvas.toDataURL(format));
     })
-    
     return blob;
 }
 function setImg(id) {
@@ -28,10 +35,10 @@ function setImg(id) {
     
 }
 window.addEventListener('resize', (ev) => {
+    console.log(Blazor);
     try {
         DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
     } catch (e) {
-        console.error(e);
     }
 })
 var serializeEvent = function (e) {
@@ -61,14 +68,12 @@ document.addEventListener('mousemove', (ev)=>{
     try {
         DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
     } catch (error) {
-        console.error(error);
     }
 })
 document.addEventListener('mouseup', (ev)=>{
     try {
         DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
     } catch (error) {
-        console.error(error);
     }
 })
 document.addEventListener('touchmove', (ev)=>{
@@ -78,7 +83,6 @@ document.addEventListener('touchmove', (ev)=>{
             clientY:ev.touches[0].clientY
         });
     } catch (error) {
-        console.error(error);
     }
 })
 document.addEventListener('touchend', (ev)=>{
@@ -86,6 +90,5 @@ document.addEventListener('touchend', (ev)=>{
         DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
         });
     } catch (error) {
-        console.error(error);
     }
 })

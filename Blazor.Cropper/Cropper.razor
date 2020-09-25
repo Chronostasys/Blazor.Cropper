@@ -107,7 +107,7 @@ public double MinRatio {get=>1.0;}
     bool reSizing = false;
     MoveDir dir = MoveDir.UnKnown;
     double minval = 30;
-    Image image;
+    ImageData image;
     string url;
     double minposX;
     double minposY;
@@ -205,20 +205,19 @@ public double MinRatio {get=>1.0;}
         {
             prevFile = ImageFile;
         }
-        image?.Dispose();
         var ext = ImageFile.Name.Split('.').Last().ToLower();
         var resizedImageFile = ImageFile;
-        if ((ext!="gif"&&AnimeGifEnable)||resizedImageFile.Size>448576)
-        {
-            resizedImageFile = await ImageFile.RequestImageFileAsync($"image/{ext}", 2000, 2000);
-        }
-        var buffer = new byte[resizedImageFile.Size];
-        await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
-        image = Image.Load(buffer, out format);
+        await Task.Delay(10);
+        await JSRuntime.InvokeVoidAsync("setImg",InputId);
+        await Task.Delay(10);
+        var data = await JSRuntime.InvokeAsync<double[]>("getOriImgSize");
+        image = new ImageData{
+            Width = data[0],
+            Height = data[1]
+        };
         InitStyles();
         MaxRatio = imgContainerWidth/imgRealW;
         @* imgUrl = image.ToBase64String(format); *@
-        await JSRuntime.InvokeVoidAsync("setImg",InputId);
         await RatioChanged.InvokeAsync(imgSize/100);
         await OnLoad.InvokeAsync();
     }
@@ -481,7 +480,7 @@ public double MinRatio {get=>1.0;}
             return new MouseEventArgs();
         }
     }
-    public ImageCroppedResult GetCropedResult()
+    public async Task<ImageCroppedResult> GetCropedResult()
     {
         var deltaX = 0;
         var deltaY = 0;
@@ -500,9 +499,6 @@ public double MinRatio {get=>1.0;}
             deltaX = -(int)(imgContainerWidth/i-image.Width)/2;
             @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
         }
-        //var s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)(prevPosX / i + deltaX), (int)(prevPosY / i + deltaY),
-        //    (int)(InitCropWidth / i), (int)(InitCropHeight / i), 0, 0, InitCropWidth, InitCropHeight,"image/png");
-        //await JSRuntime.InvokeVoidAsync("console.log", s);
         var resizeProp = 1d;
         var cw = (InitCropWidth / i);
         var ch = (InitCropHeight / i);
@@ -517,20 +513,25 @@ public double MinRatio {get=>1.0;}
                 resizeProp = MaxCropedWidth/cw;
             }
         }
-        var ci = image.Clone(ctx =>{
+        await JSRuntime.InvokeVoidAsync("console.log", "begin resize",(int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY),
+            (int)(cw), (int)(ch));
+        var s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY),
+            (int)(cw), (int)(ch), 0, 0, MaxCropedWidth, MaxCropedHeight,"image/png");
+        await JSRuntime.InvokeVoidAsync("console.log", s);
+        @* var ci = image.Clone(ctx =>{
             ctx.Crop(new Rectangle((int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY), (int)(cw), (int)(ch)));
             if (resizeProp!=1d)
             {
                 ctx.Resize(new Size((int)(cw*resizeProp),(int)(ch*resizeProp)));
             }
-        });
+        }); *@
         return new ImageCroppedResult{
-            Image = ci,
-            Format = format,
+            @* Image = ci, *@
             X = ((prevPosX-bacx) / i + deltaX),
             Y = ((prevPosY-bacy) / i + deltaY),
             Width = cw,
-            Height = ch
+            Height = ch,
+            Base64 = s
         };
     }
 

@@ -26,7 +26,7 @@
                 <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
             </header>
             <section class="modal-card-body" style="overflow:hidden">
-                <Cropper MaxCropedHeight="128" MaxCropedWidth="128" 
+                <Cropper MaxCropedHeight="500" MaxCropedWidth="500" 
                     @ref="cropper"
                     Proportion="proportion==0?1:proportion" 
                     RequireProportion="bool.Parse(enableProportion)" 
@@ -85,15 +85,14 @@
     }
     async Task DoneCrop()
     {
-        var args = cropper.GetCropedResult();
+        var args = await cropper.GetCropedResult();
         file = null;
         parsing = true;
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
         image?.Dispose();
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
-        image = args.Image;
-        imgUrl = args.Image.ToBase64String(args.Format);
+        imgUrl = args.Base64;
         parsing = false;
     }
 }
