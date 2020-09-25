@@ -209,8 +209,12 @@ public double MinRatio {get=>1.0;}
         var resizedImageFile = ImageFile;
         await Task.Delay(10);
         await JSRuntime.InvokeVoidAsync("setImg",InputId);
-        await Task.Delay(10);
-        var data = await JSRuntime.InvokeAsync<double[]>("getOriImgSize");
+        var data = new double[]{0,0};
+        while(data[0]==0d)
+        {
+            await Task.Delay(10);
+            data = await JSRuntime.InvokeAsync<double[]>("getOriImgSize");
+        }
         image = new ImageData{
             Width = data[0],
             Height = data[1]
