@@ -151,7 +151,7 @@ public double MinRatio {get=>1.0;}
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        if (MinRatio<=Ratio&&Ratio<=MaxRatio)
+        if (MinRatio<=Ratio&&Ratio<=MaxRatio&&!onTwoFingerResizing)
         {
             var temp = imgSize;
             imgSize = Ratio*100;
@@ -165,7 +165,7 @@ public double MinRatio {get=>1.0;}
                 minposY = 0;
                 minposX = (imgContainerWidth - imgRealW) / 2;
             }
-            minposY += bacy;
+            minposY += bacy-(imgSize-temp)/imgSize*imgRealH/2;
             minposX += bacx;
             if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
                 ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
@@ -362,6 +362,7 @@ public double MinRatio {get=>1.0;}
     }
     void ResizeBac(double i)
     {
+        var temp = imgSize;
         if (imgSize*i<100&&i<1)
         {
             return;
@@ -385,7 +386,7 @@ public double MinRatio {get=>1.0;}
             minposY = 0;
             minposX = (imgContainerWidth - imgRealW) / 2;
         }
-        minposY += bacy;
+        minposY += bacy-(imgSize-temp)/imgSize*imgRealH/2;
         minposX += bacx;
         if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
             ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
