@@ -58,7 +58,6 @@
     Cropper cropper;
     IBrowserFile file;
     string imgUrl = "";
-    Image image;
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
     string enableProportion = "false";
@@ -76,7 +75,6 @@
     
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
-        image?.Dispose();
         file = args.File;
     }
     void OnCropperLoad()
@@ -90,7 +88,6 @@
         parsing = true;
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
-        image?.Dispose();
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
         imgUrl = args.Base64;
         parsing = false;

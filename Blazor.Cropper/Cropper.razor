@@ -95,13 +95,10 @@ public double MinRatio {get=>1.0;}
     double layoutY=0;
     double offsetX;
     double offsetY;
-    double width;
-    double height;
     string imglistStyle{
         get=>$"height:{CropperHeight}px;";
     }
     private string cropperStyle = "";
-    string imgUrl = "";
     string cropedImgStyle = "clip: rect(0, 150px, 150px, 0);";
     bool dragging = false;
     bool reSizing = false;
