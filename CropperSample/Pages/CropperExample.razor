@@ -32,8 +32,7 @@
                     RequireAspectRatio="bool.Parse(enableProportion)" 
                     InputId="input1" 
                     ImageFile="file"
-                    @bind-Ratio="ratio"
-                    OnLoad="OnCropperLoad"></Cropper>
+                    @bind-Ratio="ratio"></Cropper>
             </section>
             <footer class="modal-card-foot">
                 <button class="button is-success" @onclick="DoneCrop">Done</button>
@@ -76,10 +75,6 @@
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
         file = args.File;
-    }
-    void OnCropperLoad()
-    {
-        base.StateHasChanged();
     }
     async Task DoneCrop()
     {

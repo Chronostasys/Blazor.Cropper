@@ -16,116 +16,57 @@ It is:
 
 If you find Blazor.Cropper helpful, you could **star this repo**, it's really important to me.  
 
-For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.
+For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.  
 
-## Usage
-to use it, you should first paste following code into your index.html:  
+## Quick Start
+Only 4 steps to use Blazor.Cropper
+### Step0. Add nuget  pkg
+Install our nuget pkg at [nuget.org](https://www.nuget.org/packages/Chronos.Blazor.Cropper). 
+Add namespace to `_import.razor`:  
+```razor
+@using Blazor.Cropper
+```
+### Step1. Add script referrence
+Then, you should paste following code into your index.html:  
 ```html
 <script src="_content/Chronos.Blazor.Cropper/CropHelper.js"></script>
 ```
-Then, you can install our [nuget pkg](https://www.nuget.org/packages/Chronos.Blazor.Cropper) and use it like follow:
+### Step2. Add cropper
+Just add cropper to your code. We recommend you to use it inside a modal card.  
+**Note**: to use the cropper, you need to use a `<InputFile>` component to get a file source. 
+You must provide a paramter named `InputId`, which's value is the same as the `id` attribute of the `<InputFile>` component.  
+Example:
 ```razor
-@page "/cropper"
-@inject IJSRuntime JSRuntime;
-
-<h1>Cropper</h1>
-<InputFile id="input1" OnChange="OnInputFileChange"></InputFile>
-@if (parsing)
-{
-    <center>
-        <h2>@prompt</h2>
-    </center>
-}
-@if (!string.IsNullOrEmpty(imgUrl)&&!parsing)
-{
-    <center>
-        <h2>Crop Result:</h2>
-        <img src="@imgUrl" />
-    </center>
-}
-@if (file != null)
-{
-    <div class="modal is-active">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-            <header class="modal-card-head">
-                <p class="modal-card-title">Modal title</p>
-                <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
-            </header>
-            <section class="modal-card-body" style="overflow:hidden">
-                <Cropper MaxCropedHeight="500" MaxCropedWidth="500" 
-                    @ref="cropper"
-                    Proportion="proportion==0?1:proportion" 
-                    RequireProportion="bool.Parse(enableProportion)" 
-                    InputId="input1" 
-                    ImageFile="file"
-                    @bind-Ratio="ratio"
-                    OnLoad="OnCropperLoad"></Cropper>
-            </section>
-            <footer class="modal-card-foot">
-                <button class="button is-success" @onclick="DoneCrop">Done</button>
-                @if (cropper!=null)
-                {
-                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)" @oninput="OnRatioChange"/>
-                }
-                
-            </footer>
-        </div>
-    </div>
-}
-<select @bind-value="enableProportion" @bind-value:event="onchange">
-    <option value="true">Enable proportion</option>
-    <option value="false">Disable proportion</option>
-</select>
-@if (bool.Parse(enableProportion))
-{
-    <input type="number" @bind-value="proportion" placeholder="proportion"/>
-}
-@code {
-    Cropper cropper;
-    IBrowserFile file;
-    string imgUrl = "";
-    Image image;
-    string prompt = "Image cropped! Parsing to base64...";
-    bool parsing = false;
-    string enableProportion = "false";
-    double proportion = 1d;
-    double ratio = 1;
-    void OnRatioChange(ChangeEventArgs args)
-    {
-        ratio = int.Parse(args.Value.ToString())/100.0;
-    }
-    protected override void OnInitialized()
-    {
-        
-        base.OnInitialized();
-    }
-    
-    void OnInputFileChange(InputFileChangeEventArgs args)
-    {
-        image?.Dispose();
-        file = args.File;
-    }
-    void OnCropperLoad()
-    {
-        base.StateHasChanged();
-    }
-    async Task DoneCrop()
-    {
-        var args = await cropper.GetCropedResult();
-        file = null;
-        parsing = true;
-        base.StateHasChanged();
-        await Task.Delay(10);// a hack, otherwise prompt won't show
-        image?.Dispose();
-        await JSRuntime.InvokeVoidAsync("console.log", "converted!");
-        imgUrl = args.Base64;
-        parsing = false;
-    }
-}
-
+@* .... some code ...*@
+<InputFile id="input1"></InputFile>
+<Cropper InputId="input1" ></Cropper>
+@* .... some code ...*@
 ```
-For more details, see [the sample project](CropperSample).  
+
+### Step3. Get result
+To get the crop result, you need to get the reference of the `Cropper`, then call the `Cropper.GetCropedResult()` method.  
+Example:  
+```razor
+@* .... some code ...*@
+<Cropper InputId="input1" @ref="cropper"></Cropper>
+@* .... some code ...*@
+@code{
+    Cropper cropper;
+    @* .... some code ...*@
+    void GetCropResult()
+    {
+        var re = cropper.GetCropedResult();
+        var buffer = re.GetBytes();
+        var base64 = re.Base64;
+    }
+    @* .... some code ...*@
+}
+```
+
+
+## Api referrence
+We have detailed xml comments on Cropper's properties & methods, simply read it while use it!  
+On the other hand, you can go to [the sample project](CropperSample) for usage examples.  
 To build it, simply clone it and run it in visual studio. The running result should be like this:  
 ![](2020-09-26-12-29-30.png)  
 
