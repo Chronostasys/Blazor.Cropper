@@ -292,6 +292,67 @@ public double MinRatio {get=>1.0;}
         setaction?.Invoke();
     }
 #endregion
+#region Public methods
+    public async Task<ImageCroppedResult> GetCropedResult()
+    {
+        var deltaX = 0;
+        var deltaY = 0;
+        var i = 0d;
+        if ((double)image.Width/(double)image.Height>imgContainerWidth/imgContainerHeight)
+        {
+            imgContainerWidth *= imgSize/100;
+            i = imgContainerWidth/image.Width;
+            deltaY = -(int)(imgContainerHeight/i-image.Height)/2;
+            @* deltaX = -(int)(imgContainerWidth/i-image.Width)/2; *@
+        }
+        else
+        {
+            imgContainerHeight *= imgSize/100;
+            i = imgContainerHeight/image.Height;
+            deltaX = -(int)(imgContainerWidth/i-image.Width)/2;
+            @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
+        }
+        var resizeProp = 1d;
+        var cw = (InitCropWidth / i);
+        var ch = (InitCropHeight / i);
+        if (cw>MaxCropedWidth||ch>MaxCropedHeight)
+        {
+            if (MaxCropedWidth/MaxCropedHeight>(double)cw/(double)ch)
+            {
+                resizeProp = MaxCropedHeight/ch;
+            }
+            else
+            {
+                resizeProp = MaxCropedWidth/cw;
+            }
+        }
+        var s = "";
+        if(gifimage==null)
+        {
+            s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY),
+                (int)(cw), (int)(ch), 0, 0, MaxCropedWidth, MaxCropedHeight,"image/png");
+        }
+        else
+        {
+            s = gifimage.Clone(ctx =>{
+                ctx.Crop(new Rectangle((int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY), (int)(cw), (int)(ch)));
+                if (resizeProp!=1d)
+                {
+                    ctx.Resize(new Size((int)(cw*resizeProp),(int)(ch*resizeProp)));
+                }
+            }).ToBase64String(format); 
+        }
+        return new ImageCroppedResult{
+            @* Image = ci, *@
+            X = ((prevPosX-bacx) / i + deltaX),
+            Y = ((prevPosY-bacy) / i + deltaY),
+            Width = cw,
+            Height = ch,
+            Base64 = s
+        };
+    }
+#endregion
+#region private methods
     TouchEventArgs MouseToTouch(MouseEventArgs args)
     {
         return new TouchEventArgs{
@@ -492,67 +553,6 @@ public double MinRatio {get=>1.0;}
             outOfBox = true;
             return new MouseEventArgs();
         }
-    }
-    public async Task<ImageCroppedResult> GetCropedResult()
-    {
-        var deltaX = 0;
-        var deltaY = 0;
-        var i = 0d;
-        if ((double)image.Width/(double)image.Height>imgContainerWidth/imgContainerHeight)
-        {
-            imgContainerWidth *= imgSize/100;
-            i = imgContainerWidth/image.Width;
-            deltaY = -(int)(imgContainerHeight/i-image.Height)/2;
-            @* deltaX = -(int)(imgContainerWidth/i-image.Width)/2; *@
-        }
-        else
-        {
-            imgContainerHeight *= imgSize/100;
-            i = imgContainerHeight/image.Height;
-            deltaX = -(int)(imgContainerWidth/i-image.Width)/2;
-            @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-        }
-        var resizeProp = 1d;
-        var cw = (InitCropWidth / i);
-        var ch = (InitCropHeight / i);
-        if (cw>MaxCropedWidth||ch>MaxCropedHeight)
-        {
-            if (MaxCropedWidth/MaxCropedHeight>(double)cw/(double)ch)
-            {
-                resizeProp = MaxCropedHeight/ch;
-            }
-            else
-            {
-                resizeProp = MaxCropedWidth/cw;
-            }
-        }
-        await JSRuntime.InvokeVoidAsync("console.log", "begin resize",(int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY),
-            (int)(cw), (int)(ch));
-        var s = "";
-        if(gifimage==null)
-        {
-            s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY),
-                (int)(cw), (int)(ch), 0, 0, MaxCropedWidth, MaxCropedHeight,"image/png");
-        }
-        else
-        {
-            s = gifimage.Clone(ctx =>{
-                ctx.Crop(new Rectangle((int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY), (int)(cw), (int)(ch)));
-                if (resizeProp!=1d)
-                {
-                    ctx.Resize(new Size((int)(cw*resizeProp),(int)(ch*resizeProp)));
-                }
-            }).ToBase64String(format); 
-        }
-        await JSRuntime.InvokeVoidAsync("console.log", s);
-        return new ImageCroppedResult{
-            @* Image = ci, *@
-            X = ((prevPosX-bacx) / i + deltaX),
-            Y = ((prevPosY-bacy) / i + deltaY),
-            Width = cw,
-            Height = ch,
-            Base64 = s
-        };
     }
 
     void OnDragStart(MouseEventArgs args)
@@ -904,18 +904,7 @@ public double MinRatio {get=>1.0;}
             OnDragEnd(args);
         }
     }
-    enum MoveDir
-    {
-        Up,
-        Down,
-        Left,
-        Right,
-        UpLeft,
-        UpRight,
-        DownLeft,
-        DownRight,
-        UnKnown
-    }
+#endregion
 }
 <style>
 .unSelectAble{

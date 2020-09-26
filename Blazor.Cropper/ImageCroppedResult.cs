@@ -15,10 +15,4 @@ namespace Blazor.Cropper
         public double Width{get;set;}
         public double Height{get;set;}
     }
-    public class ImageData
-    {
-        public double Width{get;set;}
-        public double Height{get;set;}
-
-    }
 }
