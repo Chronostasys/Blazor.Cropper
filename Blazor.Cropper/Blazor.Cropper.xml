@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Blazor.Cropper</name>
+    </assembly>
+    <members>
+        <member name="P:Blazor.Cropper.Cropper.InitCropWidth">
+            <summary>
+            the initial width of cropper if possible
+            </summary>
+            <value>default: 150</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.InitCropHeight">
+            <summary>
+            the initial height of cropper if possible
+            </summary>
+            <value>default: 150</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.RequireAspectRatio">
+            <summary>
+            sepecify whether the cropper's aspect ratio is fixed
+            </summary>
+            <value>default: false</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.AspectRatio">
+            <summary>
+            sepecify the cropper's aspect ratio
+            </summary>
+            <remarks>Only works when <see cref="P:Blazor.Cropper.Cropper.RequireAspectRatio"/> is true</remarks>
+            <value>default: 1</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.ImageFile">
+            <summary>
+            The input image file. Usually get from an <see cref="T:Microsoft.AspNetCore.Components.Forms.InputFile"/> Component
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.OnLoad">
+            <summary>
+            Fire when the image file load into cropper
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.AnimeGifEnable">
+            <summary>
+            Set whether the anime gif crop is enabled. If enabled, the gif file smaller than 1mb would 
+            be cropped as animed image. If disabled, only the first frame would be cropped.
+            </summary>
+            <remarks>Resizing gif image can cause the window stop responding for half a minute!</remarks>
+            <value>default: false</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.InputId">
+            <summary>
+            The input element's id value. THIS VALUE MUST BE SET ON INIT!
+            </summary>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.MaxCropedHeight">
+            <summary>
+            Max allowed crop result height. Should not be larger than 500.
+            </summary>
+            <value>default:500</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.MaxCropedWidth">
+            <summary>
+            Max allowed crop result width. Should not be larger than 500.
+            </summary>
+            <value>default:500</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.CropperHeight">
+            <summary>
+            Height of this component in px
+            </summary>
+            <value>default:150</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.Ratio">
+            <summary>
+            The scaling ratio, should be bind two way.
+            </summary>
+            <value>default: 1.0</value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.RatioChanged">
+            <summary>
+            Fire when scaling ratio changed by touch event.
+            </summary>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.MaxRatio">
+            <summary>
+            Max allowed scaling ratio
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.MinRatio">
+            <summary>
+            Min allowed scaling ratio
+            </summary>
+            <value>1.0</value>
+        </member>
+        <member name="M:Blazor.Cropper.Cropper.GetCropedResult">
+            <summary>
+            Get the crop result.
+            </summary>
+            <returns>crop result</returns>
+        </member>
+    </members>
+</doc>
