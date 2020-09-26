@@ -25,11 +25,11 @@
                 <p class="modal-card-title">Modal title</p>
                 <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
             </header>
-            <section class="modal-card-body" style="overflow:hidden">
+            <section class="modal-card-body">
                 <Cropper MaxCropedHeight="500" MaxCropedWidth="500" 
                     @ref="cropper"
-                    Proportion="proportion==0?1:proportion" 
-                    RequireProportion="bool.Parse(enableProportion)" 
+                    AspectRatio="proportion==0?1:proportion" 
+                    RequireAspectRatio="bool.Parse(enableProportion)" 
                     InputId="input1" 
                     ImageFile="file"
                     @bind-Ratio="ratio"

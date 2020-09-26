@@ -44,35 +44,96 @@
 
 @code {
 #region params
+    /// <summary>
+    /// the initial width of cropper if possible
+    /// </summary>
+    /// <value>default: 150</value>
     [Parameter]
     public double InitCropWidth{ get; set; } = 150;
+    /// <summary>
+    /// the initial height of cropper if possible
+    /// </summary>
+    /// <value>default: 150</value>
     [Parameter]
     public double InitCropHeight { get; set; } = 150;
+    /// <summary>
+    /// sepecify whether the cropper's aspect ratio is fixed
+    /// </summary>
+    /// <value>default: false</value>
     [Parameter]
-    public bool RequireProportion{ get; set; } = false;
+    public bool RequireAspectRatio{ get; set; } = false;
+    /// <summary>
+    /// sepecify the cropper's aspect ratio
+    /// </summary>
+    /// <remarks>Only works when <see cref="RequireAspectRatio"/> is true</remarks>
+    /// <value>default: 1</value>
     [Parameter]
-    public double Proportion{ get; set; } = 1;
+    public double AspectRatio{ get; set; } = 1;
+    /// <summary>
+    /// The input image file. Usually get from an <see cref="InputFile"/> Component
+    /// </summary>
+    /// <value></value>
     [Parameter]
     public IBrowserFile ImageFile{get;set;}
+    /// <summary>
+    /// Fire when the image file load into cropper
+    /// </summary>
+    /// <value></value>
     [Parameter]
     public EventCallback OnLoad { get; set; }
+    /// <summary>
+    /// Set whether the anime gif crop is enabled. If enabled, the gif file smaller than 1mb would 
+    /// be cropped as animed image. If disabled, only the first frame would be cropped.
+    /// </summary>
+    /// <remarks>Resizing gif image can cause the window stop responding for half a minute!</remarks>
+    /// <value>default: false</value>
     [Parameter]
-    public bool AnimeGifEnable { get; set; } = true;
+    public bool AnimeGifEnable { get; set; } = false;
+    /// <summary>
+    /// The input element's id value. THIS VALUE MUST BE SET ON INIT!
+    /// </summary>
     [Parameter]
     public string InputId{get;set;}
+    /// <summary>
+    /// Max allowed crop result height. Should not be larger than 500.
+    /// </summary>
+    /// <value>default:500</value>
     [Parameter]
     public double MaxCropedHeight{get;set;} = 500;
+    /// <summary>
+    /// Max allowed crop result width. Should not be larger than 500.
+    /// </summary>
+    /// <value>default:500</value>
     [Parameter]
     public double MaxCropedWidth{get;set;} = 500;
+    /// <summary>
+    /// Height of this component in px
+    /// </summary>
+    /// <value>default:150</value>
     [Parameter]
     public double CropperHeight {get;set;}= 150;
+    /// <summary>
+    /// The scaling ratio, should be bind two way.
+    /// </summary>
+    /// <value>default: 1.0</value>
     [Parameter]
     public double Ratio{get;set;} = 1.0;
+    /// <summary>
+    /// Fire when scaling ratio changed by touch event.
+    /// </summary>
     [Parameter]
     public EventCallback<double> RatioChanged{get;set;}
 #endregion
 #region public vars
+/// <summary>
+/// Max allowed scaling ratio
+/// </summary>
+/// <value></value>
 public double MaxRatio{get;private set;}
+/// <summary>
+/// Min allowed scaling ratio
+/// </summary>
+/// <value>1.0</value>
 public double MinRatio {get=>1.0;}
 #endregion
 #region vars
@@ -181,15 +242,15 @@ public double MinRatio {get=>1.0;}
             }
             InitBox();
         }
-        if (RequireProportion)
+        if (RequireAspectRatio)
         {
-            if (InitCropHeight>InitCropWidth*Proportion)
+            if (InitCropHeight>InitCropWidth*AspectRatio)
             {
-                InitCropHeight = InitCropWidth*Proportion;
+                InitCropHeight = InitCropWidth*AspectRatio;
             }
             else
             {
-                InitCropWidth = InitCropHeight/Proportion;
+                InitCropWidth = InitCropHeight/AspectRatio;
             }
             cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
             cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
@@ -289,6 +350,10 @@ public double MinRatio {get=>1.0;}
     }
 #endregion
 #region Public methods
+    /// <summary>
+    /// Get the crop result.
+    /// </summary>
+    /// <returns>crop result</returns>
     public async Task<ImageCroppedResult> GetCropedResult()
     {
         var deltaX = 0;
@@ -639,18 +704,18 @@ public double MinRatio {get=>1.0;}
                 {
                     ytemp = prevPosY+delta;
                     tempCropHeight =  InitCropHeight-delta;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/Proportion;
+                        tempCropWidth = tempCropHeight/AspectRatio;
                     }
                     break;
                 }
                 case MoveDir.Down:
                 {
                     tempCropHeight =  InitCropHeight+delta;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/Proportion;
+                        tempCropWidth = tempCropHeight/AspectRatio;
                     }
                     break;
                 }
@@ -658,18 +723,18 @@ public double MinRatio {get=>1.0;}
                 {
                     xtemp = prevPosX + deltaX;
                     tempCropWidth =  InitCropWidth-deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropHeight = tempCropWidth*Proportion;
+                        tempCropHeight = tempCropWidth*AspectRatio;
                     }
                     break;
                 }
                 case MoveDir.Right:
                 {
                     tempCropWidth =  InitCropWidth+deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropHeight = tempCropWidth*Proportion;
+                        tempCropHeight = tempCropWidth*AspectRatio;
                     }
                     break;
                 }
@@ -678,9 +743,9 @@ public double MinRatio {get=>1.0;}
                     ytemp = prevPosY+delta;
                     tempCropHeight =  InitCropHeight-delta;
                     tempCropWidth =  InitCropWidth-deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/Proportion;
+                        tempCropWidth = tempCropHeight/AspectRatio;
                         deltaX = InitCropWidth - tempCropWidth;
                     }
                     xtemp = prevPosX + deltaX;
@@ -691,9 +756,9 @@ public double MinRatio {get=>1.0;}
                     ytemp = prevPosY+delta;
                     tempCropHeight =  InitCropHeight-delta;
                     tempCropWidth =  InitCropWidth+deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/Proportion;
+                        tempCropWidth = tempCropHeight/AspectRatio;
                     }
                     break;
                 }
@@ -701,9 +766,9 @@ public double MinRatio {get=>1.0;}
                 {
                     tempCropHeight =  InitCropHeight+delta;
                     tempCropWidth =  InitCropWidth-deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/Proportion;
+                        tempCropWidth = tempCropHeight/AspectRatio;
                         deltaX = InitCropWidth - tempCropWidth;
                     }
                     xtemp = prevPosX + deltaX;
@@ -713,9 +778,9 @@ public double MinRatio {get=>1.0;}
                 {
                     tempCropHeight =  InitCropHeight+delta;
                     tempCropWidth =  InitCropWidth+deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/Proportion;
+                        tempCropWidth = tempCropHeight/AspectRatio;
                     }
                     break;
                 }
@@ -736,18 +801,18 @@ public double MinRatio {get=>1.0;}
             {
                 outOfBox = true;
                 tempCropHeight = (minposY+imgh) - ytemp;
-                if (RequireProportion)
+                if (RequireAspectRatio)
                 {
-                    tempCropWidth = tempCropHeight/Proportion;
+                    tempCropWidth = tempCropHeight/AspectRatio;
                 }
             }
             if (xtemp+tempCropWidth>(minposX+imgw))
             {
                 outOfBox = true;
                 tempCropWidth = (minposX+imgw) - xtemp;
-                if (RequireProportion)
+                if (RequireAspectRatio)
                 {
-                    tempCropHeight = tempCropWidth/Proportion;
+                    tempCropHeight = tempCropWidth/AspectRatio;
                 }
             }
             if (tempCropHeight<minval)
@@ -794,18 +859,18 @@ public double MinRatio {get=>1.0;}
                 {
                     prevPosY = prevPosY+delta;
                     InitCropHeight-=delta;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/Proportion;
+                        InitCropWidth = InitCropHeight/AspectRatio;
                     }
                     break;
                 }
                 case MoveDir.Down:
                 {
                     InitCropHeight+=delta;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/Proportion;
+                        InitCropWidth = InitCropHeight/AspectRatio;
                     }
                     break;
                 }
@@ -813,18 +878,18 @@ public double MinRatio {get=>1.0;}
                 {
                     prevPosX += deltaX;
                     InitCropWidth -=deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        InitCropHeight = InitCropWidth*Proportion;
+                        InitCropHeight = InitCropWidth*AspectRatio;
                     }
                     break;
                 }
                 case MoveDir.Right:
                 {
                     InitCropWidth+=deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        InitCropHeight = InitCropWidth*Proportion;
+                        InitCropHeight = InitCropWidth*AspectRatio;
                     }
                     break;
                 }
@@ -832,10 +897,10 @@ public double MinRatio {get=>1.0;}
                 {
                     prevPosY = prevPosY+delta;
                     InitCropHeight-=delta;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
                         var ori = InitCropWidth;
-                        InitCropWidth = InitCropHeight/Proportion;
+                        InitCropWidth = InitCropHeight/AspectRatio;
                         deltaX = ori - InitCropWidth;
                         prevPosX += deltaX;
                     }
@@ -851,19 +916,19 @@ public double MinRatio {get=>1.0;}
                     prevPosY = prevPosY+delta;
                     InitCropHeight-=delta;
                     InitCropWidth+=deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/Proportion;
+                        InitCropWidth = InitCropHeight/AspectRatio;
                     }
                     break;
                 }
                 case MoveDir.DownLeft:
                 {
                     InitCropHeight+=delta;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
                         var ori = InitCropWidth;
-                        InitCropWidth = InitCropHeight/Proportion;
+                        InitCropWidth = InitCropHeight/AspectRatio;
                         deltaX = ori - InitCropWidth;
                         prevPosX += deltaX;
                     }
@@ -878,9 +943,9 @@ public double MinRatio {get=>1.0;}
                 {
                     InitCropHeight+=delta;
                     InitCropWidth+=deltaX;
-                    if (RequireProportion)
+                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/Proportion;
+                        InitCropWidth = InitCropHeight/AspectRatio;
                     }
                     break;
                 }

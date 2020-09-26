@@ -1,6 +1,6 @@
 // This file is to show how a library package may provide JavaScript interop features
 // wrapped in a .NET API
-
+var first = true;
 function getWidthHeight() {
     var a = [];
     var e = document.getElementById("blazor_cropper");
@@ -28,6 +28,12 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
     return blob;
 }
 function setImg(id) {
+    console.log('set');
+    if (first) {
+        var e = document.getElementById("blazor_cropper");
+        e.parentElement.style.overflowX='hidden';
+        first = false;
+    }
     var input = document.getElementById(id);
     var src = URL.createObjectURL(input.files[0]);
     document.getElementById('dimg').setAttribute('src',src);
