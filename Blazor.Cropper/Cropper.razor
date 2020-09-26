@@ -1004,4 +1004,12 @@ public double MinRatio {get=>1.0;}
     right: -6px;
     cursor: se-resize;
 }
+@@media screen and (max-width: 1080px) {
+    .right-down,.left-down,.left-up,.right-up{
+        z-index: 99;
+    }
+    .right,.left,.down,.up{
+        display: none;
+    }
+}
 </style>
