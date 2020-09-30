@@ -404,11 +404,6 @@ public double MinRatio {get=>1.0;}
             }).ToBase64String(format); 
         }
         return new ImageCroppedResult{
-            @* Image = ci, *@
-            X = ((prevPosX-bacx) / i + deltaX),
-            Y = ((prevPosY-bacy) / i + deltaY),
-            Width = cw,
-            Height = ch,
             Base64 = s
         };
     }
