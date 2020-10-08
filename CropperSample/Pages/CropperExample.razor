@@ -32,7 +32,9 @@
                     RequireAspectRatio="bool.Parse(enableProportion)" 
                     InputId="input1" 
                     ImageFile="file"
-                    @bind-Ratio="ratio"></Cropper>
+                    @bind-Ratio="ratio"
+                    AnimeGifEnable="true"
+                    ></Cropper>
             </section>
             <footer class="modal-card-foot">
                 <button class="button is-success" @onclick="DoneCrop">Done</button>
