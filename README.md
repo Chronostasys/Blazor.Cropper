@@ -1,4 +1,7 @@
 # Blazor.Cropper
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8184731f2b374089a64e53d24e1c09a7)](https://app.codacy.com/gh/Chronostasys/Blazor.Cropper?utm_source=github.com&utm_medium=referral&utm_content=Chronostasys/Blazor.Cropper&utm_campaign=Badge_Grade)
+
 A blazor library provide a component to crop image  
 ![](imgs/base.gif)=>  
 ![](imgs/1.gif) ![](imgs/2.gif) ![](imgs/3.gif)  
