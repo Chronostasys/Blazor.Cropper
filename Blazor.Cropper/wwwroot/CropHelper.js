@@ -10,7 +10,6 @@ function getWidthHeight() {
 function getOriImgSize(){
     var a = [];
     var e = document.getElementById("oriimg");
-    console.log(e.naturalWidth,e.naturalHeight);
     a.push(e.naturalWidth);
     a.push(e.naturalHeight);
     return a;
@@ -27,7 +26,6 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
     return blob;
 }
 function setImg(id) {
-    console.log('set');
     var e = document.getElementById("blazor_cropper");
     e.parentElement.style.overflowX='hidden';
     var input = document.getElementById(id);
@@ -37,11 +35,7 @@ function setImg(id) {
     
 }
 window.addEventListener('resize', (ev) => {
-    console.log(Blazor);
-    try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
-    } catch (e) {
-    }
+    DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
 })
 var serializeEvent = function (e) {
     if (e) {
@@ -67,30 +61,17 @@ var serializeEvent = function (e) {
     }
 };
 document.addEventListener('mousemove', (ev)=>{
-    try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
-    } catch (error) {
-    }
+    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
 })
 document.addEventListener('mouseup', (ev)=>{
-    try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
-    } catch (error) {
-    }
+    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
 })
 document.addEventListener('touchmove', (ev)=>{
-    try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
-            clientX:ev.touches[0].clientX,
-            clientY:ev.touches[0].clientY
-        });
-    } catch (error) {
-    }
+    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
+        clientX:ev.touches[0].clientX,
+        clientY:ev.touches[0].clientY
+    });
 })
 document.addEventListener('touchend', (ev)=>{
-    try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
-        });
-    } catch (error) {
-    }
+    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd');
 })
