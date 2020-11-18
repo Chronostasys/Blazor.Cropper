@@ -1,7 +1,7 @@
 ﻿@inject IJSRuntime JSRuntime;
 <div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" >
     <img id="oriimg" class="imgbac" draggable="false" src="" style="@backgroundImgStyle"
-        @ontouchend="()=>{
+        @ontouchend="(args)=>{
                  if(onTwoFingerResizing||isBacMoving)
                  {
                      isBacMoving = false;
@@ -24,6 +24,7 @@
               }"/>
     @* 裁剪框  *@
     <div draggable="false" id="mainBox" @ontouchstart:stopPropagation
+        @ontouchend="args=> OnSizeChangeEnd(TouchToMouse(args))"
         style="@cropperStyle">
         <div id="left-up" class="minBox left-up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.UpLeft)" @onmousedown="args=> OnResizeStart(args,MoveDir.UpLeft)"></div>
         <div id="up" class="minBox up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Up)" @onmousedown="args=> OnResizeStart(args,MoveDir.Up)"></div>
@@ -35,15 +36,12 @@
         <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.DownRight)"></div>
     </div>
     <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> OnDragStart(TouchToMouse(args))"
+        @ontouchend="args=> OnDragEnd(TouchToMouse(args))"
         class="img" draggable="false"  style="@(backgroundImgStyle+cropedImgStyle)" src="" @ontouchstart:stopPropagation />
 </div>
-@* <center>
-    <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1.2);InitBox();}">Larger</button>
-    <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1/1.2);InitBox();}">Smaller</button>
-    </center> *@
 
 @code {
-    #region params
+#region params
     /// <summary>
     /// the initial width of cropper if possible
     /// </summary>
@@ -123,8 +121,10 @@
     /// </summary>
     [Parameter]
     public EventCallback<double> RatioChanged { get; set; }
-    #endregion
-    #region public vars
+#endregion
+
+
+#region public vars
     /// <summary>
     /// Max allowed scaling ratio
     /// </summary>
@@ -135,8 +135,55 @@
     /// </summary>
     /// <value>1.0</value>
     public double MinRatio { get => 1.0; }
-    #endregion
-    #region vars
+#endregion
+
+
+#region private props
+    bool widerThenContainer
+    {
+        get => (double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight;
+    }
+    double imgRealW
+    {
+        get
+        {
+            if (widerThenContainer)
+            {
+                return imgContainerWidth * imgSize / 100;
+            }
+            else
+            {
+                return imgContainerHeight * imgSize / 100 * (double)image.Width / image.Height;
+                @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
+            }
+        }
+    }
+    double imgRealH
+    {
+        get
+        {
+            if (widerThenContainer)
+            {
+                return imgContainerWidth * imgSize / 100 * (double)image.Height / image.Width;
+            }
+            else
+            {
+                return imgContainerHeight * imgSize / 100;
+            }
+        }
+    }
+    string backgroundImgStyle
+    {
+        get => $"left:{bacx}px;top: {bacy}px;width:{imgSize}%;height:{imgSize}%;";
+    }
+    string imglistStyle
+    {
+        get => $"height:{CropperHeight}px;";
+    }
+#endregion
+
+
+#region vars
     double prevBacX = 0;
     double prevBacY = 0;
     double bacx = 0;
@@ -144,10 +191,6 @@
     double imgSize = 100;
     bool onTwoFingerResizing = false;
     bool isBacMoving = false;
-    string backgroundImgStyle
-    {
-        get => $"left:{bacx}px;top: {bacy}px;width:{imgSize}%;height:{imgSize}%;";
-    }
     double prevTouchPointDistance = -1;
     double imgContainerWidth = 500;
     double imgContainerHeight = 150;
@@ -157,11 +200,7 @@
     double layoutY = 0;
     double offsetX;
     double offsetY;
-    string imglistStyle
-    {
-        get => $"height:{CropperHeight}px;";
-    }
-    private string cropperStyle = "";
+    string cropperStyle = "";
     string cropedImgStyle = "clip: rect(0, 150px, 150px, 0);";
     bool dragging = false;
     bool reSizing = false;
@@ -180,45 +219,20 @@
     IBrowserFile prevFile;
     IImageFormat format;
     Image gifimage;
-    double imgRealW
-    {
-        get
-        {
-            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
-            {
-                return imgContainerWidth * imgSize / 100;
-            }
-            else
-            {
-                return imgContainerHeight * imgSize / 100 * (double)image.Width / image.Height;
-                @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-            }
-        }
-    }
-    double imgRealH
-    {
-        get
-        {
-            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
-            {
-                return imgContainerWidth * imgSize / 100 * (double)image.Height / image.Width;
-            }
-            else
-            {
-                return imgContainerHeight * imgSize / 100;
-                @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-            }
-        }
-    }
-    #endregion
-    #region static actions
+
+#endregion
+
+
+#region static actions
     static Action setaction;
     static Action<MouseEventArgs> mouseMoveAction;
     static Action<MouseEventArgs> touchMoveAction;
     static Action<MouseEventArgs> touchEndAction;
     static Action<MouseEventArgs> mouseUpAction;
-    #endregion
-    #region Override methods
+#endregion
+
+
+#region Override methods
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -226,7 +240,7 @@
         {
             var temp = imgSize;
             imgSize = Ratio * 100;
-            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+            if (widerThenContainer)
             {
                 minposX = 0;
                 minposY = (imgContainerHeight - imgRealH) / 2;
@@ -248,7 +262,7 @@
             {
                 bacy -= (imgSize - temp) / imgSize * imgRealH / 2;
                 layoutY -= (imgSize - temp) / imgSize * imgRealH / 2;
-                cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+                SetCroppedImgStyle();
             }
             InitBox();
         }
@@ -262,8 +276,8 @@
             {
                 InitCropWidth = InitCropHeight / AspectRatio;
             }
-            cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
-            cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+            SetCropperStyle();
+            SetCroppedImgStyle();
         }
         if (prevFile == ImageFile)
         {
@@ -296,103 +310,94 @@
             Width = data[0],
             Height = data[1]
         };
-        var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
-        while (t[0] == 0)
-        {
-            await Task.Delay(10);
-            t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
-        }
-        imgContainerWidth = t[0];
-        imgContainerHeight = t[1];
-        InitStyles();
+        await SetImgContainterSize();
         MaxRatio = imgContainerWidth / imgRealW;
-        @* imgUrl = image.ToBase64String(format); *@
-    await RatioChanged.InvokeAsync(imgSize / 100);
-    await OnLoad.InvokeAsync();
-}
-protected override async Task OnAfterRenderAsync(bool first)
-{
-    await base.OnAfterRenderAsync(first);
-    if (first)
-    {
-        setaction = () => SetWidthHeight();
-        mouseMoveAction = args =>
-        {
-            OnSizeChanging(args);
-            OnResizeBackGroundImage(MouseToTouch(args));
-        };
-        mouseUpAction = args =>
-        {
-            if (onTwoFingerResizing || isBacMoving)
-            {
-                isBacMoving = false;
-                onTwoFingerResizing = false;
-                InitBox();
-            }
-            OnSizeChangeEnd(args);
-        };
-        touchMoveAction = OnSizeChanging;
-        touchEndAction = (args) =>
-        {
-            outOfBox = true;
-            OnSizeChangeEnd(args);
-        };
-
-        await JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight);
+        await RatioChanged.InvokeAsync(imgSize / 100);
+        await OnLoad.InvokeAsync();
     }
-}
+    protected override async Task OnAfterRenderAsync(bool first)
+    {
+        await base.OnAfterRenderAsync(first);
+        if (first)
+        {
+            setaction = () => SetImgContainterSize();
+            mouseMoveAction = args =>
+            {
+                OnSizeChanging(args);
+                OnResizeBackGroundImage(MouseToTouch(args));
+            };
+            mouseUpAction = args =>
+            {
+                if (onTwoFingerResizing || isBacMoving)
+                {
+                    isBacMoving = false;
+                    onTwoFingerResizing = false;
+                    InitBox();
+                }
+                OnSizeChangeEnd(args);
+            };
+            touchMoveAction = OnSizeChanging;
+            touchEndAction = (args) =>
+            {
+                outOfBox = true;
+                OnSizeChangeEnd(args);
+            };
+
+            await JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight);
+        }
+    }
 #endregion
 
 #region JsInvokable methods
-[JSInvokable("OnTouchEnd")]
-public static void TouchEndCaller(MouseEventArgs args)
-{
-    touchEndAction?.Invoke(args);
-}
-[JSInvokable("OnTouchMove")]
-public static void TouchMoveCaller(MouseEventArgs args)
-{
-    touchMoveAction?.Invoke(args);
-}
-[JSInvokable("OnMouseUp")]
-public static void MouseUpCaller(MouseEventArgs args)
-{
-    mouseUpAction?.Invoke(args);
-}
-[JSInvokable("OnMouseMove")]
-public static void MouseMoveCaller(MouseEventArgs args)
-{
-    mouseMoveAction?.Invoke(args);
-}
-[JSInvokable("SetWidthHeight")]
-public static void SetWidthHeightCaller()
-{
-    setaction?.Invoke();
-}
-#endregion
-#region Public methods
-/// <summary>
-/// Get the crop result.
-/// </summary>
-/// <returns>crop result</returns>
-public async Task<ImageCroppedResult> GetCropedResult()
-{
-    var deltaX = 0;
-    var deltaY = 0;
-    var i = 0d;
-    if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+    [JSInvokable("OnTouchEnd")]
+    public static void TouchEndCaller(MouseEventArgs args)
     {
-        imgContainerWidth *= imgSize / 100;
-        i = imgContainerWidth / image.Width;
-        deltaY = -(int)(imgContainerHeight / i - image.Height) / 2;
-            @* deltaX = -(int)(imgContainerWidth/i-image.Width)/2; *@
+        touchEndAction?.Invoke(args);
+    }
+    [JSInvokable("OnTouchMove")]
+    public static void TouchMoveCaller(MouseEventArgs args)
+    {
+        touchMoveAction?.Invoke(args);
+    }
+    [JSInvokable("OnMouseUp")]
+    public static void MouseUpCaller(MouseEventArgs args)
+    {
+        mouseUpAction?.Invoke(args);
+    }
+    [JSInvokable("OnMouseMove")]
+    public static void MouseMoveCaller(MouseEventArgs args)
+    {
+        mouseMoveAction?.Invoke(args);
+    }
+    [JSInvokable("SetWidthHeight")]
+    public static void SetWidthHeightCaller()
+    {
+        setaction?.Invoke();
+    }
+#endregion
+
+
+#region Public methods
+    /// <summary>
+    /// Get the crop result.
+    /// </summary>
+    /// <returns>crop result</returns>
+    public async Task<ImageCroppedResult> GetCropedResult()
+    {
+        var deltaX = 0;
+        var deltaY = 0;
+        var i = 0d;
+        if (widerThenContainer)
+        {
+            imgContainerWidth *= imgSize / 100;
+            i = imgContainerWidth / image.Width;
+            deltaY = -(int)(imgContainerHeight / i - image.Height) / 2;
         }
         else
         {
             imgContainerHeight *= imgSize / 100;
             i = imgContainerHeight / image.Height;
             deltaX = -(int)(imgContainerWidth / i - image.Width) / 2;
-            @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
         }
         var resizeProp = 1d;
         var cw = (InitCropWidth / i);
@@ -430,8 +435,385 @@ public async Task<ImageCroppedResult> GetCropedResult()
             Base64 = s
         };
     }
-    #endregion
-    #region private methods
+#endregion
+
+
+#region private methods
+    void SetCroppedImgStyle()
+    {
+        cropedImgStyle =$"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+    }
+    void SetCropperStyle()
+    {
+        cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
+    }
+
+    MouseEventArgs TouchToMouse(TouchEventArgs args)
+    {
+        try
+        {
+            return new MouseEventArgs()
+            {
+                ClientX = args.Touches[0].ClientX,
+                ClientY = args.Touches[0].ClientY
+            };
+        }
+        catch (System.Exception)
+        {
+            outOfBox = true;
+            return new MouseEventArgs();
+        }
+    }
+
+    void OnDragStart(MouseEventArgs args)
+    {
+        outOfBox = false;
+        if (reSizing)
+        {
+            return;
+        }
+        SetCropperStyle();
+        offsetX = args.ClientX;
+        offsetY = args.ClientY;
+        dragging = true;
+    }
+    void OnDragging(MouseEventArgs args)
+    {
+        if (dragging && !reSizing)
+        {
+            var x = prevPosX - offsetX + args.ClientX;
+            var y = prevPosY - offsetY + args.ClientY;
+            if (y < minposY)
+            {
+                outOfBox = true;
+                y = minposY;
+            }
+            if (x < minposX)
+            {
+                outOfBox = true;
+                x = minposX;
+            }
+            if (y + InitCropHeight > (minposY + imgh))
+            {
+                outOfBox = true;
+                y = (minposY + imgh) - InitCropHeight;
+            }
+            if (x + InitCropWidth > (minposX + imgw))
+            {
+                outOfBox = true;
+                x = (minposX + imgw) - InitCropWidth;
+            }
+            unsavedX = x;
+            unsavedY = y;
+            cropperStyle = $"top:{y}px;left:{x}px;height:{InitCropHeight}px;width:{InitCropWidth}px";
+            cropedImgStyle = $"clip: rect({y - layoutY}px, {x - layoutX + InitCropWidth}px, {y - layoutY + InitCropHeight}px, {x - layoutX}px);";
+            base.StateHasChanged();
+        }
+    }
+    void OnDragEnd(MouseEventArgs args)
+    {
+        dragging = false;
+        OnDragging(args);
+        if (outOfBox)
+        {
+            prevPosX = unsavedX;
+            prevPosY = unsavedY;
+            return;
+        }
+        prevPosX = prevPosX - offsetX + args.ClientX;
+        prevPosY = prevPosY - offsetY + args.ClientY;
+    }
+    void OnResizeStart(MouseEventArgs args, MoveDir dir)
+    {
+        outOfBox = false;
+        this.dir = dir;
+        if (dragging)
+        {
+            return;
+        }
+        SetCropperStyle();
+        offsetX = args.ClientX;
+        offsetY = args.ClientY;
+        reSizing = true;
+    }
+    void OnSizeChanging(MouseEventArgs args)
+    {
+        if (reSizing && !dragging)
+        {
+            var delta = args.ClientY - offsetY;
+            var deltaX = args.ClientX - offsetX;
+            var ytemp = prevPosY;
+            var tempCropHeight = InitCropHeight;
+            var xtemp = prevPosX;
+            var tempCropWidth = InitCropWidth;
+            switch (dir)
+            {
+                case MoveDir.Up:
+                    {
+                        ytemp = prevPosY + delta;
+                        tempCropHeight = InitCropHeight - delta;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.Down:
+                    {
+                        tempCropHeight = InitCropHeight + delta;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.Left:
+                    {
+                        xtemp = prevPosX + deltaX;
+                        tempCropWidth = InitCropWidth - deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropHeight = tempCropWidth * AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.Right:
+                    {
+                        tempCropWidth = InitCropWidth + deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropHeight = tempCropWidth * AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.UpLeft:
+                    {
+                        ytemp = prevPosY + delta;
+                        tempCropHeight = InitCropHeight - delta;
+                        tempCropWidth = InitCropWidth - deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                            deltaX = InitCropWidth - tempCropWidth;
+                        }
+                        xtemp = prevPosX + deltaX;
+                        break;
+                    }
+                case MoveDir.UpRight:
+                    {
+                        ytemp = prevPosY + delta;
+                        tempCropHeight = InitCropHeight - delta;
+                        tempCropWidth = InitCropWidth + deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.DownLeft:
+                    {
+                        tempCropHeight = InitCropHeight + delta;
+                        tempCropWidth = InitCropWidth - deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                            deltaX = InitCropWidth - tempCropWidth;
+                        }
+                        xtemp = prevPosX + deltaX;
+                        break;
+                    }
+                case MoveDir.DownRight:
+                    {
+                        tempCropHeight = InitCropHeight + delta;
+                        tempCropWidth = InitCropWidth + deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                default:
+                    break;
+            }
+            if (ytemp < minposY)
+            {
+                outOfBox = true;
+                ytemp = minposY;
+            }
+            if (xtemp < minposX)
+            {
+                outOfBox = true;
+                xtemp = minposX;
+            }
+            if (ytemp + tempCropHeight > (minposY + imgh))
+            {
+                outOfBox = true;
+                tempCropHeight = (minposY + imgh) - ytemp;
+                if (RequireAspectRatio)
+                {
+                    tempCropWidth = tempCropHeight / AspectRatio;
+                }
+            }
+            if (xtemp + tempCropWidth > (minposX + imgw))
+            {
+                outOfBox = true;
+                tempCropWidth = (minposX + imgw) - xtemp;
+                if (RequireAspectRatio)
+                {
+                    tempCropHeight = tempCropWidth / AspectRatio;
+                }
+            }
+            if (tempCropHeight < minval)
+            {
+                tempCropHeight = minval;
+                ytemp = unsavedY;
+                xtemp = unsavedX;
+            }
+            if (tempCropWidth < minval)
+            {
+                tempCropWidth = minval;
+                ytemp = unsavedY;
+                xtemp = unsavedX;
+            }
+            unsavedX = xtemp;
+            unsavedY = ytemp;
+            unsavedCropH = tempCropHeight;
+            unsavedCropW = tempCropWidth;
+            cropperStyle = $"top:{ytemp}px;left:{xtemp}px;height:{tempCropHeight}px;width:{tempCropWidth}px";
+            cropedImgStyle = $"clip: rect({ytemp - layoutY}px, {xtemp - layoutX + tempCropWidth}px, {ytemp - layoutY + tempCropHeight}px, {xtemp - layoutX}px);";
+        }
+        OnDragging(args);
+        base.StateHasChanged();
+    }
+    void OnSizeChangeEnd(MouseEventArgs args)
+    {
+        if (reSizing)
+        {
+            reSizing = false;
+            OnSizeChanging(args);
+            var delta = args.ClientY - offsetY;
+            var deltaX = args.ClientX - offsetX;
+            if (outOfBox)
+            {
+                InitCropHeight = unsavedCropH;
+                InitCropWidth = unsavedCropW;
+                prevPosY = unsavedY;
+                prevPosX = unsavedX;
+                return;
+            }
+            switch (dir)
+            {
+                case MoveDir.Up:
+                    {
+                        prevPosY = prevPosY + delta;
+                        InitCropHeight -= delta;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.Down:
+                    {
+                        InitCropHeight += delta;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.Left:
+                    {
+                        prevPosX += deltaX;
+                        InitCropWidth -= deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropHeight = InitCropWidth * AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.Right:
+                    {
+                        InitCropWidth += deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropHeight = InitCropWidth * AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.UpLeft:
+                    {
+                        prevPosY = prevPosY + delta;
+                        InitCropHeight -= delta;
+                        if (RequireAspectRatio)
+                        {
+                            var ori = InitCropWidth;
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                            deltaX = ori - InitCropWidth;
+                            prevPosX += deltaX;
+                        }
+                        else
+                        {
+                            prevPosX += deltaX;
+                            InitCropWidth -= deltaX;
+                        }
+                        break;
+                    }
+                case MoveDir.UpRight:
+                    {
+                        prevPosY = prevPosY + delta;
+                        InitCropHeight -= delta;
+                        InitCropWidth += deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                case MoveDir.DownLeft:
+                    {
+                        InitCropHeight += delta;
+                        if (RequireAspectRatio)
+                        {
+                            var ori = InitCropWidth;
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                            deltaX = ori - InitCropWidth;
+                            prevPosX += deltaX;
+                        }
+                        else
+                        {
+                            prevPosX += deltaX;
+                            InitCropWidth -= deltaX;
+                        }
+                        break;
+                    }
+                case MoveDir.DownRight:
+                    {
+                        InitCropHeight += delta;
+                        InitCropWidth += deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
+                    }
+                default:
+                    break;
+            }
+            if (InitCropHeight < minval)
+            {
+                InitCropHeight = minval;
+            }
+            if (InitCropWidth < minval)
+            {
+                InitCropWidth = minval;
+            }
+        }
+        if (dragging)
+        {
+            OnDragEnd(args);
+        }
+    }
     TouchEventArgs MouseToTouch(MouseEventArgs args)
     {
         return new TouchEventArgs
@@ -460,7 +842,7 @@ public async Task<ImageCroppedResult> GetCropedResult()
 
 
 
-        if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+        if (widerThenContainer)
         {
             minposX = 0;
             minposY = (imgContainerHeight - imgRealH) / 2;
@@ -481,7 +863,7 @@ public async Task<ImageCroppedResult> GetCropedResult()
         {
             bacy -= (i - 1) * imgRealH / 2;
             layoutY -= (i - 1) * imgRealH / 2;
-            cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+            SetCroppedImgStyle();
         }
     }
     void OnResizeBackGroundImage(TouchEventArgs args)
@@ -494,7 +876,7 @@ public async Task<ImageCroppedResult> GetCropedResult()
             }
             var dx = args.Touches[0].ClientX - prevBacX;
             var dy = args.Touches[0].ClientY - prevBacY;
-            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+            if (widerThenContainer)
             {
                 minposX = 0;
                 minposY = (imgContainerHeight - imgRealH) / 2;
@@ -522,7 +904,7 @@ public async Task<ImageCroppedResult> GetCropedResult()
                 layoutY -= dy;
                 minposY -= bacy;
             }
-            cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
+            SetCroppedImgStyle();
             prevBacX = args.Touches[0].ClientX;
             prevBacY = args.Touches[0].ClientY;
         }
@@ -538,11 +920,6 @@ public async Task<ImageCroppedResult> GetCropedResult()
             ResizeBac(i);
 
             RatioChanged.InvokeAsync(imgSize / 100);
-
-
-
-
-            @* bacy-=(imgSize-1)*imgContainerHeight/2; *@
         }
         else
         {
@@ -551,9 +928,15 @@ public async Task<ImageCroppedResult> GetCropedResult()
         prevTouchPointDistance = distance;
 
     }
-    async Task SetWidthHeight()
+    async Task SetImgContainterSize()
     {
         var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
+        // in the case that container has not yet loaded 
+        while (t[0] == 0)
+        {
+            await Task.Delay(10);
+            t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
+        }
         imgContainerWidth = t[0];
         imgContainerHeight = t[1];
         InitStyles();
@@ -562,7 +945,7 @@ public async Task<ImageCroppedResult> GetCropedResult()
     {
         var prevPosX = 0d;
         var prevPosY = 0d;
-        if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+        if (widerThenContainer)
         {
             prevPosY = (imgContainerHeight - imgRealH) / 2;
             prevPosX = 0;
@@ -582,7 +965,7 @@ public async Task<ImageCroppedResult> GetCropedResult()
     void InitStyles()
     {
         var i = 0d;
-        if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+        if (widerThenContainer)
         {
             i = imgContainerWidth / image.Width;
             prevPosY = (imgContainerHeight - imgRealH) / 2;
@@ -608,385 +991,11 @@ public async Task<ImageCroppedResult> GetCropedResult()
         {
             InitCropWidth = imgw;
         }
-        @* if (prevPosX<0)
-            {
-            prevPosX = 0;
-            }
-            if (prevPosY<0)
-            {
-            prevPosY = 0;
-            } *@
-    JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight, imgRealW, imgRealH, bacx);
-    cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
-    cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
-    base.StateHasChanged();
-}
-private MouseEventArgs TouchToMouse(TouchEventArgs args)
-{
-    try
-    {
-        return new MouseEventArgs()
-        {
-            ClientX = args.Touches[0].ClientX,
-            ClientY = args.Touches[0].ClientY
-        };
-    }
-    catch (System.Exception)
-    {
-        outOfBox = true;
-        return new MouseEventArgs();
-    }
-}
-
-void OnDragStart(MouseEventArgs args)
-{
-    outOfBox = false;
-    if (reSizing)
-    {
-        return;
-    }
-    cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
-    offsetX = args.ClientX;
-    offsetY = args.ClientY;
-    dragging = true;
-}
-void OnDragging(MouseEventArgs args)
-{
-    if (dragging && !reSizing)
-    {
-        var x = prevPosX - offsetX + args.ClientX;
-        var y = prevPosY - offsetY + args.ClientY;
-        if (y < minposY)
-        {
-            outOfBox = true;
-            y = minposY;
-        }
-        if (x < minposX)
-        {
-            outOfBox = true;
-            x = minposX;
-        }
-        if (y + InitCropHeight > (minposY + imgh))
-        {
-            outOfBox = true;
-            y = (minposY + imgh) - InitCropHeight;
-        }
-        if (x + InitCropWidth > (minposX + imgw))
-        {
-            outOfBox = true;
-            x = (minposX + imgw) - InitCropWidth;
-        }
-        unsavedX = x;
-        unsavedY = y;
-        cropperStyle = $"top:{y}px;left:{x}px;height:{InitCropHeight}px;width:{InitCropWidth}px";
-        cropedImgStyle = $"clip: rect({y - layoutY}px, {x - layoutX + InitCropWidth}px, {y - layoutY + InitCropHeight}px, {x - layoutX}px);";
+        JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight, imgRealW, imgRealH, bacx);
+        SetCropperStyle();
+        SetCroppedImgStyle();
         base.StateHasChanged();
     }
-}
-void OnDragEnd(MouseEventArgs args)
-{
-    dragging = false;
-    OnDragging(args);
-    if (outOfBox)
-    {
-        prevPosX = unsavedX;
-        prevPosY = unsavedY;
-        return;
-    }
-    prevPosX = prevPosX - offsetX + args.ClientX;
-    prevPosY = prevPosY - offsetY + args.ClientY;
-}
-void OnResizeStart(MouseEventArgs args, MoveDir dir)
-{
-    outOfBox = false;
-    this.dir = dir;
-    if (dragging)
-    {
-        return;
-    }
-    cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
-    offsetX = args.ClientX;
-    offsetY = args.ClientY;
-    reSizing = true;
-}
-void OnSizeChanging(MouseEventArgs args)
-{
-    if (reSizing && !dragging)
-    {
-        var delta = args.ClientY - offsetY;
-        var deltaX = args.ClientX - offsetX;
-        var ytemp = prevPosY;
-        var tempCropHeight = InitCropHeight;
-        var xtemp = prevPosX;
-        var tempCropWidth = InitCropWidth;
-        switch (dir)
-        {
-            case MoveDir.Up:
-                {
-                    ytemp = prevPosY + delta;
-                    tempCropHeight = InitCropHeight - delta;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.Down:
-                {
-                    tempCropHeight = InitCropHeight + delta;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.Left:
-                {
-                    xtemp = prevPosX + deltaX;
-                    tempCropWidth = InitCropWidth - deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropHeight = tempCropWidth * AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.Right:
-                {
-                    tempCropWidth = InitCropWidth + deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropHeight = tempCropWidth * AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.UpLeft:
-                {
-                    ytemp = prevPosY + delta;
-                    tempCropHeight = InitCropHeight - delta;
-                    tempCropWidth = InitCropWidth - deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                        deltaX = InitCropWidth - tempCropWidth;
-                    }
-                    xtemp = prevPosX + deltaX;
-                    break;
-                }
-            case MoveDir.UpRight:
-                {
-                    ytemp = prevPosY + delta;
-                    tempCropHeight = InitCropHeight - delta;
-                    tempCropWidth = InitCropWidth + deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.DownLeft:
-                {
-                    tempCropHeight = InitCropHeight + delta;
-                    tempCropWidth = InitCropWidth - deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                        deltaX = InitCropWidth - tempCropWidth;
-                    }
-                    xtemp = prevPosX + deltaX;
-                    break;
-                }
-            case MoveDir.DownRight:
-                {
-                    tempCropHeight = InitCropHeight + delta;
-                    tempCropWidth = InitCropWidth + deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            default:
-                break;
-        }
-        if (ytemp < minposY)
-        {
-            outOfBox = true;
-            ytemp = minposY;
-        }
-        if (xtemp < minposX)
-        {
-            outOfBox = true;
-            xtemp = minposX;
-        }
-        if (ytemp + tempCropHeight > (minposY + imgh))
-        {
-            outOfBox = true;
-            tempCropHeight = (minposY + imgh) - ytemp;
-            if (RequireAspectRatio)
-            {
-                tempCropWidth = tempCropHeight / AspectRatio;
-            }
-        }
-        if (xtemp + tempCropWidth > (minposX + imgw))
-        {
-            outOfBox = true;
-            tempCropWidth = (minposX + imgw) - xtemp;
-            if (RequireAspectRatio)
-            {
-                tempCropHeight = tempCropWidth / AspectRatio;
-            }
-        }
-        if (tempCropHeight < minval)
-        {
-            tempCropHeight = minval;
-            ytemp = unsavedY;
-            xtemp = unsavedX;
-        }
-        if (tempCropWidth < minval)
-        {
-            tempCropWidth = minval;
-            ytemp = unsavedY;
-            xtemp = unsavedX;
-        }
-        unsavedX = xtemp;
-        unsavedY = ytemp;
-        unsavedCropH = tempCropHeight;
-        unsavedCropW = tempCropWidth;
-        cropperStyle = $"top:{ytemp}px;left:{xtemp}px;height:{tempCropHeight}px;width:{tempCropWidth}px";
-        cropedImgStyle = $"clip: rect({ytemp - layoutY}px, {xtemp - layoutX + tempCropWidth}px, {ytemp - layoutY + tempCropHeight}px, {xtemp - layoutX}px);";
-    }
-    OnDragging(args);
-    base.StateHasChanged();
-}
-void OnSizeChangeEnd(MouseEventArgs args)
-{
-    if (reSizing)
-    {
-        reSizing = false;
-        OnSizeChanging(args);
-        var delta = args.ClientY - offsetY;
-        var deltaX = args.ClientX - offsetX;
-        if (outOfBox)
-        {
-            InitCropHeight = unsavedCropH;
-            InitCropWidth = unsavedCropW;
-            prevPosY = unsavedY;
-            prevPosX = unsavedX;
-            return;
-        }
-        switch (dir)
-        {
-            case MoveDir.Up:
-                {
-                    prevPosY = prevPosY + delta;
-                    InitCropHeight -= delta;
-                    if (RequireAspectRatio)
-                    {
-                        InitCropWidth = InitCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.Down:
-                {
-                    InitCropHeight += delta;
-                    if (RequireAspectRatio)
-                    {
-                        InitCropWidth = InitCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.Left:
-                {
-                    prevPosX += deltaX;
-                    InitCropWidth -= deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        InitCropHeight = InitCropWidth * AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.Right:
-                {
-                    InitCropWidth += deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        InitCropHeight = InitCropWidth * AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.UpLeft:
-                {
-                    prevPosY = prevPosY + delta;
-                    InitCropHeight -= delta;
-                    if (RequireAspectRatio)
-                    {
-                        var ori = InitCropWidth;
-                        InitCropWidth = InitCropHeight / AspectRatio;
-                        deltaX = ori - InitCropWidth;
-                        prevPosX += deltaX;
-                    }
-                    else
-                    {
-                        prevPosX += deltaX;
-                        InitCropWidth -= deltaX;
-                    }
-                    break;
-                }
-            case MoveDir.UpRight:
-                {
-                    prevPosY = prevPosY + delta;
-                    InitCropHeight -= delta;
-                    InitCropWidth += deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        InitCropWidth = InitCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            case MoveDir.DownLeft:
-                {
-                    InitCropHeight += delta;
-                    if (RequireAspectRatio)
-                    {
-                        var ori = InitCropWidth;
-                        InitCropWidth = InitCropHeight / AspectRatio;
-                        deltaX = ori - InitCropWidth;
-                        prevPosX += deltaX;
-                    }
-                    else
-                    {
-                        prevPosX += deltaX;
-                        InitCropWidth -= deltaX;
-                    }
-                    break;
-                }
-            case MoveDir.DownRight:
-                {
-                    InitCropHeight += delta;
-                    InitCropWidth += deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        InitCropWidth = InitCropHeight / AspectRatio;
-                    }
-                    break;
-                }
-            default:
-                break;
-        }
-        if (InitCropHeight < minval)
-        {
-            InitCropHeight = minval;
-        }
-        if (InitCropWidth < minval)
-        {
-            InitCropWidth = minval;
-        }
-    }
-    if (dragging)
-    {
-        OnDragEnd(args);
-    }
-}
 #endregion
 }
 <style>
