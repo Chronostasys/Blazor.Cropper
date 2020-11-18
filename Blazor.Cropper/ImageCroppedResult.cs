@@ -10,9 +10,5 @@ namespace Blazor.Cropper
         {
             return Convert.FromBase64String(Base64.Substring(Base64.IndexOf(',')+1));
         }
-        public double X{get;set;}
-        public double Y{get;set;}
-        public double Width{get;set;}
-        public double Height{get;set;}
     }
 }

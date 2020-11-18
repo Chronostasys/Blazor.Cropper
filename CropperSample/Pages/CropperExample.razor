@@ -25,15 +25,16 @@
                 <p class="modal-card-title">Modal title</p>
                 <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
             </header>
-            <section class="modal-card-body" style="overflow:hidden">
+            <section class="modal-card-body">
                 <Cropper MaxCropedHeight="500" MaxCropedWidth="500" 
                     @ref="cropper"
-                    Proportion="proportion==0?1:proportion" 
-                    RequireProportion="bool.Parse(enableProportion)" 
+                    AspectRatio="proportion==0?1:proportion" 
+                    RequireAspectRatio="bool.Parse(enableProportion)" 
                     InputId="input1" 
                     ImageFile="file"
                     @bind-Ratio="ratio"
-                    OnLoad="OnCropperLoad"></Cropper>
+                    AnimeGifEnable="true"
+                    ></Cropper>
             </section>
             <footer class="modal-card-foot">
                 <button class="button is-success" @onclick="DoneCrop">Done</button>
@@ -58,7 +59,6 @@
     Cropper cropper;
     IBrowserFile file;
     string imgUrl = "";
-    Image image;
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
     string enableProportion = "false";
@@ -76,12 +76,7 @@
     
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
-        image?.Dispose();
         file = args.File;
-    }
-    void OnCropperLoad()
-    {
-        base.StateHasChanged();
     }
     async Task DoneCrop()
     {
@@ -90,7 +85,6 @@
         parsing = true;
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
-        image?.Dispose();
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
         imgUrl = args.Base64;
         parsing = false;
