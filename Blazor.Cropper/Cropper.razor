@@ -212,6 +212,7 @@ public double MinRatio {get=>1.0;}
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        await Task.Delay(100);
         if (MinRatio<=Ratio&&Ratio<=MaxRatio&&!onTwoFingerResizing)
         {
             var temp = imgSize;
@@ -293,6 +294,7 @@ public double MinRatio {get=>1.0;}
     }
     protected override async Task OnAfterRenderAsync(bool first)
     {
+        await base.OnAfterRenderAsync(first);
         if (first)
         {
             setaction = ()=> SetWidthHeight();
@@ -314,11 +316,16 @@ public double MinRatio {get=>1.0;}
                 outOfBox = true;
                 OnSizeChangeEnd(args);
             };
+            
             var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
+            while (t[0]==0)
+            {
+                await Task.Delay(10);
+                t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
+            }
             imgContainerWidth = t[0];
             imgContainerHeight = t[1];
         }
-        await base.OnAfterRenderAsync(first);
     }
 #endregion
 
