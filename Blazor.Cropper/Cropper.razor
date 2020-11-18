@@ -232,6 +232,7 @@
 #endregion
 
 
+
 #region Override methods
     protected override async Task OnParametersSetAsync()
     {
@@ -992,6 +993,7 @@
             InitCropWidth = imgw;
         }
         JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight, imgRealW, imgRealH, bacx);
+
         SetCropperStyle();
         SetCroppedImgStyle();
         base.StateHasChanged();
