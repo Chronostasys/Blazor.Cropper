@@ -9,7 +9,7 @@ A blazor library provide a component to crop image
 ![](imgs/base.gif)=>  
 ![](imgs/1.gif) ![](imgs/2.gif) ![](imgs/3.gif)  
 
-
+[Sample site here](https://chronostasys.github.io/)  
 It is:
 - almost full c#
 - fast
