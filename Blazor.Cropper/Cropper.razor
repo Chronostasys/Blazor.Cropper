@@ -2,26 +2,26 @@
 <div id="blazor_cropper" class="image-list unSelectAble" style="@imglistStyle" >
     <img id="oriimg" class="imgbac" draggable="false" src="" style="@backgroundImgStyle"
         @ontouchend="()=>{
-            if(onTwoFingerResizing||isBacMoving)
-            {
-                isBacMoving = false;
-                onTwoFingerResizing=false;
-                InitBox();
-            }
-        }"
+                 if(onTwoFingerResizing||isBacMoving)
+                 {
+                     isBacMoving = false;
+                     onTwoFingerResizing=false;
+                     InitBox();
+                 }
+             }"
         @ontouchmove:stopPropagation
         @ontouchstart:stopPropagation
         @ontouchmove="OnResizeBackGroundImage"
         @ontouchstart="args=>{
-            prevBacX = args.Touches[0].ClientX;
-            prevBacY = args.Touches[0].ClientY;
-            isBacMoving = true;
-        }"
+                   prevBacX = args.Touches[0].ClientX;
+                   prevBacY = args.Touches[0].ClientY;
+                   isBacMoving = true;
+               }"
         @onmousedown="args=>{
-            prevBacX = args.ClientX;
-            prevBacY = args.ClientY;
-            isBacMoving = true;
-        }"/>
+                  prevBacX = args.ClientX;
+                  prevBacY = args.ClientY;
+                  isBacMoving = true;
+              }"/>
     @* 裁剪框  *@
     <div draggable="false" id="mainBox" @ontouchstart:stopPropagation
         style="@cropperStyle">
@@ -40,16 +40,16 @@
 @* <center>
     <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1.2);InitBox();}">Larger</button>
     <button class="btn btn-primary" @onclick:preventDefault @onclick:stopPropagation @onclick="()=>{ResizeBac(1/1.2);InitBox();}">Smaller</button>
-</center> *@
+    </center> *@
 
 @code {
-#region params
+    #region params
     /// <summary>
     /// the initial width of cropper if possible
     /// </summary>
     /// <value>default: 150</value>
     [Parameter]
-    public double InitCropWidth{ get; set; } = 150;
+    public double InitCropWidth { get; set; } = 150;
     /// <summary>
     /// the initial height of cropper if possible
     /// </summary>
@@ -61,20 +61,20 @@
     /// </summary>
     /// <value>default: false</value>
     [Parameter]
-    public bool RequireAspectRatio{ get; set; } = false;
+    public bool RequireAspectRatio { get; set; } = false;
     /// <summary>
     /// sepecify the cropper's aspect ratio
     /// </summary>
     /// <remarks>Only works when <see cref="RequireAspectRatio"/> is true</remarks>
     /// <value>default: 1</value>
     [Parameter]
-    public double AspectRatio{ get; set; } = 1;
+    public double AspectRatio { get; set; } = 1;
     /// <summary>
     /// The input image file. Usually get from an <see cref="InputFile"/> Component
     /// </summary>
     /// <value></value>
     [Parameter]
-    public IBrowserFile ImageFile{get;set;}
+    public IBrowserFile ImageFile { get; set; }
     /// <summary>
     /// Fire when the image file load into cropper
     /// </summary>
@@ -93,50 +93,50 @@
     /// The input element's id value. THIS VALUE MUST BE SET ON INIT!
     /// </summary>
     [Parameter]
-    public string InputId{get;set;}
+    public string InputId { get; set; }
     /// <summary>
     /// Max allowed crop result height. Should not be larger than 500.
     /// </summary>
     /// <value>default:500</value>
     [Parameter]
-    public double MaxCropedHeight{get;set;} = 500;
+    public double MaxCropedHeight { get; set; } = 500;
     /// <summary>
     /// Max allowed crop result width. Should not be larger than 500.
     /// </summary>
     /// <value>default:500</value>
     [Parameter]
-    public double MaxCropedWidth{get;set;} = 500;
+    public double MaxCropedWidth { get; set; } = 500;
     /// <summary>
     /// Height of this component in px
     /// </summary>
     /// <value>default:150</value>
     [Parameter]
-    public double CropperHeight {get;set;}= 150;
+    public double CropperHeight { get; set; } = 150;
     /// <summary>
     /// The scaling ratio, should be bind two way.
     /// </summary>
     /// <value>default: 1.0</value>
     [Parameter]
-    public double Ratio{get;set;} = 1.0;
+    public double Ratio { get; set; } = 1.0;
     /// <summary>
     /// Fire when scaling ratio changed by touch event.
     /// </summary>
     [Parameter]
-    public EventCallback<double> RatioChanged{get;set;}
-#endregion
-#region public vars
-/// <summary>
-/// Max allowed scaling ratio
-/// </summary>
-/// <value></value>
-public double MaxRatio{get;private set;}
-/// <summary>
-/// Min allowed scaling ratio
-/// </summary>
-/// <value>1.0</value>
-public double MinRatio {get=>1.0;}
-#endregion
-#region vars
+    public EventCallback<double> RatioChanged { get; set; }
+    #endregion
+    #region public vars
+    /// <summary>
+    /// Max allowed scaling ratio
+    /// </summary>
+    /// <value></value>
+    public double MaxRatio { get; private set; }
+    /// <summary>
+    /// Min allowed scaling ratio
+    /// </summary>
+    /// <value>1.0</value>
+    public double MinRatio { get => 1.0; }
+    #endregion
+    #region vars
     double prevBacX = 0;
     double prevBacY = 0;
     double bacx = 0;
@@ -144,20 +144,22 @@ public double MinRatio {get=>1.0;}
     double imgSize = 100;
     bool onTwoFingerResizing = false;
     bool isBacMoving = false;
-    string backgroundImgStyle{
-        get=>$"left:{bacx}px;top: {bacy}px;width:{imgSize}%;height:{imgSize}%;";
+    string backgroundImgStyle
+    {
+        get => $"left:{bacx}px;top: {bacy}px;width:{imgSize}%;height:{imgSize}%;";
     }
     double prevTouchPointDistance = -1;
     double imgContainerWidth = 500;
     double imgContainerHeight = 150;
     double prevPosX = 0;
     double prevPosY = 0;
-    double layoutX=0;
-    double layoutY=0;
+    double layoutX = 0;
+    double layoutY = 0;
     double offsetX;
     double offsetY;
-    string imglistStyle{
-        get=>$"height:{CropperHeight}px;";
+    string imglistStyle
+    {
+        get => $"height:{CropperHeight}px;";
     }
     private string cropperStyle = "";
     string cropedImgStyle = "clip: rect(0, 150px, 150px, 0);";
@@ -178,45 +180,52 @@ public double MinRatio {get=>1.0;}
     IBrowserFile prevFile;
     IImageFormat format;
     Image gifimage;
-    double imgRealW{get{
-        if ((double)image.Width/(double)image.Height>imgContainerWidth/imgContainerHeight)
+    double imgRealW
+    {
+        get
         {
-            return imgContainerWidth*imgSize/100;
+            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+            {
+                return imgContainerWidth * imgSize / 100;
+            }
+            else
+            {
+                return imgContainerHeight * imgSize / 100 * (double)image.Width / image.Height;
+                @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
+            }
         }
-        else
+    }
+    double imgRealH
+    {
+        get
         {
-            return imgContainerHeight * imgSize/100*(double)image.Width/image.Height;
-            @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
+            if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
+            {
+                return imgContainerWidth * imgSize / 100 * (double)image.Height / image.Width;
+            }
+            else
+            {
+                return imgContainerHeight * imgSize / 100;
+                @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
+            }
         }
-    }}
-    double imgRealH{get{
-        if ((double)image.Width/(double)image.Height>imgContainerWidth/imgContainerHeight)
-        {
-            return imgContainerWidth*imgSize/100*(double)image.Height/image.Width;
-        }
-        else
-        {
-            return imgContainerHeight * imgSize/100;
-            @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-        }
-    }}
-#endregion
-#region static actions
+    }
+    #endregion
+    #region static actions
     static Action setaction;
     static Action<MouseEventArgs> mouseMoveAction;
     static Action<MouseEventArgs> touchMoveAction;
     static Action<MouseEventArgs> touchEndAction;
     static Action<MouseEventArgs> mouseUpAction;
-#endregion
-#region Override methods
+    #endregion
+    #region Override methods
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        await Task.Delay(100);
-        if (MinRatio<=Ratio&&Ratio<=MaxRatio&&!onTwoFingerResizing)
+        if (MinRatio <= Ratio && Ratio <= MaxRatio && !onTwoFingerResizing)
         {
             var temp = imgSize;
-            imgSize = Ratio*100;
+            imgSize = Ratio * 100;
             if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
             {
                 minposX = 0;
@@ -227,36 +236,36 @@ public double MinRatio {get=>1.0;}
                 minposY = 0;
                 minposX = (imgContainerWidth - imgRealW) / 2;
             }
-            minposY += bacy-(imgSize-temp)/imgSize*imgRealH/2;
+            minposY += bacy - (imgSize - temp) / imgSize * imgRealH / 2;
             minposX += bacx;
-            if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
-                ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
+            if (prevPosX + InitCropWidth > minposX + imgRealW || prevPosX < minposX
+                || prevPosY + InitCropHeight > minposY + imgRealH || prevPosY < minposY)
             {
                 imgSize = temp;
-                await RatioChanged.InvokeAsync(imgSize/100);
+                await RatioChanged.InvokeAsync(imgSize / 100);
             }
             else
             {
-                bacy-=(imgSize-temp)/imgSize*imgRealH/2;
-                layoutY-=(imgSize-temp)/imgSize*imgRealH/2;
+                bacy -= (imgSize - temp) / imgSize * imgRealH / 2;
+                layoutY -= (imgSize - temp) / imgSize * imgRealH / 2;
                 cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
             }
             InitBox();
         }
         if (RequireAspectRatio)
         {
-            if (InitCropHeight>InitCropWidth*AspectRatio)
+            if (InitCropHeight > InitCropWidth * AspectRatio)
             {
-                InitCropHeight = InitCropWidth*AspectRatio;
+                InitCropHeight = InitCropWidth * AspectRatio;
             }
             else
             {
-                InitCropWidth = InitCropHeight/AspectRatio;
+                InitCropWidth = InitCropHeight / AspectRatio;
             }
             cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
             cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
         }
-        if (prevFile==ImageFile)
+        if (prevFile == ImageFile)
         {
             return;
         }
@@ -267,29 +276,30 @@ public double MinRatio {get=>1.0;}
         var ext = ImageFile.Name.Split('.').Last().ToLower();
         var resizedImageFile = ImageFile;
         await Task.Delay(10);
-        await JSRuntime.InvokeVoidAsync("setImg",InputId);
-        var data = new double[]{0,0};
-        while(data[0]==0d)
+        await JSRuntime.InvokeVoidAsync("setImg", InputId);
+        var data = new double[] { 0, 0 };
+        while (data[0] == 0d)
         {
             await Task.Delay(10);
             data = await JSRuntime.InvokeAsync<double[]>("getOriImgSize");
         }
 
         gifimage?.Dispose();
-        if (ext=="gif"&&AnimeGifEnable&&resizedImageFile.Size<1048576)
+        if (ext == "gif" && AnimeGifEnable && resizedImageFile.Size < 1048576)
         {
             var buffer = new byte[resizedImageFile.Size];
             await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
             gifimage = Image.Load(buffer, out format);
         }
-        image = new ImageData{
+        image = new ImageData
+        {
             Width = data[0],
             Height = data[1]
         };
         InitStyles();
-        MaxRatio = imgContainerWidth/imgRealW;
+        MaxRatio = imgContainerWidth / imgRealW;
         @* imgUrl = image.ToBase64String(format); *@
-        await RatioChanged.InvokeAsync(imgSize/100);
+        await RatioChanged.InvokeAsync(imgSize / 100);
         await OnLoad.InvokeAsync();
     }
     protected override async Task OnAfterRenderAsync(bool first)
@@ -297,28 +307,31 @@ public double MinRatio {get=>1.0;}
         await base.OnAfterRenderAsync(first);
         if (first)
         {
-            setaction = ()=> SetWidthHeight();
-            mouseMoveAction = args=>{
+            setaction = () => SetWidthHeight();
+            mouseMoveAction = args =>
+            {
                 OnSizeChanging(args);
                 OnResizeBackGroundImage(MouseToTouch(args));
             };
-            mouseUpAction = args=>{
-                if(onTwoFingerResizing||isBacMoving)
+            mouseUpAction = args =>
+            {
+                if (onTwoFingerResizing || isBacMoving)
                 {
                     isBacMoving = false;
-                    onTwoFingerResizing=false;
+                    onTwoFingerResizing = false;
                     InitBox();
                 }
                 OnSizeChangeEnd(args);
             };
             touchMoveAction = OnSizeChanging;
-            touchEndAction = (args)=>{
+            touchEndAction = (args) =>
+            {
                 outOfBox = true;
                 OnSizeChangeEnd(args);
             };
-            
+
             var t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
-            while (t[0]==0)
+            while (t[0] == 0)
             {
                 await Task.Delay(10);
                 t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
@@ -327,9 +340,9 @@ public double MinRatio {get=>1.0;}
             imgContainerHeight = t[1];
         }
     }
-#endregion
+    #endregion
 
-#region JsInvokable methods
+    #region JsInvokable methods
     [JSInvokable("OnTouchEnd")]
     public static void TouchEndCaller(MouseEventArgs args)
     {
@@ -355,8 +368,8 @@ public double MinRatio {get=>1.0;}
     {
         setaction?.Invoke();
     }
-#endregion
-#region Public methods
+    #endregion
+    #region Public methods
     /// <summary>
     /// Get the crop result.
     /// </summary>
@@ -366,75 +379,78 @@ public double MinRatio {get=>1.0;}
         var deltaX = 0;
         var deltaY = 0;
         var i = 0d;
-        if ((double)image.Width/(double)image.Height>imgContainerWidth/imgContainerHeight)
+        if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
         {
-            imgContainerWidth *= imgSize/100;
-            i = imgContainerWidth/image.Width;
-            deltaY = -(int)(imgContainerHeight/i-image.Height)/2;
+            imgContainerWidth *= imgSize / 100;
+            i = imgContainerWidth / image.Width;
+            deltaY = -(int)(imgContainerHeight / i - image.Height) / 2;
             @* deltaX = -(int)(imgContainerWidth/i-image.Width)/2; *@
         }
         else
         {
-            imgContainerHeight *= imgSize/100;
-            i = imgContainerHeight/image.Height;
-            deltaX = -(int)(imgContainerWidth/i-image.Width)/2;
+            imgContainerHeight *= imgSize / 100;
+            i = imgContainerHeight / image.Height;
+            deltaX = -(int)(imgContainerWidth / i - image.Width) / 2;
             @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
         }
         var resizeProp = 1d;
         var cw = (InitCropWidth / i);
         var ch = (InitCropHeight / i);
-        if (cw>MaxCropedWidth||ch>MaxCropedHeight)
+        if (cw > MaxCropedWidth || ch > MaxCropedHeight)
         {
-            if (MaxCropedWidth/MaxCropedHeight>(double)cw/(double)ch)
+            if (MaxCropedWidth / MaxCropedHeight > (double)cw / (double)ch)
             {
-                resizeProp = MaxCropedHeight/ch;
+                resizeProp = MaxCropedHeight / ch;
             }
             else
             {
-                resizeProp = MaxCropedWidth/cw;
+                resizeProp = MaxCropedWidth / cw;
             }
         }
         var s = "";
-        if(gifimage==null)
+        if (gifimage == null)
         {
-            s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY),
-                (int)(cw), (int)(ch), 0, 0, (int)(cw*resizeProp),(int)(ch*resizeProp),"image/png");
+            s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX - bacx) / i + deltaX), (int)((prevPosY - bacy) / i + deltaY),
+                (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
         }
         else
         {
-            s = gifimage.Clone(ctx =>{
-                ctx.Crop(new Rectangle((int)((prevPosX-bacx) / i + deltaX), (int)((prevPosY-bacy) / i + deltaY), (int)(cw), (int)(ch)));
-                if (resizeProp!=1d)
+            s = gifimage.Clone(ctx =>
+            {
+                ctx.Crop(new Rectangle((int)((prevPosX - bacx) / i + deltaX), (int)((prevPosY - bacy) / i + deltaY), (int)(cw), (int)(ch)));
+                if (resizeProp != 1d)
                 {
-                    ctx.Resize(new Size((int)(cw*resizeProp),(int)(ch*resizeProp)));
+                    ctx.Resize(new Size((int)(cw * resizeProp), (int)(ch * resizeProp)));
                 }
-            }).ToBase64String(format); 
+            }).ToBase64String(format);
         }
-        return new ImageCroppedResult{
+        return new ImageCroppedResult
+        {
             Base64 = s
         };
     }
-#endregion
-#region private methods
+    #endregion
+    #region private methods
     TouchEventArgs MouseToTouch(MouseEventArgs args)
     {
-        return new TouchEventArgs{
-            Touches = new []{
+        return new TouchEventArgs
+        {
+            Touches = new[]{
                 new TouchPoint{
-                    ClientX = args.ClientX,
-                    ClientY = args.ClientY
-                }
+                ClientX = args.ClientX,
+                ClientY = args.ClientY
+            }
             }
         };
     }
     void ResizeBac(double i)
     {
         var temp = imgSize;
-        if (imgSize*i<100&&i<1)
+        if (imgSize * i < 100 && i < 1)
         {
             return;
         }
-        if ((imgRealW*i>imgContainerWidth)&&(imgRealH*i>imgContainerHeight)&&i>1)
+        if ((imgRealW * i > imgContainerWidth) && (imgRealH * i > imgContainerHeight) && i > 1)
         {
             return;
         }
@@ -453,17 +469,17 @@ public double MinRatio {get=>1.0;}
             minposY = 0;
             minposX = (imgContainerWidth - imgRealW) / 2;
         }
-        minposY += bacy-(imgSize-temp)/imgSize*imgRealH/2;
+        minposY += bacy - (imgSize - temp) / imgSize * imgRealH / 2;
         minposX += bacx;
-        if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX
-            ||prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
+        if (prevPosX + InitCropWidth > minposX + imgRealW || prevPosX < minposX
+            || prevPosY + InitCropHeight > minposY + imgRealH || prevPosY < minposY)
         {
-            imgSize /=i;
+            imgSize /= i;
         }
         else
         {
-            bacy-=(i-1)*imgRealH/2;
-            layoutY-=(i-1)*imgRealH/2;
+            bacy -= (i - 1) * imgRealH / 2;
+            layoutY -= (i - 1) * imgRealH / 2;
             cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
         }
     }
@@ -487,44 +503,44 @@ public double MinRatio {get=>1.0;}
                 minposY = 0;
                 minposX = (imgContainerWidth - imgRealW) / 2;
             }
-            minposY += bacy+dy;
-            minposX += bacx+dx;
+            minposY += bacy + dy;
+            minposX += bacx + dx;
             bacx += dx;
             bacy += dy;
-            layoutX+=dx;
-            layoutY+=dy;
-            if (prevPosX+InitCropWidth>minposX+imgRealW||prevPosX<minposX)
+            layoutX += dx;
+            layoutY += dy;
+            if (prevPosX + InitCropWidth > minposX + imgRealW || prevPosX < minposX)
             {
-                bacx-=dx;
+                bacx -= dx;
                 layoutX -= dx;
-                minposX -=bacx;
+                minposX -= bacx;
             }
-            if (prevPosY+InitCropHeight>minposY+imgRealH||prevPosY<minposY)
+            if (prevPosY + InitCropHeight > minposY + imgRealH || prevPosY < minposY)
             {
-                bacy-=dy;
-                layoutY-=dy;
-                minposY-=bacy;
+                bacy -= dy;
+                layoutY -= dy;
+                minposY -= bacy;
             }
             cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
             prevBacX = args.Touches[0].ClientX;
             prevBacY = args.Touches[0].ClientY;
         }
-        if (args.Touches.Length!=2)
+        if (args.Touches.Length != 2)
         {
             return;
         }
-        var distance = Math.Pow((args.Touches[0].ClientX-args.Touches[1].ClientX),2)+
-            Math.Pow((args.Touches[0].ClientY-args.Touches[1].ClientY),2);
+        var distance = Math.Pow((args.Touches[0].ClientX - args.Touches[1].ClientX), 2) +
+            Math.Pow((args.Touches[0].ClientY - args.Touches[1].ClientY), 2);
         if (onTwoFingerResizing)
         {
-            var i = distance/prevTouchPointDistance;
+            var i = distance / prevTouchPointDistance;
             ResizeBac(i);
-            
-            RatioChanged.InvokeAsync(imgSize/100);
 
-            
-            
-            
+            RatioChanged.InvokeAsync(imgSize / 100);
+
+
+
+
             @* bacy-=(imgSize-1)*imgContainerHeight/2; *@
         }
         else
@@ -541,7 +557,8 @@ public double MinRatio {get=>1.0;}
         imgContainerHeight = t[1];
         InitStyles();
     }
-    void InitBox(){
+    void InitBox()
+    {
         var prevPosX = 0d;
         var prevPosY = 0d;
         if ((double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight)
@@ -591,13 +608,13 @@ public double MinRatio {get=>1.0;}
             InitCropWidth = imgw;
         }
         @* if (prevPosX<0)
-        {
+            {
             prevPosX = 0;
-        }
-        if (prevPosY<0)
-        {
+            }
+            if (prevPosY<0)
+            {
             prevPosY = 0;
-        } *@
+            } *@
         cropperStyle = $"top:{prevPosY}px;left:{prevPosX}px;cursor:move;height:{InitCropHeight}px;width:{InitCropWidth}px";
         cropedImgStyle = $"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
         base.StateHasChanged();
@@ -633,34 +650,34 @@ public double MinRatio {get=>1.0;}
     }
     void OnDragging(MouseEventArgs args)
     {
-        if (dragging&&!reSizing)
+        if (dragging && !reSizing)
         {
-            var x = prevPosX-offsetX+args.ClientX;
-            var y = prevPosY-offsetY+args.ClientY;
-            if (y<minposY)
+            var x = prevPosX - offsetX + args.ClientX;
+            var y = prevPosY - offsetY + args.ClientY;
+            if (y < minposY)
             {
                 outOfBox = true;
                 y = minposY;
             }
-            if (x<minposX)
+            if (x < minposX)
             {
                 outOfBox = true;
                 x = minposX;
             }
-            if (y+InitCropHeight>(minposY+imgh))
+            if (y + InitCropHeight > (minposY + imgh))
             {
                 outOfBox = true;
-                y = (minposY+imgh) - InitCropHeight;
+                y = (minposY + imgh) - InitCropHeight;
             }
-            if(x+InitCropWidth>(minposX+imgw))
+            if (x + InitCropWidth > (minposX + imgw))
             {
                 outOfBox = true;
-                x = (minposX+imgw) - InitCropWidth;
+                x = (minposX + imgw) - InitCropWidth;
             }
             unsavedX = x;
             unsavedY = y;
             cropperStyle = $"top:{y}px;left:{x}px;height:{InitCropHeight}px;width:{InitCropWidth}px";
-            cropedImgStyle = $"clip: rect({y-layoutY}px, {x-layoutX+InitCropWidth}px, {y-layoutY+InitCropHeight}px, {x-layoutX}px);";
+            cropedImgStyle = $"clip: rect({y - layoutY}px, {x - layoutX + InitCropWidth}px, {y - layoutY + InitCropHeight}px, {x - layoutX}px);";
             base.StateHasChanged();
         }
     }
@@ -674,8 +691,8 @@ public double MinRatio {get=>1.0;}
             prevPosY = unsavedY;
             return;
         }
-        prevPosX = prevPosX-offsetX+args.ClientX;
-        prevPosY = prevPosY-offsetY+args.ClientY;
+        prevPosX = prevPosX - offsetX + args.ClientX;
+        prevPosY = prevPosY - offsetY + args.ClientY;
     }
     void OnResizeStart(MouseEventArgs args, MoveDir dir)
     {
@@ -692,138 +709,138 @@ public double MinRatio {get=>1.0;}
     }
     void OnSizeChanging(MouseEventArgs args)
     {
-        if (reSizing&&!dragging)
+        if (reSizing && !dragging)
         {
             var delta = args.ClientY - offsetY;
             var deltaX = args.ClientX - offsetX;
             var ytemp = prevPosY;
-            var tempCropHeight =  InitCropHeight;
+            var tempCropHeight = InitCropHeight;
             var xtemp = prevPosX;
-            var tempCropWidth =  InitCropWidth;
+            var tempCropWidth = InitCropWidth;
             switch (dir)
             {
                 case MoveDir.Up:
-                {
-                    ytemp = prevPosY+delta;
-                    tempCropHeight =  InitCropHeight-delta;
-                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/AspectRatio;
+                        ytemp = prevPosY + delta;
+                        tempCropHeight = InitCropHeight - delta;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.Down:
-                {
-                    tempCropHeight =  InitCropHeight+delta;
-                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/AspectRatio;
+                        tempCropHeight = InitCropHeight + delta;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.Left:
-                {
-                    xtemp = prevPosX + deltaX;
-                    tempCropWidth =  InitCropWidth-deltaX;
-                    if (RequireAspectRatio)
                     {
-                        tempCropHeight = tempCropWidth*AspectRatio;
+                        xtemp = prevPosX + deltaX;
+                        tempCropWidth = InitCropWidth - deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropHeight = tempCropWidth * AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.Right:
-                {
-                    tempCropWidth =  InitCropWidth+deltaX;
-                    if (RequireAspectRatio)
                     {
-                        tempCropHeight = tempCropWidth*AspectRatio;
+                        tempCropWidth = InitCropWidth + deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropHeight = tempCropWidth * AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.UpLeft:
-                {
-                    ytemp = prevPosY+delta;
-                    tempCropHeight =  InitCropHeight-delta;
-                    tempCropWidth =  InitCropWidth-deltaX;
-                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/AspectRatio;
-                        deltaX = InitCropWidth - tempCropWidth;
+                        ytemp = prevPosY + delta;
+                        tempCropHeight = InitCropHeight - delta;
+                        tempCropWidth = InitCropWidth - deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                            deltaX = InitCropWidth - tempCropWidth;
+                        }
+                        xtemp = prevPosX + deltaX;
+                        break;
                     }
-                    xtemp = prevPosX + deltaX;
-                    break;
-                }
                 case MoveDir.UpRight:
-                {
-                    ytemp = prevPosY+delta;
-                    tempCropHeight =  InitCropHeight-delta;
-                    tempCropWidth =  InitCropWidth+deltaX;
-                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/AspectRatio;
+                        ytemp = prevPosY + delta;
+                        tempCropHeight = InitCropHeight - delta;
+                        tempCropWidth = InitCropWidth + deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.DownLeft:
-                {
-                    tempCropHeight =  InitCropHeight+delta;
-                    tempCropWidth =  InitCropWidth-deltaX;
-                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/AspectRatio;
-                        deltaX = InitCropWidth - tempCropWidth;
+                        tempCropHeight = InitCropHeight + delta;
+                        tempCropWidth = InitCropWidth - deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                            deltaX = InitCropWidth - tempCropWidth;
+                        }
+                        xtemp = prevPosX + deltaX;
+                        break;
                     }
-                    xtemp = prevPosX + deltaX;
-                    break;
-                }
                 case MoveDir.DownRight:
-                {
-                    tempCropHeight =  InitCropHeight+delta;
-                    tempCropWidth =  InitCropWidth+deltaX;
-                    if (RequireAspectRatio)
                     {
-                        tempCropWidth = tempCropHeight/AspectRatio;
+                        tempCropHeight = InitCropHeight + delta;
+                        tempCropWidth = InitCropWidth + deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            tempCropWidth = tempCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 default:
                     break;
             }
-            if (ytemp<minposY)
+            if (ytemp < minposY)
             {
                 outOfBox = true;
                 ytemp = minposY;
             }
-            if (xtemp<minposX)
+            if (xtemp < minposX)
             {
                 outOfBox = true;
                 xtemp = minposX;
             }
-            if (ytemp+tempCropHeight>(minposY+imgh))
+            if (ytemp + tempCropHeight > (minposY + imgh))
             {
                 outOfBox = true;
-                tempCropHeight = (minposY+imgh) - ytemp;
+                tempCropHeight = (minposY + imgh) - ytemp;
                 if (RequireAspectRatio)
                 {
-                    tempCropWidth = tempCropHeight/AspectRatio;
+                    tempCropWidth = tempCropHeight / AspectRatio;
                 }
             }
-            if (xtemp+tempCropWidth>(minposX+imgw))
+            if (xtemp + tempCropWidth > (minposX + imgw))
             {
                 outOfBox = true;
-                tempCropWidth = (minposX+imgw) - xtemp;
+                tempCropWidth = (minposX + imgw) - xtemp;
                 if (RequireAspectRatio)
                 {
-                    tempCropHeight = tempCropWidth/AspectRatio;
+                    tempCropHeight = tempCropWidth / AspectRatio;
                 }
             }
-            if (tempCropHeight<minval)
+            if (tempCropHeight < minval)
             {
-                tempCropHeight=minval;
+                tempCropHeight = minval;
                 ytemp = unsavedY;
                 xtemp = unsavedX;
             }
-            if (tempCropWidth<minval)
+            if (tempCropWidth < minval)
             {
                 tempCropWidth = minval;
                 ytemp = unsavedY;
@@ -834,7 +851,7 @@ public double MinRatio {get=>1.0;}
             unsavedCropH = tempCropHeight;
             unsavedCropW = tempCropWidth;
             cropperStyle = $"top:{ytemp}px;left:{xtemp}px;height:{tempCropHeight}px;width:{tempCropWidth}px";
-            cropedImgStyle = $"clip: rect({ytemp-layoutY}px, {xtemp-layoutX+tempCropWidth}px, {ytemp-layoutY+tempCropHeight}px, {xtemp-layoutX}px);";
+            cropedImgStyle = $"clip: rect({ytemp - layoutY}px, {xtemp - layoutX + tempCropWidth}px, {ytemp - layoutY + tempCropHeight}px, {xtemp - layoutX}px);";
         }
         OnDragging(args);
         base.StateHasChanged();
@@ -858,107 +875,107 @@ public double MinRatio {get=>1.0;}
             switch (dir)
             {
                 case MoveDir.Up:
-                {
-                    prevPosY = prevPosY+delta;
-                    InitCropHeight-=delta;
-                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/AspectRatio;
+                        prevPosY = prevPosY + delta;
+                        InitCropHeight -= delta;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.Down:
-                {
-                    InitCropHeight+=delta;
-                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/AspectRatio;
+                        InitCropHeight += delta;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.Left:
-                {
-                    prevPosX += deltaX;
-                    InitCropWidth -=deltaX;
-                    if (RequireAspectRatio)
                     {
-                        InitCropHeight = InitCropWidth*AspectRatio;
+                        prevPosX += deltaX;
+                        InitCropWidth -= deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropHeight = InitCropWidth * AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.Right:
-                {
-                    InitCropWidth+=deltaX;
-                    if (RequireAspectRatio)
                     {
-                        InitCropHeight = InitCropWidth*AspectRatio;
+                        InitCropWidth += deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropHeight = InitCropWidth * AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.UpLeft:
-                {
-                    prevPosY = prevPosY+delta;
-                    InitCropHeight-=delta;
-                    if (RequireAspectRatio)
                     {
-                        var ori = InitCropWidth;
-                        InitCropWidth = InitCropHeight/AspectRatio;
-                        deltaX = ori - InitCropWidth;
-                        prevPosX += deltaX;
+                        prevPosY = prevPosY + delta;
+                        InitCropHeight -= delta;
+                        if (RequireAspectRatio)
+                        {
+                            var ori = InitCropWidth;
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                            deltaX = ori - InitCropWidth;
+                            prevPosX += deltaX;
+                        }
+                        else
+                        {
+                            prevPosX += deltaX;
+                            InitCropWidth -= deltaX;
+                        }
+                        break;
                     }
-                    else
-                    {
-                        prevPosX += deltaX;
-                        InitCropWidth -=deltaX;
-                    }
-                    break;
-                }
                 case MoveDir.UpRight:
-                {
-                    prevPosY = prevPosY+delta;
-                    InitCropHeight-=delta;
-                    InitCropWidth+=deltaX;
-                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/AspectRatio;
+                        prevPosY = prevPosY + delta;
+                        InitCropHeight -= delta;
+                        InitCropWidth += deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case MoveDir.DownLeft:
-                {
-                    InitCropHeight+=delta;
-                    if (RequireAspectRatio)
                     {
-                        var ori = InitCropWidth;
-                        InitCropWidth = InitCropHeight/AspectRatio;
-                        deltaX = ori - InitCropWidth;
-                        prevPosX += deltaX;
+                        InitCropHeight += delta;
+                        if (RequireAspectRatio)
+                        {
+                            var ori = InitCropWidth;
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                            deltaX = ori - InitCropWidth;
+                            prevPosX += deltaX;
+                        }
+                        else
+                        {
+                            prevPosX += deltaX;
+                            InitCropWidth -= deltaX;
+                        }
+                        break;
                     }
-                    else
-                    {
-                        prevPosX += deltaX;
-                        InitCropWidth -=deltaX;
-                    }
-                    break;
-                }
                 case MoveDir.DownRight:
-                {
-                    InitCropHeight+=delta;
-                    InitCropWidth+=deltaX;
-                    if (RequireAspectRatio)
                     {
-                        InitCropWidth = InitCropHeight/AspectRatio;
+                        InitCropHeight += delta;
+                        InitCropWidth += deltaX;
+                        if (RequireAspectRatio)
+                        {
+                            InitCropWidth = InitCropHeight / AspectRatio;
+                        }
+                        break;
                     }
-                    break;
-                }
                 default:
                     break;
-            } 
-            if (InitCropHeight<minval)
+            }
+            if (InitCropHeight < minval)
             {
                 InitCropHeight = minval;
             }
-            if (InitCropWidth<minval)
+            if (InitCropWidth < minval)
             {
                 InitCropWidth = minval;
             }
@@ -968,7 +985,7 @@ public double MinRatio {get=>1.0;}
             OnDragEnd(args);
         }
     }
-#endregion
+    #endregion
 }
 <style>
 @@import url("https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css");
