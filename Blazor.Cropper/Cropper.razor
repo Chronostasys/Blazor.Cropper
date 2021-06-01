@@ -41,7 +41,15 @@
 </div>
 
 @code {
+
 #region params
+
+    /// <summary>
+    /// whether use c# for ordinary img processing
+    /// </summary>
+    /// <value>default: false</value>
+    [Parameter]
+    public bool PureCSharpProcessing { get; set; } = false;
     /// <summary>
     /// the initial width of cropper if possible
     /// </summary>
@@ -155,7 +163,7 @@
             {
                 return imgContainerHeight * imgSize / 100 * (double)image.Width / image.Height;
                 @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-            }
+    }
         }
     }
     double imgRealH
@@ -300,7 +308,7 @@
         }
 
         gifimage?.Dispose();
-        if (ext == "gif" && AnimeGifEnable && resizedImageFile.Size < 1048576)
+        if (PureCSharpProcessing||(ext == "gif" && AnimeGifEnable) @*&& resizedImageFile.Size < 1048576*@)
         {
             var buffer = new byte[resizedImageFile.Size];
             await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
@@ -414,27 +422,24 @@
                 resizeProp = MaxCropedWidth / cw;
             }
         }
-        var s = "";
         if (gifimage == null)
         {
-            s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX - bacx) / i + deltaX), (int)((prevPosY - bacy) / i + deltaY),
+            var s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX - bacx) / i + deltaX), (int)((prevPosY - bacy) / i + deltaY),
                 (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
+            return new ImageCroppedResult(s);
         }
         else
         {
-            s = gifimage.Clone(ctx =>
+            var img = gifimage.Clone(ctx =>
             {
                 ctx.Crop(new Rectangle((int)((prevPosX - bacx) / i + deltaX), (int)((prevPosY - bacy) / i + deltaY), (int)(cw), (int)(ch)));
                 if (resizeProp != 1d)
                 {
                     ctx.Resize(new Size((int)(cw * resizeProp), (int)(ch * resizeProp)));
                 }
-            }).ToBase64String(format);
+            });
+            return new ImageCroppedResult(img, format);
         }
-        return new ImageCroppedResult
-        {
-            Base64 = s
-        };
     }
 #endregion
 

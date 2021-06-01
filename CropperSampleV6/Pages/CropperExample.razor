@@ -1,4 +1,4 @@
-﻿@page "/cropper"
+﻿@page "/"
 @inject IJSRuntime JSRuntime;
 
 <h1>Cropper</h1>
@@ -87,6 +87,7 @@
         await Task.Delay(10);// a hack, otherwise prompt won't show
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
         imgUrl = await args.GetBase64Async();
+        args.Dispose();
         parsing = false;
     }
 }
