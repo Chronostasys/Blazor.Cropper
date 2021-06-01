@@ -41,7 +41,15 @@
 </div>
 
 @code {
+
 #region params
+
+    /// <summary>
+    /// whether use c# for ordinary img processing
+    /// </summary>
+    /// <value>default: false</value>
+    [Parameter]
+    public bool PureCSharpProcessing { get; set; } = false;
     /// <summary>
     /// the initial width of cropper if possible
     /// </summary>
@@ -300,7 +308,7 @@
         }
 
         gifimage?.Dispose();
-        if (ext == "gif" && AnimeGifEnable @*&& resizedImageFile.Size < 1048576*@)
+        if (PureCSharpProcessing||(ext == "gif" && AnimeGifEnable) @*&& resizedImageFile.Size < 1048576*@)
         {
             var buffer = new byte[resizedImageFile.Size];
             await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
