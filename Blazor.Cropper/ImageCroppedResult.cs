@@ -32,13 +32,13 @@ namespace Blazor.Cropper
             stream.TryGetBuffer(out ArraySegment<byte> buffer);
             return $"data:{Format.DefaultMimeType};base64,{Convert.ToBase64String(buffer.Array, 0, (int)stream.Length)}";
         }
-        public void SaveAsync(Stream s)
+        public Task SaveAsync(Stream s)
         {
             if (Img == null)
             {
                 throw new NotSupportedException();
             }
-            Img.SaveAsync(s, Format);
+            return Img.SaveAsync(s, Format);
         }
 
         public void Dispose()

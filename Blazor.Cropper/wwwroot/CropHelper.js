@@ -34,6 +34,15 @@ function setImg(id) {
     document.getElementById('oriimg').setAttribute('src',src);
     
 }
+function setImgSrc(bin, format) {
+    var e = document.getElementById("blazor_cropper");
+    e.parentElement.style.overflowX = 'hidden';
+    console.log(bin);
+    src = 'data:' + format + ';base64,' + bin;
+    console.log(src);
+    document.getElementById('dimg').setAttribute('src', src);
+    document.getElementById('oriimg').setAttribute('src', src);
+}
 window.addEventListener('resize', (ev) => {
     DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
 })

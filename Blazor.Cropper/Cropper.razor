@@ -42,7 +42,7 @@
 
 @code {
 
-#region params
+    #region params
 
     /// <summary>
     /// whether use c# for ordinary img processing
@@ -76,7 +76,8 @@
     [Parameter]
     public double AspectRatio { get; set; } = 1;
     /// <summary>
-    /// The input image file. Usually get from an <see cref="InputFile"/> Component
+    /// The input image file. Usually get from an <see cref="InputFile"/> Component. You can also
+    /// mock a file from stream using <see cref="StreamFile"/> if needed.
     /// </summary>
     /// <value></value>
     [Parameter]
@@ -92,11 +93,13 @@
     /// be cropped as animed image. If disabled, only the first frame would be cropped.
     /// </summary>
     /// <remarks>Resizing gif image can cause the window stop responding for half a minute!</remarks>
-    /// <value>default: false</value>
+    /// <value>default: true</value>
     [Parameter]
-    public bool AnimeGifEnable { get; set; } = false;
+    public bool AnimeGifEnable { get; set; } = true;
     /// <summary>
-    /// The input element's id value. THIS VALUE MUST BE SET ON INIT!
+    /// The input element's id value. This param is optional and can help cropper to init image
+    /// faster on browser.
+    /// Does't have effect if <see cref="PureCSharpProcessing"/> is true.
     /// </summary>
     [Parameter]
     public string InputId { get; set; }
@@ -129,10 +132,10 @@
     /// </summary>
     [Parameter]
     public EventCallback<double> RatioChanged { get; set; }
-#endregion
+    #endregion
 
 
-#region public vars
+    #region public vars
     /// <summary>
     /// Max allowed scaling ratio
     /// </summary>
@@ -143,10 +146,10 @@
     /// </summary>
     /// <value>1.0</value>
     public double MinRatio { get => 1.0; }
-#endregion
+    #endregion
 
 
-#region private props
+    #region private props
     bool widerThenContainer
     {
         get => (double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight;
@@ -163,7 +166,7 @@
             {
                 return imgContainerHeight * imgSize / 100 * (double)image.Width / image.Height;
                 @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-    }
+            }
         }
     }
     double imgRealH
@@ -188,10 +191,10 @@
     {
         get => $"height:{CropperHeight}px;";
     }
-#endregion
+    #endregion
 
 
-#region vars
+    #region vars
     double prevBacX = 0;
     double prevBacY = 0;
     double bacx = 0;
@@ -228,20 +231,20 @@
     IImageFormat format;
     Image gifimage;
 
-#endregion
+    #endregion
 
 
-#region static actions
+    #region static actions
     static Action setaction;
     static Action<MouseEventArgs> mouseMoveAction;
     static Action<MouseEventArgs> touchMoveAction;
     static Action<MouseEventArgs> touchEndAction;
     static Action<MouseEventArgs> mouseUpAction;
-#endregion
+    #endregion
 
 
 
-#region Override methods
+    #region Override methods
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -299,20 +302,28 @@
         var ext = ImageFile.Name.Split('.').Last().ToLower();
         var resizedImageFile = ImageFile;
         await Task.Delay(10);
-        await JSRuntime.InvokeVoidAsync("setImg", InputId);
+
+
+        gifimage?.Dispose();
+        if (PureCSharpProcessing||string.IsNullOrEmpty(InputId)||(ext == "gif" && AnimeGifEnable) @*&& resizedImageFile.Size < 1048576*@)
+        {
+            var buffer = new byte[resizedImageFile.Size];
+            await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
+            if((ext == "gif" && AnimeGifEnable)||PureCSharpProcessing)
+            {
+                gifimage = Image.Load(buffer, out format);
+                await JSRuntime.InvokeVoidAsync("setImgSrc", buffer, format.DefaultMimeType);
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("setImgSrc", buffer, "image/"+ext);
+        }
+        else
+            await JSRuntime.InvokeVoidAsync("setImg", InputId);
         var data = new double[] { 0, 0 };
         while (data[0] == 0d)
         {
             await Task.Delay(10);
             data = await JSRuntime.InvokeAsync<double[]>("getOriImgSize");
-        }
-
-        gifimage?.Dispose();
-        if (PureCSharpProcessing||(ext == "gif" && AnimeGifEnable) @*&& resizedImageFile.Size < 1048576*@)
-        {
-            var buffer = new byte[resizedImageFile.Size];
-            await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
-            gifimage = Image.Load(buffer, out format);
         }
         image = new ImageData
         {
@@ -355,9 +366,9 @@
             await JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight);
         }
     }
-#endregion
+    #endregion
 
-#region JsInvokable methods
+    #region JsInvokable methods
     [JSInvokable("OnTouchEnd")]
     public static void TouchEndCaller(MouseEventArgs args)
     {
@@ -383,10 +394,10 @@
     {
         setaction?.Invoke();
     }
-#endregion
+    #endregion
 
 
-#region Public methods
+    #region Public methods
     /// <summary>
     /// Get the crop result.
     /// </summary>
@@ -396,16 +407,17 @@
         var deltaX = 0;
         var deltaY = 0;
         var i = 0d;
+        
         if (widerThenContainer)
         {
-            imgContainerWidth *= imgSize / 100;
-            i = imgContainerWidth / image.Width;
+            var containerWidth = imgContainerWidth * imgSize / 100;
+            i = containerWidth / image.Width;
             deltaY = -(int)(imgContainerHeight / i - image.Height) / 2;
         }
         else
         {
-            imgContainerHeight *= imgSize / 100;
-            i = imgContainerHeight / image.Height;
+            var containerHeight = imgContainerHeight * imgSize / 100;
+            i = containerHeight / image.Height;
             deltaX = -(int)(imgContainerWidth / i - image.Width) / 2;
         }
         var resizeProp = 1d;
@@ -441,10 +453,10 @@
             return new ImageCroppedResult(img, format);
         }
     }
-#endregion
+    #endregion
 
 
-#region private methods
+    #region private methods
     void SetCroppedImgStyle()
     {
         cropedImgStyle =$"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
@@ -918,6 +930,7 @@
         {
             return;
         }
+        // two finger resize
         var distance = Math.Pow((args.Touches[0].ClientX - args.Touches[1].ClientX), 2) +
             Math.Pow((args.Touches[0].ClientY - args.Touches[1].ClientY), 2);
         if (onTwoFingerResizing)
@@ -1003,7 +1016,7 @@
         SetCroppedImgStyle();
         base.StateHasChanged();
     }
-#endregion
+    #endregion
 }
 <style>
 @@import url("https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css");
