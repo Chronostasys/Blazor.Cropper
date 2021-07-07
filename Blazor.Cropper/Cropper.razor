@@ -126,7 +126,18 @@
     /// </summary>
     /// <value>default: 1.0</value>
     [Parameter]
-    public double Ratio { get; set; } = 1.0;
+    public double Ratio
+    {
+        get => ratio;
+        set
+        {
+            if (value == ratio)
+                return;
+
+            ratio = value;
+            RatioChanged.InvokeAsync(value);
+        }
+    }
     /// <summary>
     /// Fire when scaling ratio changed by touch event.
     /// </summary>
@@ -230,6 +241,7 @@
     IBrowserFile prevFile;
     IImageFormat format;
     Image gifimage;
+    double ratio = 1d;
 
     #endregion
 
@@ -268,7 +280,7 @@
                 || prevPosY + InitCropHeight > minposY + imgRealH || prevPosY < minposY)
             {
                 imgSize = temp;
-                await RatioChanged.InvokeAsync(imgSize / 100);
+                Ratio = imgSize / 100;
             }
             else
             {
@@ -332,7 +344,7 @@
         };
         await SetImgContainterSize();
         MaxRatio = imgContainerWidth / imgRealW;
-        await RatioChanged.InvokeAsync(imgSize / 100);
+        Ratio = imgSize / 100;
         await OnLoad.InvokeAsync();
     }
     protected override async Task OnAfterRenderAsync(bool first)
@@ -407,7 +419,7 @@
         var deltaX = 0;
         var deltaY = 0;
         var i = 0d;
-        
+
         if (widerThenContainer)
         {
             var containerWidth = imgContainerWidth * imgSize / 100;
@@ -937,8 +949,7 @@
         {
             var i = distance / prevTouchPointDistance;
             ResizeBac(i);
-
-            RatioChanged.InvokeAsync(imgSize / 100);
+            Ratio = imgSize / 100;
         }
         else
         {
