@@ -374,8 +374,6 @@
                 outOfBox = true;
                 OnSizeChangeEnd(args);
             };
-
-            await JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight);
         }
     }
     #endregion
@@ -1021,7 +1019,6 @@
         {
             InitCropWidth = imgw;
         }
-        JSRuntime.InvokeVoidAsync("console.log", imgContainerWidth, imgContainerHeight, imgRealW, imgRealH, bacx);
 
         SetCropperStyle();
         SetCroppedImgStyle();

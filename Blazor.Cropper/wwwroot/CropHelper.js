@@ -1,5 +1,47 @@
 // This file is to show how a library package may provide JavaScript interop features
 // wrapped in a .NET API
+function start() {
+    window.Blazor.start().then(() => {
+        addEventListeners();
+    }).catch(() => addEventListeners())
+}
+function addEventListeners() {
+    document.addEventListener('mousemove', (ev) => {
+        try {
+            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
+        } catch (error) {
+        }
+    })
+    document.addEventListener('mouseup', (ev) => {
+        try {
+            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
+        } catch (error) {
+        }
+    })
+    document.addEventListener('touchmove', (ev) => {
+        try {
+            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
+                clientX: ev.touches[0].clientX,
+                clientY: ev.touches[0].clientY
+            });
+        } catch (error) {
+
+        }
+    })
+    document.addEventListener('touchend', (ev) => {
+        try {
+            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd');
+        } catch (error) {
+
+        }
+    })
+    window.addEventListener('resize', (ev) => {
+        try {
+            DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
+        } catch (error) {
+        }
+    })
+}
 function getWidthHeight() {
     var a = [];
     var e = document.getElementById("blazor_cropper");
@@ -7,7 +49,7 @@ function getWidthHeight() {
     a.push(e.clientHeight);
     return a;
 }
-function getOriImgSize(){
+function getOriImgSize() {
     var a = [];
     var e = document.getElementById("oriimg");
     a.push(e.naturalWidth);
@@ -15,7 +57,7 @@ function getOriImgSize(){
     return a;
 }
 async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format) {
-    var blob =  await new Promise(function (resolve) {
+    var blob = await new Promise(function (resolve) {
         var canvas = document.createElement('canvas');
         var img = document.getElementById(id);
         canvas.width = width;
@@ -27,25 +69,20 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
 }
 function setImg(id) {
     var e = document.getElementById("blazor_cropper");
-    e.parentElement.style.overflowX='hidden';
+    e.parentElement.style.overflowX = 'hidden';
     var input = document.getElementById(id);
     var src = URL.createObjectURL(input.files[0]);
-    document.getElementById('dimg').setAttribute('src',src);
-    document.getElementById('oriimg').setAttribute('src',src);
-    
+    document.getElementById('dimg').setAttribute('src', src);
+    document.getElementById('oriimg').setAttribute('src', src);
+
 }
 function setImgSrc(bin, format) {
     var e = document.getElementById("blazor_cropper");
     e.parentElement.style.overflowX = 'hidden';
-    console.log(bin);
     src = 'data:' + format + ';base64,' + bin;
-    console.log(src);
     document.getElementById('dimg').setAttribute('src', src);
     document.getElementById('oriimg').setAttribute('src', src);
 }
-window.addEventListener('resize', (ev) => {
-    DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
-})
 var serializeEvent = function (e) {
     if (e) {
         var o = {
@@ -69,18 +106,3 @@ var serializeEvent = function (e) {
         return o;
     }
 };
-document.addEventListener('mousemove', (ev)=>{
-    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
-})
-document.addEventListener('mouseup', (ev)=>{
-    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
-})
-document.addEventListener('touchmove', (ev)=>{
-    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
-        clientX:ev.touches[0].clientX,
-        clientY:ev.touches[0].clientY
-    });
-})
-document.addEventListener('touchend', (ev)=>{
-    DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd');
-})

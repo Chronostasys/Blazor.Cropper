@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>\Blazor.Cropper\Blazor.Cropper.xml</DocumentationFile>
+    <DocumentationFile>.\Blazor.Cropper\Blazor.Cropper.xml</DocumentationFile>
   </PropertyGroup>
 
 
