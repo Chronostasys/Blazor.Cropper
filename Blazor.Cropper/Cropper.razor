@@ -143,6 +143,10 @@
     /// </summary>
     [Parameter]
     public EventCallback<double> RatioChanged { get; set; }
+    /// <summary>
+    /// Fire when cropper size changed. 
+    /// Item1 of the return tuple is width, Item2 is height
+    /// </summary>
     [Parameter]
     public EventCallback<(double,double)> OnSizeChanged {get;set;}
     #endregion
