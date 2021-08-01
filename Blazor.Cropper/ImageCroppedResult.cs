@@ -1,14 +1,14 @@
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 
 namespace Blazor.Cropper
 {
-    public class ImageCroppedResult:IDisposable
+    public class ImageCroppedResult : IDisposable
     {
-        private string _base64;
+        private readonly string _base64;
         public Image Img { get; init; }
         public IImageFormat Format { get; init; }
         public ImageCroppedResult(Image img, IImageFormat format)
@@ -23,14 +23,22 @@ namespace Blazor.Cropper
 
         public async Task<string> GetBase64Async()
         {
-            if (Img==null)
+            if (Img == null)
             {
+                if (_base64.StartsWith("data:image/png"))
+                {
+                    string pureBase64 = _base64.Substring(22);
+                    return pureBase64;
+                }
+
                 return _base64;
             }
-            using var stream = new MemoryStream();
-            await Img.SaveAsync(stream, Format);
-            stream.TryGetBuffer(out ArraySegment<byte> buffer);
-            return $"data:{Format.DefaultMimeType};base64,{Convert.ToBase64String(buffer.Array, 0, (int)stream.Length)}";
+
+            using MemoryStream memoryStream = new MemoryStream();
+            await Img.SaveAsync(memoryStream, Format);
+
+            byte[] imageBytes = memoryStream.ToArray();
+            return Convert.ToBase64String(imageBytes);
         }
         public Task SaveAsync(Stream s)
         {

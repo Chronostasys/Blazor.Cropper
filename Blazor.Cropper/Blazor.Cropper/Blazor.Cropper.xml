@@ -133,6 +133,12 @@
             Fire when scaling ratio changed by touch event.
             </summary>
         </member>
+        <member name="P:Blazor.Cropper.Cropper.OnSizeChanged">
+            <summary>
+            Fire when cropper size changed. 
+            Item1 of the return tuple is width, Item2 is height
+            </summary>
+        </member>
         <member name="P:Blazor.Cropper.Cropper.MaxRatio">
             <summary>
             Max allowed scaling ratio

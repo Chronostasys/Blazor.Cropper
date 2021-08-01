@@ -457,7 +457,7 @@
         if (gifimage == null)
         {
             var s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((prevPosX - bacx) / i + deltaX), (int)((prevPosY - bacy) / i + deltaY),
-                (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
+                (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp),"image/png");
             return new ImageCroppedResult(s);
         }
         else
