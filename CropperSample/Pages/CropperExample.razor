@@ -93,7 +93,8 @@
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
-        imgUrl = await args.GetBase64Async();
+        var base64string = await args.GetBase64Async();
+        imgUrl = $"data:image/png;base64,{base64string}";
         parsing = false;
     }
 }
