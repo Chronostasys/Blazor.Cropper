@@ -28,17 +28,27 @@
         <section class="modal-card-body">
             <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
                 RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
-                AnimeGifEnable="true"></Cropper>
+                AnimeGifEnable="true"
+                OnSizeChanged="t=>{
+                    width = t.Item1;
+                    height = t.Item2;
+                }"></Cropper>
         </section>
         <footer class="modal-card-foot">
             <button class="button is-success" @onclick="DoneCrop">Done</button>
             @if (cropper != null)
-                {
-                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
-                @oninput="OnRatioChange" />
-                }
-
-            </footer>
+            {
+                <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
+                    @oninput="OnRatioChange" />
+            }
+            @if (cropper!=null)
+            {
+                <div>
+                    width: @width |  
+                    height: @height
+                </div>  
+            }
+        </footer>
         </div>
     </div>
 }
@@ -53,6 +63,8 @@
 @code {
     Cropper cropper;
     IBrowserFile file;
+    double width;
+    double height;
     string imgUrl = "";
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;

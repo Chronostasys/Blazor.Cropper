@@ -143,6 +143,8 @@
     /// </summary>
     [Parameter]
     public EventCallback<double> RatioChanged { get; set; }
+    [Parameter]
+    public EventCallback<(double,double)> OnSizeChanged {get;set;}
     #endregion
 
 
@@ -257,6 +259,10 @@
 
 
     #region Override methods
+    protected override async Task OnInitializedAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("addCropperEventListeners");
+    }
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -467,6 +473,22 @@
 
 
     #region private methods
+
+    double GetI()
+    {
+        double i = 0d;
+        if (widerThenContainer)
+        {
+            var containerWidth = imgContainerWidth * imgSize / 100;
+            i = containerWidth / image.Width;
+        }
+        else
+        {
+            var containerHeight = imgContainerHeight * imgSize / 100;
+            i = containerHeight / image.Height;
+        }
+        return i;
+    }
     void SetCroppedImgStyle()
     {
         cropedImgStyle =$"clip: rect({prevPosY - layoutY}px, {prevPosX - layoutX + InitCropWidth}px, {prevPosY - layoutY + InitCropHeight}px, {prevPosX - layoutX}px);";
@@ -841,6 +863,8 @@
         {
             OnDragEnd(args);
         }
+        var i = GetI();
+        OnSizeChanged.InvokeAsync((InitCropWidth/i,InitCropHeight/i));
     }
     TouchEventArgs MouseToTouch(MouseEventArgs args)
     {
