@@ -2,7 +2,9 @@
 @inject IJSRuntime JSRuntime;
 
 <h1>Cropper</h1>
-<InputFile id="input1" OnChange="OnInputFileChange"></InputFile>
+<div class="mb-3">
+    <InputFile class="form-control form-control-lg" id="input1" OnChange="OnInputFileChange"></InputFile>
+</div>
 @if (parsing)
 {
     <center>
@@ -11,53 +13,64 @@
 }
 @if (!string.IsNullOrEmpty(imgUrl) && !parsing)
 {
-    <center>
-        <h2>Crop Result:</h2>
-        <img src="@imgUrl" />
-    </center>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">
+                <strong>Image Preview</strong>
+            </h3>
+        </div>
+        <div class="card-body">
+            <center>
+                <img class="img-fluid" src="@imgUrl" />
+            </center>
+        </div>
+    </div>
 }
 @if (file != null)
 {
     <div class="card">
-        <div class="card-body">
+        <div class="card-body py-0">
             <Cropper CropperHeight="500" MaxCropedHeight="500" MaxCropedWidth="500"
                  @ref="cropper"
-                 AspectRatio="proportion==0?1:proportion"
-                 RequireAspectRatio="bool.Parse(enableProportion)"
+                 AspectRatio="AspectRatio"
+                 RequireAspectRatio="IsAspectRatioEnabled"
                  InputId="input1"
                  ImageFile="file"
                  @bind-Ratio="ratio"
                  AnimeGifEnable="true"></Cropper>
         </div>
-        <div class="card-footer">
-            <button class="btn btn-success mr-1" @onclick="DoneCrop">Done</button>
-
+        <div class="card-footer text-center justify-content-center">
             @if (cropper != null)
             {
-                <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)" @oninput="OnRatioChange" />
+                <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)"
+               value="@(ratio*100)" @oninput="OnRatioChange" placeholder="Zoom range" />
             }
-
+        </div>
+        <div class="card-footer">
+            <div class="input-group">
+                <div class="input-group-text">
+                    <input @bind="IsAspectRatioEnabled" class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input">
+                </div>
+                <span class="input-group-text">Aspect Ratio</span>
+                <input @bind-value="AspectRatio" type="number" class="form-control" placeholder="Enter width">
+            </div>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-success mr-1" @onclick="DoneCrop">Done</button>
             <button class="btn btn-danger" aria-label="close" @onclick="()=>file=null">Close</button>
 
         </div>
     </div>
 }
-<select @bind-value="enableProportion" @bind-value:event="onchange">
-    <option value="true">Enable proportion</option>
-    <option value="false">Disable proportion</option>
-</select>
-@if (bool.Parse(enableProportion))
-{
-    <input type="number" @bind-value="proportion" placeholder="proportion" />
-}
+
 @code {
     Cropper cropper;
     IBrowserFile file;
     string imgUrl = "";
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
-    string enableProportion = "false";
-    double proportion = 1d;
+    private bool IsAspectRatioEnabled { get; set; }
+    private double AspectRatio { get; set; } = 1d;
     double ratio = 1;
 
     void OnRatioChange(ChangeEventArgs args)
