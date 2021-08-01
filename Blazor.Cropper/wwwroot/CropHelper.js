@@ -60,6 +60,7 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
         canvas.getContext('2d').drawImage(img, sx, sy, swidth, sheight, x, y, width, height);
         resolve(canvas.toDataURL(format));
     })
+    blob = blob.substr(blob.indexOf(',') + 1)
     return blob;
 }
 function setImg(id) {
