@@ -183,7 +183,7 @@
             {
                 return imgContainerHeight * imgSize / 100 * (double)image.Width / image.Height;
                 @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-            }
+    }
         }
     }
     double imgRealH
@@ -202,7 +202,7 @@
     }
     string backgroundImgStyle
     {
-        get => $"left:{bacx}px;top: {bacy}px;width:{imgSize}%;height:{imgSize}%;";
+        get => $"left:{bacx}px;top: {bacy}px;height:{imgSize}%;";
     }
     string imglistStyle
     {
@@ -327,7 +327,8 @@
 
 
         gifimage?.Dispose();
-        if (PureCSharpProcessing||string.IsNullOrEmpty(InputId)||(ext == "gif" && AnimeGifEnable) @*&& resizedImageFile.Size < 1048576*@)
+        if (PureCSharpProcessing||string.IsNullOrEmpty(InputId)||(ext == "gif" && AnimeGifEnable) 
+    @*&& resizedImageFile.Size < 1048576*@)
         {
             var buffer = new byte[resizedImageFile.Size];
             await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
