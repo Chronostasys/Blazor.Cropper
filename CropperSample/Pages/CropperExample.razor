@@ -6,44 +6,49 @@
 @if (parsing)
 {
     <center>
-        <h2>@prompt</h2>
-    </center>
+    <h2>@prompt</h2>
+</center>
 }
-@if (!string.IsNullOrEmpty(imgUrl)&&!parsing)
+@if (!string.IsNullOrEmpty(imgUrl) && !parsing)
 {
     <center>
-        <h2>Crop Result:</h2>
-        <img src="@imgUrl" />
-    </center>
+    <h2>Crop Result:</h2>
+    <img src="@imgUrl" />
+</center>
 }
 @if (file != null)
 {
     <div class="modal is-active">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-            <header class="modal-card-head">
-                <p class="modal-card-title">Modal title</p>
-                <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
-            </header>
-            <section class="modal-card-body">
-                <Cropper MaxCropedHeight="500" MaxCropedWidth="500" 
-                    @ref="cropper"
-                    AspectRatio="proportion==0?1:proportion" 
-                    RequireAspectRatio="bool.Parse(enableProportion)" 
-                    InputId="input1" 
-                    ImageFile="file"
-                    @bind-Ratio="ratio"
-                    AnimeGifEnable="true"
-                    ></Cropper>
-            </section>
-            <footer class="modal-card-foot">
-                <button class="button is-success" @onclick="DoneCrop">Done</button>
-                @if (cropper!=null)
-                {
-                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)" @oninput="OnRatioChange"/>
-                }
-                
-            </footer>
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Modal title</p>
+            <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
+        </header>
+        <section class="modal-card-body">
+            <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
+                RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
+                AnimeGifEnable="true"
+                OnSizeChanged="t=>{
+                    width = t.Item1;
+                    height = t.Item2;
+                }"></Cropper>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-success" @onclick="DoneCrop">Done</button>
+            @if (cropper != null)
+            {
+                <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
+                    @oninput="OnRatioChange" />
+            }
+            @if (cropper!=null)
+            {
+                <div>
+                    width: @width |  
+                    height: @height
+                </div>  
+            }
+        </footer>
         </div>
     </div>
 }
@@ -53,11 +58,13 @@
 </select>
 @if (bool.Parse(enableProportion))
 {
-    <input type="number" @bind-value="proportion" placeholder="proportion"/>
+    <input type="number" @bind-value="proportion" placeholder="proportion" />
 }
 @code {
     Cropper cropper;
     IBrowserFile file;
+    double width;
+    double height;
     string imgUrl = "";
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
@@ -66,14 +73,14 @@
     double ratio = 1;
     void OnRatioChange(ChangeEventArgs args)
     {
-        ratio = int.Parse(args.Value.ToString())/100.0;
+        ratio = int.Parse(args.Value.ToString()) / 100.0;
     }
     protected override void OnInitialized()
     {
-        
+
         base.OnInitialized();
     }
-    
+
     void OnInputFileChange(InputFileChangeEventArgs args)
     {
         file = args.File;
@@ -90,3 +97,6 @@
         parsing = false;
     }
 }
+<style>
+    @@import url("https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css");
+</style>

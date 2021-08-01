@@ -1,11 +1,6 @@
 // This file is to show how a library package may provide JavaScript interop features
 // wrapped in a .NET API
-function start() {
-    window.Blazor.start().then(() => {
-        addEventListeners();
-    }).catch(() => addEventListeners())
-}
-function addEventListeners() {
+function addCropperEventListeners() {
     document.addEventListener('mousemove', (ev) => {
         try {
             DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
