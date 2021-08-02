@@ -124,6 +124,12 @@
     [Parameter]
     public double CropperHeight { get; set; } = 150;
     /// <summary>
+    /// Whether the cropper size is locked
+    /// </summary>
+    /// <value>default: false</value>
+    [Parameter]
+    public bool IsCropLocked { get; set; } = false;
+    /// <summary>
     /// The scaling ratio, should be bind two way.
     /// </summary>
     /// <value>default: 1.0</value>
@@ -169,7 +175,7 @@
 
 
     #region private props
-    bool widerThenContainer
+    bool widerThanContainer
     {
         get => (double)image.Width / (double)image.Height > imgContainerWidth / imgContainerHeight;
     }
@@ -177,7 +183,7 @@
     {
         get
         {
-            if (widerThenContainer)
+            if (widerThanContainer)
             {
                 return imgContainerWidth * imgSize / 100;
             }
@@ -185,14 +191,14 @@
             {
                 return imgContainerHeight * imgSize / 100 * (double)image.Width / image.Height;
                 @* deltaY = -(int)(imgContainerHeight/i-image.Height)/2; *@
-    }
+            }
         }
     }
     double imgRealH
     {
         get
         {
-            if (widerThenContainer)
+            if (widerThanContainer)
             {
                 return imgContainerWidth * imgSize / 100 * (double)image.Height / image.Width;
             }
@@ -275,17 +281,19 @@
         if (initCropWidth<0)
         {
             initCropWidth = InitCropWidth;
-            initCropHeight = InitCropHeight;   
+            initCropHeight = InitCropHeight;
         }
     }
+    double prevR = 1d;
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        if (MinRatio <= Ratio && Ratio <= MaxRatio && !onTwoFingerResizing)
+        if (Ratio!=prevR&&MinRatio <= Ratio && Ratio <= MaxRatio && !onTwoFingerResizing)
         {
+            prevR = Ratio;
             var temp = imgSize;
             imgSize = Ratio * 100;
-            if (widerThenContainer)
+            if (widerThanContainer)
             {
                 minposX = 0;
                 minposY = (imgContainerHeight - imgRealH) / 2;
@@ -309,7 +317,10 @@
                 layoutY -= (imgSize - temp) / imgSize * imgRealH / 2;
                 SetCroppedImgStyle();
             }
-            InitBox();
+            @*SetCropperStyle();*@
+        InitBox();
+        @*prevPosY = bacy + prevPosY - layoutY;
+        prevPosX = prevPosX - layoutX + bacx;*@
         }
         if (RequireAspectRatio)
         {
@@ -440,7 +451,7 @@
         var deltaY = 0;
         var i = 0d;
 
-        if (widerThenContainer)
+        if (widerThanContainer)
         {
             var containerWidth = imgContainerWidth * imgSize / 100;
             i = containerWidth / image.Width;
@@ -493,7 +504,7 @@
     double GetI()
     {
         double i = 0d;
-        if (widerThenContainer)
+        if (widerThanContainer)
         {
             var containerWidth = imgContainerWidth * imgSize / 100;
             i = containerWidth / image.Width;
@@ -600,6 +611,11 @@
         SetCropperStyle();
         offsetX = args.ClientX;
         offsetY = args.ClientY;
+        if (IsCropLocked && !isBacMoving && !onTwoFingerResizing)
+        {
+            OnDragStart(args);
+            return;
+        }
         reSizing = true;
     }
     void OnSizeChanging(MouseEventArgs args)
@@ -928,7 +944,7 @@
 
 
 
-        if (widerThenContainer)
+        if (widerThanContainer)
         {
             minposX = 0;
             minposY = (imgContainerHeight - imgRealH) / 2;
@@ -962,7 +978,7 @@
             }
             var dx = args.Touches[0].ClientX - prevBacX;
             var dy = args.Touches[0].ClientY - prevBacY;
-            if (widerThenContainer)
+            if (widerThanContainer)
             {
                 minposX = 0;
                 minposY = (imgContainerHeight - imgRealH) / 2;
@@ -1031,7 +1047,7 @@
     {
         var prevPosX = 0d;
         var prevPosY = 0d;
-        if (widerThenContainer)
+        if (widerThanContainer)
         {
             prevPosY = (imgContainerHeight - imgRealH) / 2;
             prevPosX = 0;
@@ -1051,7 +1067,7 @@
     void InitStyles()
     {
         var i = 0d;
-        if (widerThenContainer)
+        if (widerThanContainer)
         {
             i = imgContainerWidth / image.Width;
             prevPosY = (imgContainerHeight - imgRealH) / 2;
