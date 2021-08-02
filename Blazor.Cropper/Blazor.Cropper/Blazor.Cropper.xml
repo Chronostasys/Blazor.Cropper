@@ -122,6 +122,12 @@
             </summary>
             <value>default:150</value>
         </member>
+        <member name="P:Blazor.Cropper.Cropper.IsCropLocked">
+            <summary>
+            Whether the cropper size is locked
+            </summary>
+            <value>default: false</value>
+        </member>
         <member name="P:Blazor.Cropper.Cropper.Ratio">
             <summary>
             The scaling ratio, should be bind two way.
