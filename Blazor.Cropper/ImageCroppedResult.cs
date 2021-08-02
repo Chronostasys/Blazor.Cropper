@@ -25,12 +25,6 @@ namespace Blazor.Cropper
         {
             if (Img == null)
             {
-                if (_base64.StartsWith("data:image/png"))
-                {
-                    string pureBase64 = _base64.Substring(22);
-                    return pureBase64;
-                }
-
                 return _base64;
             }
 
