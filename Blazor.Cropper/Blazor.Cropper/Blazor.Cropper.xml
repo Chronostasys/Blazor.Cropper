@@ -10,6 +10,13 @@
             </summary>
             <value>default: false</value>
         </member>
+        <member name="P:Blazor.Cropper.Cropper.IsImageLocked">
+            <summary>
+            If this property is true, the image will become
+            unresizable in cropper
+            </summary>
+            <value>default: true</value>
+        </member>
         <member name="P:Blazor.Cropper.Cropper.InitCropWidth">
             <summary>
             the initial width of cropper if possible

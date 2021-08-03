@@ -25,6 +25,13 @@ namespace Blazor.Cropper
         [Parameter]
         public bool PureCSharpProcessing { get; set; } = false;
         /// <summary>
+        /// If this property is true, the image will become
+        /// unresizable in cropper
+        /// </summary>
+        /// <value>default: true</value>
+        [Parameter]
+        public bool IsImageLocked { get; set; } = true;
+        /// <summary>
         /// the initial width of cropper if possible
         /// </summary>
         /// <value>default: 150</value>
@@ -115,7 +122,7 @@ namespace Blazor.Cropper
             get => ratio;
             set
             {
-                if (value == ratio)
+                if (value == ratio||IsImageLocked)
                 {
                     return;
                 }
@@ -1008,7 +1015,7 @@ namespace Blazor.Cropper
                 prevBacX = args.Touches[0].ClientX;
                 prevBacY = args.Touches[0].ClientY;
             }
-            if (args.Touches.Length != 2)
+            if (args.Touches.Length != 2||IsImageLocked)
             {
                 return;
             }

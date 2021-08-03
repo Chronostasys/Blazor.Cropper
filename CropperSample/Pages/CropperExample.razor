@@ -30,6 +30,7 @@
                 RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
                 AnimeGifEnable="true"
                 IsCropLocked="isCropLocked"
+                IsImageLocked="isImageLocked"
                 OnSizeChanged="t=>{
                     width = t.Item1;
                     height = t.Item2;
@@ -40,17 +41,18 @@
             @if (cropper != null)
             {
                 <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
-                    @oninput="OnRatioChange" />
+                       @oninput="OnRatioChange" />
             }
-            @if (cropper!=null)
+            @if (cropper != null)
             {
                 <div>
-                    width: @width |  
+                    width: @width |
                     height: @height
-                </div>  
+                </div>
             }
-            IsCropLocked:<input type="checkbox" @bind="isCropLocked" />
-            
+            |IsCropLocked:<input type="checkbox" @bind="isCropLocked" />
+            |IsImageLocked:<input type="checkbox" @bind="isImageLocked" />
+
         </footer>
         </div>
     </div>
@@ -75,6 +77,7 @@
     double proportion = 1d;
     double ratio = 1;
     bool isCropLocked = false;
+    bool isImageLocked = true;
     void OnRatioChange(ChangeEventArgs args)
     {
         ratio = int.Parse(args.Value.ToString()) / 100.0;
