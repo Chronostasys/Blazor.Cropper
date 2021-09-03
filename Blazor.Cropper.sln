@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9C562553-AD99-44D0-80B7-D1E17B1C4D5B}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		.bettercodehub.yml = .bettercodehub.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CropperSampleV6", "CropperSampleV6\CropperSampleV6.csproj", "{50C77918-A2FE-4383-94AB-1B733313751B}"
