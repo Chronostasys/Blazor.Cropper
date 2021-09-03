@@ -1,0 +1,4 @@
+﻿component_depth: 1
+default_excludes: true
+languages:
+- csharp
