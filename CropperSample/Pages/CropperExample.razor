@@ -29,6 +29,7 @@
             <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
                 RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
                 AnimeGifEnable="true"
+                PureCSharpProcessing="true"
                 IsCropLocked="isCropLocked"
                 IsImageLocked="isImageLocked"
                 OnSizeChanged="t=>{
@@ -88,8 +89,9 @@
         base.OnInitialized();
     }
 
-    void OnInputFileChange(InputFileChangeEventArgs args)
+    async Task OnInputFileChange(InputFileChangeEventArgs args)
     {
+        await JSRuntime.InvokeVoidAsync("console.log", DateTime.Now.ToString());
         file = args.File;
     }
     async Task DoneCrop()

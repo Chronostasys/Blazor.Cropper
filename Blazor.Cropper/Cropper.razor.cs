@@ -458,15 +458,18 @@ namespace Blazor.Cropper
             }
             else
             {
-                Image img = _gifimage.Clone(ctx =>
+                var rect = new Rectangle((int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY), (int)(cw), (int)(ch));
+                _gifimage.Mutate(ctx =>
                 {
-                    ctx.Crop(new Rectangle((int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY), (int)(cw), (int)(ch)));
+                    // fix exif orientaion issue
+                    ctx.AutoOrient();
+                    ctx.Crop(rect);
                     if (resizeProp != 1d)
                     {
                         ctx.Resize(new Size((int)(cw * resizeProp), (int)(ch * resizeProp)));
                     }
                 });
-                return new ImageCroppedResult(img, _format);
+                return new ImageCroppedResult(_gifimage, _format);
             }
         }
         #endregion
