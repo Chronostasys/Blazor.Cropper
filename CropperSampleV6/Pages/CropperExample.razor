@@ -9,13 +9,10 @@
         <h2>@prompt</h2>
     </center>
 }
-@if (!string.IsNullOrEmpty(imgUrl) && !parsing)
-{
-    <center>
-        <h2>Crop Result:</h2>
-        <img src="@imgUrl" />
-    </center>
-}
+<center>
+    <h2>Crop Result:</h2>
+    <img id="my-img" />
+</center>
 @if (file != null)
 {
     <div class="modal is-active">
@@ -102,8 +99,10 @@
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
-        var base64string = await args.GetBase64Async();
-        imgUrl = $"data:image/png;base64,{base64string}";
+        MemoryStream s = new();
+        await args.Img.SaveAsync(s, args.Format);
+        var bs = s.ToArray();
+        await JSRuntime.InvokeVoidAsync("setSrc", bs, args.Format.DefaultMimeType);
         parsing = false;
     }
 }
