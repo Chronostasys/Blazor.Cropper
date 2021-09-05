@@ -162,7 +162,10 @@ function addCropperEventListeners() {
     })
     document.addEventListener('touchend', (ev) => {
         try {
-            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd');
+            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
+                clientX: ev.touches[0].clientX,
+                clientY: ev.touches[0].clientY
+            });
         } catch (error) {
 
         }
@@ -186,7 +189,6 @@ function getOriImgSize() {
     var e = document.getElementById("oriimg");
     a.push(e.naturalWidth);
     a.push(e.naturalHeight);
-    console.log(a);
     return a;
 }
 async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format) {
