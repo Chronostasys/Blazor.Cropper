@@ -26,7 +26,7 @@
                 <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
                          RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
                          AnimeGifEnable="true"
-                         PureCSharpProcessing="true"
+                         PureCSharpProcessing="purecs"
                          IsCropLocked="isCropLocked"
                          IsImageLocked="isImageLocked"
                          OnSizeChanged="t=>{
@@ -55,6 +55,7 @@
         </div>
     </div>
 }
+<br />
 <select @bind-value="enableProportion" @bind-value:event="onchange">
     <option value="true">Enable proportion</option>
     <option value="false">Disable proportion</option>
@@ -63,12 +64,16 @@
 {
     <input type="number" @bind-value="proportion" placeholder="proportion" />
 }
+<br />
+Pure c# processiing:
+<input type="checkbox" @bind="purecs" />
 @code {
     Cropper cropper;
     IBrowserFile file;
     double width;
     double height;
     string imgUrl = "";
+    bool purecs = false;
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
     string enableProportion = "false";
@@ -99,10 +104,8 @@
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
-        MemoryStream s = new();
-        await args.Img.SaveAsync(s, args.Format);
-        var bs = s.ToArray();
-        await JSRuntime.InvokeVoidAsync("setSrc", bs, args.Format.DefaultMimeType);
+        var bs = await args.GetDataAsync();
+        await JSRuntime.InvokeVoidAsync("setSrc", bs);
         parsing = false;
     }
 }

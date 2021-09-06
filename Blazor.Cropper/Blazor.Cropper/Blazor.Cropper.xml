@@ -135,6 +135,13 @@
             </summary>
             <returns>crop result</returns>
         </member>
+        <member name="M:Blazor.Cropper.ImageCroppedResult.SaveAsync(System.IO.Stream)">
+            <summary>
+            save img data to stream
+            </summary>
+            <param name="s"></param>
+            <returns></returns>
+        </member>
         <member name="T:Blazor.Cropper.StreamFile">
             <summary>
             mock a browserfile from a stream

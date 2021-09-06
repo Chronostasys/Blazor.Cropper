@@ -270,6 +270,7 @@ namespace Blazor.Cropper
         protected override async Task OnInitializedAsync()
         {
             await JSRuntime.InvokeVoidAsync("addCropperEventListeners");
+            await JSRuntime.InvokeVoidAsync("setVersion", Environment.Version.Major);
         }
         protected override void OnParametersSet()
         {
@@ -452,9 +453,19 @@ namespace Blazor.Cropper
             var (resizeProp,cw,ch) = GetCropperInfos(i);
             if (_gifimage == null)
             {
-                string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY),
-                    (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
-                return new ImageCroppedResult(s);
+                if (Environment.Version.Major > 5)
+                {
+                    // for dotnet version after 5, pass byte array between c# and js is optimized
+                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg", (int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY),
+                        (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
+                    return new ImageCroppedResult(bin);
+                }
+                else
+                {
+                    string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY),
+                        (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
+                    return new ImageCroppedResult(s);
+                }
             }
             else
             {
@@ -472,10 +483,10 @@ namespace Blazor.Cropper
                 return new ImageCroppedResult(_gifimage, _format);
             }
         }
-        #endregion
+#endregion
 
 
-        #region private methods
+#region private methods
 
         private (double resizeProp,double cw,double ch) GetCropperInfos(double i)
         {
@@ -1023,6 +1034,6 @@ namespace Blazor.Cropper
             SetCroppedImgStyle();
             base.StateHasChanged();
         }
-        #endregion
+#endregion
     }
 }
