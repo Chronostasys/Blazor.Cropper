@@ -6,57 +6,59 @@
 @if (parsing)
 {
     <center>
-    <h2>@prompt</h2>
-</center>
+        <h2>@prompt</h2>
+    </center>
 }
 @if (!string.IsNullOrEmpty(imgUrl) && !parsing)
 {
     <center>
-    <h2>Crop Result:</h2>
-    <img src="@imgUrl" />
-</center>
+        <h2>Crop Result:</h2>
+        <img src="@imgUrl" />
+    </center>
 }
 @if (file != null)
 {
     <div class="modal is-active">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Modal title</p>
-            <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
-        </header>
-        <section class="modal-card-body">
-            <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
-                RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
-                AnimeGifEnable="true"
-                IsCropLocked="isCropLocked"
-                IsImageLocked="isImageLocked"
-                OnSizeChanged="t=>{
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Modal title</p>
+                <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
+            </header>
+            <section class="modal-card-body">
+                <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
+                         RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
+                         AnimeGifEnable="true"
+                         PureCSharpProcessing="purecs"
+                         IsCropLocked="isCropLocked"
+                         IsImageLocked="isImageLocked"
+                         OnSizeChanged="t=>{
                     width = t.Item1;
                     height = t.Item2;
                 }"></Cropper>
-        </section>
-        <footer class="modal-card-foot">
-            <button class="button is-success" @onclick="DoneCrop">Done</button>
-            @if (cropper != null)
-            {
-                <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
-                       @oninput="OnRatioChange" />
-            }
-            @if (cropper != null)
-            {
-                <div>
-                    width: @width |
-                    height: @height
-                </div>
-            }
-            |IsCropLocked:<input type="checkbox" @bind="isCropLocked" />
-            |IsImageLocked:<input type="checkbox" @bind="isImageLocked" />
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" @onclick="DoneCrop">Done</button>
+                @if (cropper != null)
+                {
+                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
+                           @oninput="OnRatioChange" />
+                }
+                @if (cropper != null)
+                {
+                    <div>
+                        width: @width |
+                        height: @height
+                    </div>
+                }
+                |IsCropLocked:<input type="checkbox" @bind="isCropLocked" />
+                |IsImageLocked:<input type="checkbox" @bind="isImageLocked" />
 
-        </footer>
+            </footer>
         </div>
     </div>
 }
+<br />
 <select @bind-value="enableProportion" @bind-value:event="onchange">
     <option value="true">Enable proportion</option>
     <option value="false">Disable proportion</option>
@@ -65,9 +67,13 @@
 {
     <input type="number" @bind-value="proportion" placeholder="proportion" />
 }
+<br />
+Pure c# processiing:
+<input type="checkbox" @bind="purecs" />
 @code {
     Cropper cropper;
     IBrowserFile file;
+    bool purecs = false;
     double width;
     double height;
     string imgUrl = "";
@@ -88,8 +94,9 @@
         base.OnInitialized();
     }
 
-    void OnInputFileChange(InputFileChangeEventArgs args)
+    async Task OnInputFileChange(InputFileChangeEventArgs args)
     {
+        await JSRuntime.InvokeVoidAsync("console.log", DateTime.Now.ToString());
         file = args.File;
     }
     async Task DoneCrop()

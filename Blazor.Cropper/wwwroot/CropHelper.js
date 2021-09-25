@@ -1,5 +1,4 @@
-// This file is to show how a library package may provide JavaScript interop features
-// wrapped in a .NET API
+// blazor.cropper code MIT license
 function addCropperEventListeners() {
     document.addEventListener('mousemove', (ev) => {
         try {
@@ -25,7 +24,10 @@ function addCropperEventListeners() {
     })
     document.addEventListener('touchend', (ev) => {
         try {
-            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd');
+            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
+                clientX: ev.touches[0].clientX,
+                clientY: ev.touches[0].clientY
+            });
         } catch (error) {
 
         }
@@ -51,17 +53,29 @@ function getOriImgSize() {
     a.push(e.naturalHeight);
     return a;
 }
+let version = 5;
+function setVersion(ver) {
+    version = ver;
+}
 async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format) {
-    var blob = await new Promise(function (resolve) {
-        var canvas = document.createElement('canvas');
-        var img = document.getElementById(id);
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(img, sx, sy, swidth, sheight, x, y, width, height);
-        resolve(canvas.toDataURL(format));
-    })
-    blob = blob.substr(blob.indexOf(',') + 1)
-    return blob;
+    var canvas = document.createElement('canvas');
+    var img = document.getElementById(id);
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, sx, sy, swidth, sheight, x, y, width, height);
+    if (version === 6) {
+        return await new Promise((rs, rv) => {
+            canvas.toBlob(async b => {
+                const bin = new Uint8Array(await b.arrayBuffer());
+                rs(bin)
+            });
+        })
+    }
+    else {
+        const s = canvas.toDataURL(format);
+        return s.substr(s.indexOf(',') + 1)
+    }
 }
 function setImg(id) {
     var e = document.getElementById("blazor_cropper");
@@ -73,6 +87,15 @@ function setImg(id) {
 
 }
 function setImgSrc(bin, format) {
+    if (bin.constructor === Uint8Array) {
+        document.getElementById('dimg').src = URL.createObjectURL(
+            new Blob([bin], { type: format })
+        );
+        document.getElementById('oriimg').src = URL.createObjectURL(
+            new Blob([bin], { type: format })
+        );
+        return
+    }
     var e = document.getElementById("blazor_cropper");
     e.parentElement.style.overflowX = 'hidden';
     src = 'data:' + format + ';base64,' + bin;

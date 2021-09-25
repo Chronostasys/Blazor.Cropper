@@ -2,90 +2,98 @@
 @inject IJSRuntime JSRuntime;
 
 <h1>Cropper</h1>
-<div class="mb-3">
-    <InputFile class="form-control form-control-lg" id="input1" OnChange="OnInputFileChange"></InputFile>
-</div>
+<InputFile id="input1" OnChange="OnInputFileChange"></InputFile>
 @if (parsing)
 {
     <center>
         <h2>@prompt</h2>
     </center>
 }
-@if (!string.IsNullOrEmpty(imgUrl) && !parsing)
-{
-    <div class="card">
-        <div class="card-header">
-            <h3 class="mb-0">
-                <strong>Image Preview</strong>
-            </h3>
-        </div>
-        <div class="card-body">
-            <center>
-                <img class="img-fluid" src="@imgUrl" />
-            </center>
-        </div>
-    </div>
-}
+<center>
+    <h2>Crop Result:</h2>
+    <img id="my-img" />
+</center>
 @if (file != null)
 {
-    <div class="card">
-        <div class="card-body py-0">
-            <Cropper CropperHeight="500" MaxCropedHeight="500" MaxCropedWidth="500"
-                 @ref="cropper"
-                 AspectRatio="AspectRatio"
-                 RequireAspectRatio="IsAspectRatioEnabled"
-                 InputId="input1"
-                 ImageFile="file"
-                 @bind-Ratio="ratio"
-                 AnimeGifEnable="true"></Cropper>
-        </div>
-        <div class="card-footer text-center justify-content-center">
-            @if (cropper != null)
-            {
-                <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)"
-               value="@(ratio*100)" @oninput="OnRatioChange" placeholder="Zoom range" />
-            }
-        </div>
-        <div class="card-footer">
-            <div class="input-group">
-                <div class="input-group-text">
-                    <input @bind="IsAspectRatioEnabled" class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input">
-                </div>
-                <span class="input-group-text">Aspect Ratio</span>
-                <input @bind-value="AspectRatio" type="number" class="form-control" placeholder="Enter width">
-            </div>
-        </div>
-        <div class="card-footer">
-            <button class="btn btn-success mr-1" @onclick="DoneCrop">Done</button>
-            <button class="btn btn-danger" aria-label="close" @onclick="()=>file=null">Close</button>
+    <div class="modal is-active">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Modal title</p>
+                <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
+            </header>
+            <section class="modal-card-body">
+                <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
+                         RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
+                         AnimeGifEnable="true"
+                         PureCSharpProcessing="purecs"
+                         IsCropLocked="isCropLocked"
+                         IsImageLocked="isImageLocked"
+                         OnSizeChanged="t=>{
+                    width = t.Item1;
+                    height = t.Item2;
+                }"></Cropper>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" @onclick="DoneCrop">Done</button>
+                @if (cropper != null)
+                {
+                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
+                           @oninput="OnRatioChange" />
+                }
+                @if (cropper != null)
+                {
+                    <div>
+                        width: @width |
+                        height: @height
+                    </div>
+                }
+                |IsCropLocked:<input type="checkbox" @bind="isCropLocked" />
+                |IsImageLocked:<input type="checkbox" @bind="isImageLocked" />
 
+            </footer>
         </div>
     </div>
 }
-
+<br />
+<select @bind-value="enableProportion" @bind-value:event="onchange">
+    <option value="true">Enable proportion</option>
+    <option value="false">Disable proportion</option>
+</select>
+@if (bool.Parse(enableProportion))
+{
+    <input type="number" @bind-value="proportion" placeholder="proportion" />
+}
+<br />
+Pure c# processiing:
+<input type="checkbox" @bind="purecs" />
 @code {
     Cropper cropper;
     IBrowserFile file;
+    double width;
+    double height;
     string imgUrl = "";
+    bool purecs = false;
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
-    private bool IsAspectRatioEnabled { get; set; }
-    private double AspectRatio { get; set; } = 1d;
+    string enableProportion = "false";
+    double proportion = 1d;
     double ratio = 1;
-
+    bool isCropLocked = false;
+    bool isImageLocked = true;
     void OnRatioChange(ChangeEventArgs args)
     {
         ratio = int.Parse(args.Value.ToString()) / 100.0;
     }
-
     protected override void OnInitialized()
     {
 
         base.OnInitialized();
     }
 
-    void OnInputFileChange(InputFileChangeEventArgs args)
+    async Task OnInputFileChange(InputFileChangeEventArgs args)
     {
+        await JSRuntime.InvokeVoidAsync("console.log", DateTime.Now.ToString());
         file = args.File;
     }
     async Task DoneCrop()
@@ -96,10 +104,11 @@
         base.StateHasChanged();
         await Task.Delay(10);// a hack, otherwise prompt won't show
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
-        var base64string = await args.GetBase64Async();
-        imgUrl = $"data:image/png;base64,{base64string}";
-
-        args.Dispose();
+        var bs = await args.GetDataAsync();
+        await JSRuntime.InvokeVoidAsync("setSrc", bs);
         parsing = false;
     }
 }
+<style>
+    @@import url("https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css");
+</style>

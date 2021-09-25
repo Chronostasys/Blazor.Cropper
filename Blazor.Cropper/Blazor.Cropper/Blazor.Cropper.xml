@@ -39,12 +39,14 @@
             <summary>
             sepecify the cropper's aspect ratio
             </summary>
-            <remarks>Only works when <see cref="P:Blazor.Cropper.Cropper.RequireAspectRatio"/> is true</remarks>
+            <remarks>Only works when <see cref="P:Blazor.Cropper.Cropper.RequireAspectRatio"/>
+            is true</remarks>
             <value>default: 1</value>
         </member>
         <member name="P:Blazor.Cropper.Cropper.ImageFile">
             <summary>
-            The input image file. Usually get from an <see cref="T:Microsoft.AspNetCore.Components.Forms.InputFile"/> Component. You can also
+            The input image file. Usually get from an
+            <see cref="T:Microsoft.AspNetCore.Components.Forms.InputFile"/> Component. You can also
             mock a file from stream using <see cref="T:Blazor.Cropper.StreamFile"/> if needed.
             </summary>
             <value></value>
@@ -57,15 +59,19 @@
         </member>
         <member name="P:Blazor.Cropper.Cropper.AnimeGifEnable">
             <summary>
-            Set whether the anime gif crop is enabled. If enabled, the gif file smaller than 1mb would 
-            be cropped as animed image. If disabled, only the first frame would be cropped.
+            Set whether the anime gif crop is enabled. If enabled,
+            the gif file smaller than 1mb would 
+            be cropped as animed image. If disabled, only the first
+            frame would be cropped.
             </summary>
-            <remarks>Resizing gif image can cause the window stop responding for half a minute!</remarks>
+            <remarks>Crop large gif image can cause the window stop responding
+            for half a minute!</remarks>
             <value>default: true</value>
         </member>
         <member name="P:Blazor.Cropper.Cropper.InputId">
             <summary>
-            The input element's id value. This param is optional and can help cropper to init image
+            The input element's id value. This param is optional and
+            can help cropper to init image
             faster on browser.
             Does't have effect if <see cref="P:Blazor.Cropper.Cropper.PureCSharpProcessing"/> is true.
             </summary>
@@ -128,6 +134,13 @@
             Get the crop result.
             </summary>
             <returns>crop result</returns>
+        </member>
+        <member name="M:Blazor.Cropper.ImageCroppedResult.SaveAsync(System.IO.Stream)">
+            <summary>
+            save img data to stream
+            </summary>
+            <param name="s"></param>
+            <returns></returns>
         </member>
         <member name="T:Blazor.Cropper.StreamFile">
             <summary>
