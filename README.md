@@ -21,7 +21,12 @@ It is:
 
 If you find Blazor.Cropper helpful, you could **star this repo**, it's really important to me.  
 
-For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.  
+For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.    
+
+
+## Server-side Usage
+Blazor.Cropper is designed to be a client side library. However, [it can be used on server side blazor when setting `PureCSharpProcessing="true"`](https://github.com/Chronostasys/Blazor.Cropper/issues/30).  
+Please note that using Blazor.Cropper on server side could consume remarkable amount of server resources(including bandwidth, cpu and memory).
 
 ## Quick Start
 Only 4 steps to use Blazor.Cropper
