@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -206,11 +207,11 @@ namespace Blazor.Cropper
 
         private string BackgroundImgStyle
         {
-            get => $"left:{_bacx}px;top: {_bacy}px;height:{_imgSize}%;";
+            get => FormattableString.Invariant($"left:{_bacx}px;top:{_bacy}px;height:{_imgSize}%;");
         }
         private string ImglistStyle
         {
-            get => $"height:{CropperHeight}px;";
+            get => FormattableString.Invariant($"height:{CropperHeight}px;");
         }
         #endregion
 
@@ -488,6 +489,16 @@ namespace Blazor.Cropper
 
 #region private methods
 
+        private string GetCropperStyle(double top, double left, double height, double width)
+        {
+            return FormattableString.Invariant($"top:{top}px;left:{left}px;height:{height}px;width:{width}px;");
+        }
+
+        private string GetCroppedImgStyle(double top, double right, double bottom, double left)
+        {
+            return FormattableString.Invariant($"clip: rect({top}px, {right}px, {bottom}px, {left}px);");
+        }
+
         private (double resizeProp,double cw,double ch) GetCropperInfos(double i)
         {
             double resizeProp = 1d;
@@ -525,12 +536,12 @@ namespace Blazor.Cropper
 
         private void SetCroppedImgStyle()
         {
-            _cropedImgStyle = $"clip: rect({_prevPosY - _layoutY}px, {_prevPosX - _layoutX + initCropWidth}px, {_prevPosY - _layoutY + initCropHeight}px, {_prevPosX - _layoutX}px);";
+            _cropedImgStyle = GetCroppedImgStyle(_prevPosY - _layoutY, _prevPosX - _layoutX + initCropWidth, _prevPosY - _layoutY + initCropHeight, _prevPosX - _layoutX);
         }
 
         private void SetCropperStyle()
         {
-            _cropperStyle = $"top:{_prevPosY}px;left:{_prevPosX}px;cursor:move;height:{initCropHeight}px;width:{initCropWidth}px";
+            _cropperStyle = GetCropperStyle(_prevPosY, _prevPosX, initCropHeight, initCropWidth);
         }
 
         private MouseEventArgs TouchToMouse(TouchEventArgs args)
@@ -591,8 +602,9 @@ namespace Blazor.Cropper
                 }
                 _unsavedX = x;
                 _unsavedY = y;
-                _cropperStyle = $"top:{y}px;left:{x}px;height:{initCropHeight}px;width:{initCropWidth}px";
-                _cropedImgStyle = $"clip: rect({y - _layoutY}px, {x - _layoutX + initCropWidth}px, {y - _layoutY + initCropHeight}px, {x - _layoutX}px);";
+
+                _cropperStyle = GetCropperStyle(y, x, initCropHeight, initCropWidth);
+                _cropedImgStyle = GetCroppedImgStyle(y - _layoutY, x - _layoutX + initCropWidth, y - _layoutY + initCropHeight, x - _layoutX);
                 base.StateHasChanged();
             }
         }
@@ -757,8 +769,8 @@ namespace Blazor.Cropper
                 _unsavedY = ytemp;
                 _unsavedCropH = tempCropHeight;
                 _unsavedCropW = tempCropWidth;
-                _cropperStyle = $"top:{ytemp}px;left:{xtemp}px;height:{tempCropHeight}px;width:{tempCropWidth}px";
-                _cropedImgStyle = $"clip: rect({ytemp - _layoutY}px, {xtemp - _layoutX + tempCropWidth}px, {ytemp - _layoutY + tempCropHeight}px, {xtemp - _layoutX}px);";
+                _cropperStyle = GetCropperStyle(ytemp, xtemp, tempCropHeight, tempCropWidth);
+                _cropedImgStyle = GetCroppedImgStyle(ytemp - _layoutY, xtemp - _layoutX + tempCropWidth, ytemp - _layoutY + tempCropHeight, xtemp - _layoutX);
             }
             OnDragging(args);
             base.StateHasChanged();
