@@ -16,7 +16,8 @@ It is:
 - mobile compatible
 - lighweight
 - support proportion
-- **GIF crop support**(only for files smaller than 1mb)
+- **GIF crop support**(only for small files)
+- support [maui(blazor)](https://github.com/dotnet/maui)
 - open source on [github](https://github.com/Chronostasys/Blazor.Cropper)  
 
 If you find Blazor.Cropper helpful, you could **star this repo**, it's really important to me.  
@@ -24,9 +25,23 @@ If you find Blazor.Cropper helpful, you could **star this repo**, it's really im
 For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.    
 
 
+## Maui Usage (new)
+Blazor.Cropper now supports [maui(blazor)](https://github.com/dotnet/maui)!  
+In some platforms, you may need to use `FilePicker` to get the input image
+rather than using html input element. You can find details in the [maui sample project](https://github.com/Chronostasys/CropperMaui)
+
+## dotnet 6 changes
+Although most of apis remains the same, there're some new apis which provide better 
+performance in .Net 6.  
+In dotnet 5, using `ImageCroppedResult.GetBase64Async();` to get the base64 result is fine. 
+In dotnet 6, it should be replaced with `ImageCroppedResult.GetDataAsync();`, which may combined 
+with new `SetImageAsync(this IJSRuntime js,byte[] bin,string imgid)` api to display the crop result.  
+You may find dotnet 6 sample [here](CropperSampleV6)
+
 ## Server-side Usage
 Blazor.Cropper is designed to be a client side library. However, [it can be used on server side blazor when setting `PureCSharpProcessing="true"`](https://github.com/Chronostasys/Blazor.Cropper/issues/30).  
-Please note that using Blazor.Cropper on server side could consume remarkable amount of server resources(including bandwidth, cpu and memory).
+Please note that using Blazor.Cropper on server side could consume remarkable amount of server resources(including bandwidth, cpu and memory).  
+[Sample project](https://github.com/Chronostasys/ServerSideCropperExample)
 
 ## Quick Start
 Only 4 steps to use Blazor.Cropper
@@ -66,8 +81,18 @@ Example:
     void GetCropResult()
     {
         var re = cropper.GetCropedResult();
-        var buffer = re.GetBytes();
-        var base64 = re.Base64;
+
+        // in dotnet 6 or later
+        var buffer = await re.GetDataAsync();
+        // donot transfer bytes to base64 in dotnet 6.
+        // if you want to display the crop result, use 
+        // SetImageAsync(this IJSRuntime js,byte[] bin,string imgid) to
+        // do the job
+
+
+
+        // otherwise, get base64 directly
+        // var base64 = await re.GetBase64Async();
     }
     @* .... some code ...*@
 }

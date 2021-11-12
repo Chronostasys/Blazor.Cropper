@@ -105,7 +105,7 @@ Pure c# processiing:
         await Task.Delay(10);// a hack, otherwise prompt won't show
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
         var bs = await args.GetDataAsync();
-        await JSRuntime.InvokeVoidAsync("setSrc", bs);
+        await JSRuntime.SetImageAsync(bs, "my-img");
         parsing = false;
     }
 }

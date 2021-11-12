@@ -67,7 +67,7 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
     if (version === 6) {
         return await new Promise((rs, rv) => {
             canvas.toBlob(async b => {
-                const bin = new Uint8Array(await b.arrayBuffer());
+                const bin = new Uint8Array(await new Response(b).arrayBuffer());
                 rs(bin)
             });
         })
@@ -125,3 +125,10 @@ var serializeEvent = function (e) {
         return o;
     }
 };
+
+function setSrc(bin,id) {
+    console.log(bin)
+    document.getElementById(id).src = URL.createObjectURL(
+        new Blob([bin], { type: 'image/png' })
+    );
+}

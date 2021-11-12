@@ -135,11 +135,33 @@
             </summary>
             <returns>crop result</returns>
         </member>
+        <member name="M:Blazor.Cropper.ImageCroppedResult.GetDataAsync">
+            <summary>
+            get image bytes
+            </summary>
+            <returns>image bytes</returns>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
         <member name="M:Blazor.Cropper.ImageCroppedResult.SaveAsync(System.IO.Stream)">
             <summary>
             save img data to stream
             </summary>
             <param name="s"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Blazor.Cropper.JSInterop">
+            <summary>
+            js interop methods
+            </summary>
+        </member>
+        <member name="M:Blazor.Cropper.JSInterop.SetImageAsync(Microsoft.JSInterop.IJSRuntime,System.Byte[],System.String)">
+            <summary>
+            set html img element to display the image
+            this function is the preferred way to display the crop result in dotnet 6
+            </summary>
+            <param name="js"></param>
+            <param name="bin">image bytes</param>
+            <param name="imgid">img element id</param>
             <returns></returns>
         </member>
         <member name="T:Blazor.Cropper.StreamFile">

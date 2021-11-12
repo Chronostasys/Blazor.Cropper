@@ -26,6 +26,7 @@ namespace Blazor.Cropper
         {
             _data = bytes;
         }
+#if !NET6_0_OR_GREATER
         [Obsolete("this api is obsolete in dotnet 6 for bad performance")]
         public async Task<string> GetBase64Async()
         {
@@ -35,7 +36,12 @@ namespace Blazor.Cropper
             }
             return Convert.ToBase64String(await GetDataAsync());
         }
-
+#endif
+        /// <summary>
+        /// get image bytes
+        /// </summary>
+        /// <returns>image bytes</returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<byte[]> GetDataAsync()
         {
             if (_data!=null)
