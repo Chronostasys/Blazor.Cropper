@@ -253,6 +253,7 @@ namespace Blazor.Cropper
         private IImageFormat _format;
         private Image _gifimage;
         private double _ratio = 1d;
+        private bool _evInitialized = false;
 
         #endregion
 
@@ -270,7 +271,6 @@ namespace Blazor.Cropper
         #region Override methods
         protected override async Task OnInitializedAsync()
         {
-            await JSRuntime.InvokeVoidAsync("addCropperEventListeners");
             await JSRuntime.InvokeVoidAsync("setVersion", Environment.Version.Major);
         }
         protected override void OnParametersSet()
@@ -366,6 +366,11 @@ namespace Blazor.Cropper
                 Width = data[0],
                 Height = data[1]
             };
+            if (!_evInitialized)
+            {
+                await JSRuntime.InvokeVoidAsync("addCropperEventListeners");
+                _evInitialized = true;
+            }
             await SetImgContainterSize();
             MaxRatio = _imgContainerWidth / ImgRealW;
             Ratio = _imgSize / 100;

@@ -127,7 +127,6 @@ var serializeEvent = function (e) {
 };
 
 function setSrc(bin,id) {
-    console.log(bin)
     document.getElementById(id).src = URL.createObjectURL(
         new Blob([bin], { type: 'image/png' })
     );
