@@ -12,7 +12,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace Blazor.Cropper
 {
-    public partial class Cropper
+    public partial class Cropper:IAsyncDisposable
     {
         [Inject]
         private IJSRuntime JSRuntime { get; set; }
@@ -281,6 +281,10 @@ namespace Blazor.Cropper
                 initCropWidth = InitCropWidth;
                 initCropHeight = InitCropHeight;
             }
+        }
+        public async ValueTask DisposeAsync()
+        {
+            await JSRuntime.InvokeVoidAsync("rmCropperEventListeners");
         }
 
         private double prevR = 1d;
@@ -1051,6 +1055,6 @@ namespace Blazor.Cropper
             SetCroppedImgStyle();
             base.StateHasChanged();
         }
-#endregion
+        #endregion
     }
 }

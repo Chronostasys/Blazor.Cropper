@@ -1,44 +1,60 @@
 // blazor.cropper code MIT license
-function addCropperEventListeners() {
-    document.addEventListener('mousemove', (ev) => {
-        try {
-            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
-        } catch (error) {
-        }
-    })
-    document.addEventListener('mouseup', (ev) => {
-        try {
-            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
-        } catch (error) {
-        }
-    })
-    document.addEventListener('touchmove', (ev) => {
-        try {
-            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
-                clientX: ev.touches[0].clientX,
-                clientY: ev.touches[0].clientY
-            });
-        } catch (error) {
 
-        }
-    })
-    document.addEventListener('touchend', (ev) => {
-        try {
-            DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
-                clientX: ev.touches[0].clientX,
-                clientY: ev.touches[0].clientY
-            });
-        } catch (error) {
-
-        }
-    })
-    window.addEventListener('resize', (ev) => {
-        try {
-            DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
-        } catch (error) {
-        }
-    })
+const onMousemove = (ev) => {
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
+    } catch (error) {
+    }
 }
+const onMouseup = (ev) => {
+    console.log("up")
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
+    } catch (error) {
+    }
+}
+const onTouchmove = (ev) => {
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
+            clientX: ev.touches[0].clientX,
+            clientY: ev.touches[0].clientY
+        });
+    } catch (error) {
+
+    }
+}
+const onTouchend = (ev) => {
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
+            clientX: ev.touches[0].clientX,
+            clientY: ev.touches[0].clientY
+        });
+    } catch (error) {
+
+    }
+}
+const onResize = (ev) => {
+    try {
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
+    } catch (error) {
+    }
+}
+function addCropperEventListeners() {
+    document.addEventListener('mousemove', onMousemove)
+    document.addEventListener('mouseup', onMouseup)
+    document.addEventListener('touchmove', onTouchmove)
+    document.addEventListener('touchend', onTouchend)
+    window.addEventListener('resize', onResize)
+}
+function rmCropperEventListeners() {
+    document.removeEventListener('mousemove', onMousemove)
+    document.removeEventListener('mouseup', onMouseup)
+    document.removeEventListener('touchmove', onTouchmove)
+    document.removeEventListener('touchend', onTouchend)
+    window.removeEventListener('resize', onResize)
+}
+
+
 function getWidthHeight() {
     var a = [];
     var e = document.getElementById("blazor_cropper");
