@@ -11,3 +11,4 @@ phases:
   build:
     commands:
       - dotnet build
+      - dotnet pack --configuration $CONFIGURATION --no-build --output $CODEBUILD_SRC_DIR/nuget
