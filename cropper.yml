@@ -11,16 +11,3 @@ phases:
   build:
     commands:
       - dotnet build
-  post_build:
-    commands:
-reports:
-    tests:
-        file-format: VisualStudioTrx
-        files:
-            - '**/*.trx'
-        base-directory: $CODEBUILD_SRC_DIR
-artifacts:
-  files:
-    - '**/*'
-  discard-paths: no
-  base-directory: $CODEBUILD_SRC_DIR/TestResults
