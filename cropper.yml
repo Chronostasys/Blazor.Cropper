@@ -11,4 +11,5 @@ phases:
   build:
     commands:
       - dotnet build
-      - dotnet pack --configuration $CONFIGURATION --no-build --output $CODEBUILD_SRC_DIR/nuget
+      - dotnet pack --configuration $CONFIGURATION --no-build --output $CODEBUILD_SRC_DIR/nuget --version-suffix get-crop-info
+      - dotnet nuget push $CODEBUILD_SRC_DIR/nuget/*.nupkg --source "https://yadayada-768033286672.d.codeartifact.us-east-1.amazonaws.com/nuget/yadayada-master-deploy/v3/index.json"
