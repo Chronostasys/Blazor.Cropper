@@ -498,7 +498,7 @@ namespace Blazor.Cropper
         /// Returns the metadata about the desired cropping.
         /// </summary>
         /// <returns></returns>
-        public Rectangle GetCropInfo()
+        public (Rectangle cropArea, double scale)  GetCropInfo()
         {
 
             var i = GetI();
@@ -519,7 +519,7 @@ namespace Blazor.Cropper
             
             var rect = new Rectangle((int) ((_prevPosX - _bacx) / i + deltaX), (int) ((_prevPosY - _bacy) / i + deltaY), (int) (cw), (int) (ch));
 
-            return rect;
+            return (rect, resizeProp);
         }
 
         #endregion
