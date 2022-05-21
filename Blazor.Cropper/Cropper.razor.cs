@@ -479,7 +479,7 @@ namespace Blazor.Cropper
             }
             else
             {
-                var rect = new Rectangle((int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY), (int)(cw), (int)(ch));
+                var rect = GetCropInfo();
                 _gifimage.Mutate(ctx =>
                 {
                     // fix exif orientaion issue
@@ -493,7 +493,36 @@ namespace Blazor.Cropper
                 return new ImageCroppedResult(_gifimage, _format);
             }
         }
-#endregion
+
+        /// <summary>
+        /// Returns the metadata about the desired cropping.
+        /// </summary>
+        /// <returns></returns>
+        public Rectangle GetCropInfo()
+        {
+
+            var i = GetI();
+
+            var (resizeProp, cw, ch) = GetCropperInfos(i);
+
+            int deltaX = 0;
+            int deltaY = 0;
+
+            if (WiderThanContainer)
+            {
+                deltaY = -(int)(_imgContainerHeight / i - _image.Height) / 2;
+            }
+            else
+            {
+                deltaX = -(int)(_imgContainerWidth / i - _image.Width) / 2;
+            }
+            
+            var rect = new Rectangle((int) ((_prevPosX - _bacx) / i + deltaX), (int) ((_prevPosY - _bacy) / i + deltaY), (int) (cw), (int) (ch));
+
+            return rect;
+        }
+
+        #endregion
 
 
 #region private methods
