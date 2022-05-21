@@ -135,6 +135,12 @@
             </summary>
             <returns>crop result</returns>
         </member>
+        <member name="M:Blazor.Cropper.Cropper.GetCropInfo">
+            <summary>
+            Returns the metadata about the desired cropping.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Blazor.Cropper.ImageCroppedResult.GetDataAsync">
             <summary>
             get image bytes

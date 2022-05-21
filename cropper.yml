@@ -1,0 +1,15 @@
+version: 0.2
+env:
+  shell: bash
+phases:
+  install:
+    commands:
+      - VERSION="${MAJOR}.$(date +%j).${CODEBUILD_BUILD_NUMBER}"
+      - TOKEN=`aws codeartifact get-authorization-token  --domain yadayada --query authorizationToken --output text`
+      - dotnet nuget add source --username aws --password $TOKEN --store-password-in-clear-text "https://yadayada-768033286672.d.codeartifact.us-east-1.amazonaws.com/nuget/yadayada-master-deploy/v3/index.json"
+      - dotnet workload install wasm-tools
+  build:
+    commands:
+      - dotnet build
+      - dotnet pack --configuration $CONFIGURATION --no-build --output $CODEBUILD_SRC_DIR/nuget --version-suffix get-crop-info
+      - dotnet nuget push $CODEBUILD_SRC_DIR/nuget/*.nupkg --source "https://yadayada-768033286672.d.codeartifact.us-east-1.amazonaws.com/nuget/yadayada-master-deploy/v3/index.json"
