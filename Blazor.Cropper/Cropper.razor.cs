@@ -479,15 +479,15 @@ namespace Blazor.Cropper
             }
             else
             {
-                var rect = GetCropInfo();
+                var info = GetCropInfo();
                 _gifimage.Mutate(ctx =>
                 {
                     // fix exif orientaion issue
                     ctx.AutoOrient();
-                    ctx.Crop(rect);
-                    if (resizeProp != 1d)
+                    ctx.Crop(info.cropArea);
+                    if (info.scale != 1d)
                     {
-                        ctx.Resize(new Size((int)(cw * resizeProp), (int)(ch * resizeProp)));
+                        ctx.Resize(new Size((int)(cw * info.scale), (int)(ch * info.scale)));
                     }
                 });
                 return new ImageCroppedResult(_gifimage, _format);
