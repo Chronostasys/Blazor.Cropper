@@ -227,10 +227,21 @@ namespace Blazor.Cropper
         private double _prevTouchPointDistance = -1;
         private double _imgContainerWidth = 500;
         private double _imgContainerHeight = 150;
+
         [Parameter]
-        public double PrevPosX { get; set; } = 0;
+        public double PrevPosX
+        {
+            get => _prevPosX;
+            set => _prevPosX = value;
+        }
+
         [Parameter]
-        public double PrevPosY { get; set; } = 0;
+        public double PrevPosY
+        {
+            get => _prevPosY;
+            set => _prevPosY = value;
+        }
+
         private double _layoutX = 0;
         private double _layoutY = 0;
         private double _offsetX;
@@ -290,6 +301,9 @@ namespace Blazor.Cropper
         }
 
         private double prevR = 1d;
+        private double _prevPosX = 0;
+        private double _prevPosY = 0;
+
         protected override async Task OnParametersSetAsync()
         {
             await base.OnParametersSetAsync();
@@ -1072,7 +1086,7 @@ namespace Blazor.Cropper
 
         private void InitStyles()
         {
-            InitPos(ref PrevPosX, ref PrevPosY);
+            InitPos(ref _prevPosX, ref _prevPosY);
             if (initCropHeight > _imgh)
             {
                 initCropHeight = _imgh;
