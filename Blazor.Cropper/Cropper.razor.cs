@@ -236,7 +236,7 @@ namespace Blazor.Cropper
             {
                 if (_prevPosX != 0)
                 {
-                    Console.WriteLine($"Attempting to reset:{nameof(_prevPosX)}");
+                    Console.WriteLine($"Attempting to reset:{nameof(_prevPosX)} to {value}");
                     return;
                 }
                 _prevPosX = value;
@@ -251,7 +251,7 @@ namespace Blazor.Cropper
             {
                 if (_prevPosY != 0)
                 {
-                    Console.WriteLine($"Attempting to reset:{nameof(_prevPosY)}");
+                    Console.WriteLine($"Attempting to reset:{nameof(_prevPosY)} to {value}");
                     return;
                 }
                 _prevPosY = value;
@@ -685,12 +685,12 @@ namespace Blazor.Cropper
             OnDragging(args);
             if (_outOfBox)
             {
-                PrevPosX = _unsavedX;
-                PrevPosY = _unsavedY;
+                _prevPosX = _unsavedX;
+                _prevPosY = _unsavedY;
                 return;
             }
-            PrevPosX = PrevPosX - _offsetX + args.ClientX;
-            PrevPosY = PrevPosY - _offsetY + args.ClientY;
+            _prevPosX = _prevPosX - _offsetX + args.ClientX;
+            _prevPosY = _prevPosY - _offsetY + args.ClientY;
         }
 
         private void OnResizeStart(MouseEventArgs args, MoveDir dir)
@@ -858,15 +858,15 @@ namespace Blazor.Cropper
                 {
                     initCropHeight = _unsavedCropH;
                     initCropWidth = _unsavedCropW;
-                    PrevPosY = _unsavedY;
-                    PrevPosX = _unsavedX;
+                    _prevPosX = _unsavedX;
+                    _prevPosY = _unsavedY;
                     return;
                 }
                 switch (_dir)
                 {
                     case MoveDir.Up:
                         {
-                            PrevPosY = PrevPosY + delta;
+                            _prevPosY += delta;
                             initCropHeight -= delta;
                             break;
                         }
@@ -877,7 +877,7 @@ namespace Blazor.Cropper
                         }
                     case MoveDir.Left:
                         {
-                            PrevPosX += deltaX;
+                            _prevPosX += deltaX;
                             initCropWidth -= deltaX;
                             break;
                         }
@@ -888,7 +888,7 @@ namespace Blazor.Cropper
                         }
                     case MoveDir.UpLeft:
                         {
-                            PrevPosY = PrevPosY + delta;
+                            _prevPosY += delta;
                             initCropHeight -= delta;
                             break;
                         }
@@ -899,7 +899,7 @@ namespace Blazor.Cropper
                         }
                     case MoveDir.UpRight:
                         {
-                            PrevPosY = PrevPosY + delta;
+                            _prevPosY += delta;
                             initCropHeight -= delta;
                             initCropWidth += deltaX;
                             break;
@@ -918,7 +918,7 @@ namespace Blazor.Cropper
                     double ori = initCropWidth;
                     initCropWidth = initCropHeight / AspectRatio;
                     deltaX = ori - initCropWidth;
-                    PrevPosX += deltaX;
+                    _prevPosX += deltaX;
                     return 0;
                 }
                 if (RequireAspectRatio)
@@ -934,7 +934,7 @@ namespace Blazor.Cropper
                 }
                 else if (!RequireAspectRatio&&(_dir is MoveDir.UpLeft or MoveDir.DownLeft))
                 {
-                    PrevPosX += deltaX;
+                    _prevPosX += deltaX;
                     initCropWidth -= deltaX;
                 }
                 if (initCropHeight < _minval)
