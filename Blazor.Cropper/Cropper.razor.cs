@@ -232,14 +232,30 @@ namespace Blazor.Cropper
         public double PrevPosX
         {
             get => _prevPosX;
-            set => _prevPosX = value;
+            set
+            {
+                if (_prevPosX != 0)
+                {
+                    Console.WriteLine($"Attempting to reset:{nameof(_prevPosX)}");
+                    return;
+                }
+                _prevPosX = value;
+            }
         }
 
         [Parameter]
         public double PrevPosY
         {
             get => _prevPosY;
-            set => _prevPosY = value;
+            set
+            {
+                if (_prevPosY != 0)
+                {
+                    Console.WriteLine($"Attempting to reset:{nameof(_prevPosY)}");
+                    return;
+                }
+                _prevPosY = value;
+            }
         }
 
         private double _layoutX = 0;
