@@ -561,11 +561,13 @@ namespace Blazor.Cropper
 
         private string GetCropperStyle(double top, double left, double height, double width)
         {
+            Console.WriteLine($"{nameof(GetCropperStyle)}, {nameof(top)}={top},{nameof(left)}={left},{nameof(height)}={height},{nameof(width)}={width}");
             return FormattableString.Invariant($"top:{top}px;left:{left}px;height:{height}px;width:{width}px;");
         }
 
         private string GetCroppedImgStyle(double top, double right, double bottom, double left)
         {
+            Console.WriteLine($"{nameof(GetCroppedImgStyle)}, {nameof(top)}={top},{nameof(right)}={right},{nameof(bottom)}={bottom},{nameof(left)}={left}");
             return FormattableString.Invariant($"clip: rect({top}px, {right}px, {bottom}px, {left}px);");
         }
 
