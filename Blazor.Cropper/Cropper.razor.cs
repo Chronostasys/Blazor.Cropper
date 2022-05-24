@@ -1039,9 +1039,18 @@ namespace Blazor.Cropper
             _imgh = ImgRealH;
         }
 
+        [Parameter]
+        public double OffsetX { set; get; }
+
+        [Parameter]
+        public double OffsetY { set; get; }
+
         private void InitStyles()
         {
             InitPos(ref _prevPosX, ref _prevPosY);
+            _prevPosX += OffsetX;
+            _prevPosY += OffsetY;
+
             if (initCropHeight > _imgh)
             {
                 initCropHeight = _imgh;
