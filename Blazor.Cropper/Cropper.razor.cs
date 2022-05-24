@@ -467,10 +467,7 @@ namespace Blazor.Cropper
             double proportionalCropHeight = (height * resizeProp);
 
 
-            // resizeProp2 is a duplicate of info from GetCropperInfos
-            var (rect, resizeProp2) = GetCropInfo();
-
-
+            var rect = GetCropInfo();
 
             if (_gifimage == null)
             {
@@ -508,7 +505,7 @@ namespace Blazor.Cropper
         /// Returns the metadata about the desired cropping.
         /// </summary>
         /// <returns></returns>
-        public (Rectangle cropArea, double scale) GetCropInfo()
+        public Rectangle GetCropInfo()
         {
 
             var i = GetI();
@@ -531,9 +528,7 @@ namespace Blazor.Cropper
             double y = ((_prevPosY - _bacy) / i + deltaY);
 
 
-            var rect = new Rectangle((int) (i*x), (int)(i*y), (int)(cw*i), (int)(ch*i));
-
-            return (rect, resizeProp);
+            return new Rectangle((int) (i*x), (int)(i*y), (int)(cw*i), (int)(ch*i));
         }
 
         #endregion
