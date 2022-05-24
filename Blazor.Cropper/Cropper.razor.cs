@@ -527,7 +527,11 @@ namespace Blazor.Cropper
                 deltaX = -(int)(_imgContainerWidth / i - _image.Width) / 2;
             }
 
-            var rect = new Rectangle((int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY), (int)(cw), (int)(ch));
+            double x = ((_prevPosX - _bacx) / i + deltaX);
+            double y = ((_prevPosY - _bacy) / i + deltaY);
+
+
+            var rect = new Rectangle((int) (i*x), (int)(i*y), (int)(cw*i), (int)(ch*i));
 
             return (rect, resizeProp);
         }
