@@ -28,6 +28,10 @@
             <section class="modal-card-body">
                 <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
                          RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
+                         OffsetX="10"
+                         OffsetY="10"
+                         InitCropHeight="10"
+                         InitCropWidth="10"
                          AnimeGifEnable="true"
                          PureCSharpProcessing="purecs"
                          IsCropLocked="isCropLocked"
