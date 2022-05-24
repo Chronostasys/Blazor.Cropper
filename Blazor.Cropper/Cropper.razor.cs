@@ -460,26 +460,36 @@ namespace Blazor.Cropper
             {
                 deltaX = -(int)(_imgContainerWidth / i - _image.Width) / 2;
             }
-            var (resizeProp,cw,ch) = GetCropperInfos(i);
+            var (resizeProp,width,height) = GetCropperInfos(i);
+            double x = ((_prevPosX - _bacx) / i + deltaX);
+            double y = ((_prevPosY - _bacy) / i + deltaY);
+            double proportionalCropWidth = (width * resizeProp);
+            double proportionalCropHeight = (height * resizeProp);
+
+
+            // resizeProp2 is a duplicate of info from GetCropperInfos
+            var (rect, resizeProp2) = GetCropInfo();
+
+
+
             if (_gifimage == null)
             {
                 if (Environment.Version.Major > 5)
                 {
                     // for dotnet version after 5, pass byte array between c# and js is optimized
-                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg", (int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY),
-                        (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
+                    // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
+                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg", rect.X, rect.Y, rect.Width, rect.Height, 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
                     return new ImageCroppedResult(bin);
                 }
                 else
                 {
-                    string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY),
-                        (int)(cw), (int)(ch), 0, 0, (int)(cw * resizeProp), (int)(ch * resizeProp), "image/png");
+                    // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
+                    string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)x, (int)y, (int)(width), (int)(height), 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
                     return new ImageCroppedResult(s);
                 }
             }
             else
             {
-                var rect = new Rectangle((int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY), (int)(cw), (int)(ch));
                 _gifimage.Mutate(ctx =>
                 {
                     // fix exif orientaion issue
@@ -487,16 +497,45 @@ namespace Blazor.Cropper
                     ctx.Crop(rect);
                     if (resizeProp != 1d)
                     {
-                        ctx.Resize(new Size((int)(cw * resizeProp), (int)(ch * resizeProp)));
+                        ctx.Resize(new Size((int)proportionalCropWidth, (int)proportionalCropHeight));
                     }
                 });
                 return new ImageCroppedResult(_gifimage, _format);
             }
         }
-#endregion
+
+        /// <summary>
+        /// Returns the metadata about the desired cropping.
+        /// </summary>
+        /// <returns></returns>
+        public (Rectangle cropArea, double scale) GetCropInfo()
+        {
+
+            var i = GetI();
+
+            var (resizeProp, cw, ch) = GetCropperInfos(i);
+
+            int deltaX = 0;
+            int deltaY = 0;
+
+            if (WiderThanContainer)
+            {
+                deltaY = -(int)(_imgContainerHeight / i - _image.Height) / 2;
+            }
+            else
+            {
+                deltaX = -(int)(_imgContainerWidth / i - _image.Width) / 2;
+            }
+
+            var rect = new Rectangle((int)((_prevPosX - _bacx) / i + deltaX), (int)((_prevPosY - _bacy) / i + deltaY), (int)(cw), (int)(ch));
+
+            return (rect, resizeProp);
+        }
+
+        #endregion
 
 
-#region private methods
+        #region private methods
 
         private string GetCropperStyle(double top, double left, double height, double width)
         {
