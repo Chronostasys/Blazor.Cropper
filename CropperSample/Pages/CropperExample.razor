@@ -26,8 +26,12 @@
                 <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
             </header>
             <section class="modal-card-body">
-                <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
+                <Cropper MaxCropedHeight="500" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion" CropperHeight="400"
                          RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
+                         OffsetX="10"
+                         OffsetY="11"
+                         InitCropWidth="12"
+                         InitCropHeight="13"
                          AnimeGifEnable="true"
                          PureCSharpProcessing="purecs"
                          IsCropLocked="isCropLocked"
@@ -39,16 +43,14 @@
             </section>
             <footer class="modal-card-foot">
                 <button class="button is-success" @onclick="DoneCrop">Done</button>
+                <button class="button is-success" @onclick="@DisplayInfo">Info</button>
                 @if (cropper != null)
                 {
                     <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
                            @oninput="OnRatioChange" />
-                }
-                @if (cropper != null)
-                {
                     <div>
-                        width: @width |
-                        height: @height
+                        width: @((int)width) |
+                        height: @((int)height)
                     </div>
                 }
                 |IsCropLocked:<input type="checkbox" @bind="isCropLocked" />
@@ -111,6 +113,14 @@ Pure c# processiing:
         imgUrl = $"data:image/png;base64,{base64string}";
         parsing = false;
     }
+
+    private void DisplayInfo()
+    {
+        var cropInfo = cropper.GetCropInfo();
+        Console.WriteLine(cropInfo);
+
+    }
+
 }
 <style>
     @@import url("https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css");
