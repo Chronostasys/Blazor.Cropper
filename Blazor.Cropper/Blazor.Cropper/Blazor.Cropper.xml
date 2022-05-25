@@ -19,13 +19,15 @@
         </member>
         <member name="P:Blazor.Cropper.Cropper.InitCropWidth">
             <summary>
-            the initial width of cropper if possible
+            the initial width of cropper if possible.
+            shall not be smaller than 30
             </summary>
             <value>default: 150</value>
         </member>
         <member name="P:Blazor.Cropper.Cropper.InitCropHeight">
             <summary>
-            the initial height of cropper if possible
+            the initial height of cropper if possible.
+            shall not be smaller than 30
             </summary>
             <value>default: 150</value>
         </member>

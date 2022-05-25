@@ -33,7 +33,8 @@ namespace Blazor.Cropper
         [Parameter]
         public bool IsImageLocked { get; set; } = true;
         /// <summary>
-        /// the initial width of cropper if possible
+        /// the initial width of cropper if possible.
+        /// shall not be smaller than 30
         /// </summary>
         /// <value>default: 150</value>
         [Parameter]
@@ -41,7 +42,8 @@ namespace Blazor.Cropper
 
         private double initCropWidth = -1;
         /// <summary>
-        /// the initial height of cropper if possible
+        /// the initial height of cropper if possible.
+        /// shall not be smaller than 30
         /// </summary>
         /// <value>default: 150</value>
         [Parameter]
@@ -509,8 +511,7 @@ namespace Blazor.Cropper
         {
 
             var i = GetI();
-
-            var (resizeProp, cw, ch) = GetCropperInfos(i);
+            var (_, cw, ch) = GetCropperInfos(i);
 
             int deltaX = 0;
             int deltaY = 0;

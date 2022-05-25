@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -11,6 +11,7 @@
     <RepositoryUrl>https://github.com/Chronostasys/Blazor.Cropper</RepositoryUrl>
     <PackageTags>Blazor,Cropper,Crop,Image</PackageTags>
     <PackageId>Chronos.Blazor.Cropper</PackageId>
+    <Version>1.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

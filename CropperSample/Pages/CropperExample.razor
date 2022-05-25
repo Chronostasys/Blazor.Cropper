@@ -30,16 +30,13 @@
                          RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
                          OffsetX="10"
                          OffsetY="11"
-                         InitCropWidth="12"
-                         InitCropHeight="13"
+                         InitCropWidth="50"
+                         InitCropHeight="50"
                          AnimeGifEnable="true"
                          PureCSharpProcessing="purecs"
                          IsCropLocked="isCropLocked"
                          IsImageLocked="isImageLocked"
-                         OnSizeChanged="t=>{
-                    width = t.Item1;
-                    height = t.Item2;
-                }"></Cropper>
+                         OnSizeChanged="SizeChanged"></Cropper>
             </section>
             <footer class="modal-card-foot">
                 <button class="button is-success" @onclick="DoneCrop">Done</button>
@@ -86,6 +83,13 @@ Pure c# processiing:
     double ratio = 1;
     bool isCropLocked = false;
     bool isImageLocked = true;
+
+    void SizeChanged((double,double) t)
+    {
+        width = t.Item1;
+        height = t.Item2;
+    }
+
     void OnRatioChange(ChangeEventArgs args)
     {
         ratio = int.Parse(args.Value.ToString()) / 100.0;
@@ -123,5 +127,5 @@ Pure c# processiing:
 
 }
 <style>
-    @@import url("https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css");
+    @@import url("https://fastly.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css");
 </style>
