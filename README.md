@@ -24,6 +24,8 @@ If you find Blazor.Cropper helpful, you could **star this repo**, it's really im
 
 For a long time, crop image in blazor bother me a lot. That's why I tried to implement a cropper in blazor.    
 
+## Users
+- [CnGal](https://www.cngal.org/) CnGal是一个非营利性的，立志于收集整理国内制作组创作的中文Galgame/AVG的介绍、攻略、评测、感想等内容的资料性质的网站。
 
 ## Maui Usage (new)
 Blazor.Cropper now supports [maui(blazor)](https://github.com/dotnet/maui)!  
