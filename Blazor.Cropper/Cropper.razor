@@ -1,5 +1,6 @@
-﻿<div id="blazor_cropper" class="image-list unSelectAble" style="@ImglistStyle" >
-    <img id="oriimg" class="imgbac" draggable="false" src="" style="@BackgroundImgStyle"
+﻿<div class="image-list">
+<div id="blazor_cropper" class="image-list unSelectAble" style="@(RatioStyle+ImglistStyle)" >
+    <img id="oriimg" class="imgbac" draggable="false" src="" style="@(BackgroundImgStyle)"
         @ontouchend="(args)=>{
                  if(_onTwoFingerResizing||_isBacMoving)
                  {
@@ -37,6 +38,7 @@
         @ontouchend="args=> OnDragEnd(TouchToMouse(args))"
         class="img" draggable="false"  style="@(BackgroundImgStyle+_cropedImgStyle)" src="" @ontouchstart:stopPropagation />
 </div>
+</div>
 
 <style>
 .unSelectAble{
@@ -51,10 +53,13 @@
 
 .image-list{
     position: relative;
-    width: 500%;
-    left: -200%;
     background-color: grey;
-    overflow: hidden;
+    overflow: auto;
+    scrollbar-width: none;
+}
+
+.image-list::-webkit-scrollbar {
+    display: none;
 }
 
 .imgbac{

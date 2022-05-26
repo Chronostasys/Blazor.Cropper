@@ -165,6 +165,7 @@ namespace Blazor.Cropper
         /// </summary>
         /// <value>1.0</value>
         public double MinRatio { get => 1.0; }
+
         #endregion
 
 
@@ -209,7 +210,11 @@ namespace Blazor.Cropper
 
         private string BackgroundImgStyle
         {
-            get => FormattableString.Invariant($"left:{_bacx}px;top:{_bacy}px;height:{_imgSize}%;");
+            get => FormattableString.Invariant($"left:{_bacx}px;top:{_bacy}px;");
+        }
+        private string RatioStyle
+        {
+            get => FormattableString.Invariant($"transform:scale({Ratio});");
         }
         private string ImglistStyle
         {
@@ -289,32 +294,9 @@ namespace Blazor.Cropper
             await JSRuntime.InvokeVoidAsync("rmCropperEventListeners");
         }
 
-        private double prevR = 1d;
         protected override async Task OnParametersSetAsync()
         {
             await base.OnParametersSetAsync();
-            if (Ratio != prevR && MinRatio <= Ratio && Ratio <= MaxRatio && !_onTwoFingerResizing)
-            {
-                prevR = Ratio;
-                double temp = _imgSize;
-                _imgSize = Ratio * 100;
-                GuardImgPosition();
-                _minposY += _bacy - (_imgSize - temp) / _imgSize * ImgRealH / 2;
-                _minposX += _bacx;
-                if (_prevPosX + initCropWidth > _minposX + ImgRealW || _prevPosX < _minposX
-                    || _prevPosY + initCropHeight > _minposY + ImgRealH || _prevPosY < _minposY)
-                {
-                    _imgSize = temp;
-                    Ratio = _imgSize / 100;
-                }
-                else
-                {
-                    _bacy -= (_imgSize - temp) / _imgSize * ImgRealH / 2;
-                    _layoutY -= (_imgSize - temp) / _imgSize * ImgRealH / 2;
-                    SetCroppedImgStyle();
-                }
-                InitBox();
-            }
             if (RequireAspectRatio)
             {
                 if (initCropHeight > initCropWidth * AspectRatio)
@@ -378,8 +360,8 @@ namespace Blazor.Cropper
                 _evInitialized = true;
             }
             await SetImgContainterSize();
-            MaxRatio = _imgContainerWidth / ImgRealW;
-            Ratio = _imgSize / 100;
+            MaxRatio = 2;
+            //Ratio = _imgSize / 100;
             await OnLoad.InvokeAsync();
             await SizeChanged();
         }
@@ -469,15 +451,14 @@ namespace Blazor.Cropper
             double proportionalCropHeight = (height * resizeProp);
 
 
-            var rect = GetCropInfo();
-
+            var rect = Rectangle.FromLTRB((int)x, (int)y, (int)width + (int)x, (int)y + (int)height);
             if (_gifimage == null)
             {
                 if (Environment.Version.Major > 5)
                 {
                     // for dotnet version after 5, pass byte array between c# and js is optimized
                     // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
-                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg", rect.X, rect.Y, rect.Width, rect.Height, 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
+                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg", (int)x, (int)y, (int)(width), (int)(height), 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
                     return new ImageCroppedResult(bin);
                 }
                 else
@@ -507,7 +488,7 @@ namespace Blazor.Cropper
         /// Returns the metadata about the desired cropping.
         /// </summary>
         /// <returns></returns>
-        public Rectangle GetCropInfo()
+        public CropInfo GetCropInfo()
         {
 
             var i = GetI();
@@ -529,7 +510,7 @@ namespace Blazor.Cropper
             double y = ((_prevPosY - _bacy) / i + deltaY);
 
 
-            return new Rectangle((int) (i*x), (int)(i*y), (int)(cw*i), (int)(ch*i));
+            return new CropInfo {Rectangle=new Rectangle((int)(x), (int)(y), (int)(cw), (int)(ch)),Ratio=Ratio};
         }
 
         #endregion
@@ -568,7 +549,7 @@ namespace Blazor.Cropper
 
         private double GetI()
         {
-            double i = 0d;
+            double i;
             if (WiderThanContainer)
             {
                 double containerWidth = _imgContainerWidth * _imgSize / 100;
@@ -626,8 +607,8 @@ namespace Blazor.Cropper
         {
             if (_dragging && !_reSizing)
             {
-                double x = _prevPosX - _offsetX + args.ClientX;
-                double y = _prevPosY - _offsetY + args.ClientY;
+                double x = _prevPosX -( _offsetX - args.ClientX)/Ratio;
+                double y = _prevPosY -( _offsetY - args.ClientY)/Ratio;
                 if (y < _minposY)
                 {
                     _outOfBox = true;
@@ -667,8 +648,8 @@ namespace Blazor.Cropper
                 _prevPosY = _unsavedY;
                 return;
             }
-            _prevPosX = _prevPosX - _offsetX + args.ClientX;
-            _prevPosY = _prevPosY - _offsetY + args.ClientY;
+            _prevPosX -= (_offsetX - args.ClientX)/Ratio;
+            _prevPosY -= (_offsetY - args.ClientY)/Ratio;
         }
 
         private void OnResizeStart(MouseEventArgs args, MoveDir dir)
@@ -694,8 +675,8 @@ namespace Blazor.Cropper
         {
             if (_reSizing && !_dragging)
             {
-                double delta = args.ClientY - _offsetY;
-                double deltaX = args.ClientX - _offsetX;
+                double delta = (args.ClientY - _offsetY)/Ratio;
+                double deltaX = (args.ClientX - _offsetX)/Ratio;
                 double ytemp = _prevPosY;
                 double tempCropHeight = initCropHeight;
                 double xtemp = _prevPosX;
@@ -830,8 +811,8 @@ namespace Blazor.Cropper
             {
                 _reSizing = false;
                 OnSizeChanging(args);
-                double delta = args.ClientY - _offsetY;
-                double deltaX = args.ClientX - _offsetX;
+                double delta = (args.ClientY - _offsetY) / Ratio;
+                double deltaX = (args.ClientX - _offsetX) / Ratio;
                 if (_outOfBox)
                 {
                     initCropHeight = _unsavedCropH;
@@ -992,8 +973,8 @@ namespace Blazor.Cropper
                 {
                     return;
                 }
-                double dx = args.Touches[0].ClientX - _prevBacX;
-                double dy = args.Touches[0].ClientY - _prevBacY;
+                double dx = (args.Touches[0].ClientX - _prevBacX)/Ratio;
+                double dy = (args.Touches[0].ClientY - _prevBacY)/Ratio;
                 GuardImgPosition();
                 _minposY += _bacy + dy;
                 _minposX += _bacx + dx;

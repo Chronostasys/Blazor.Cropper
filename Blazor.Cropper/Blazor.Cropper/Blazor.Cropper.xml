@@ -4,6 +4,22 @@
         <name>Blazor.Cropper</name>
     </assembly>
     <members>
+        <member name="T:Blazor.Cropper.CropInfo">
+            <summary>
+            Crop metadata
+            </summary>
+        </member>
+        <member name="P:Blazor.Cropper.CropInfo.Rectangle">
+            <summary>
+            Crop zone
+            </summary>
+        </member>
+        <member name="M:Blazor.Cropper.CropInfo.GetInitParams">
+            <summary>
+            Get init parameters from this function to restore the cropper state
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:Blazor.Cropper.Cropper.PureCSharpProcessing">
             <summary>
             whether use c# for ordinary img processing

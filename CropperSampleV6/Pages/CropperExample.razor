@@ -22,25 +22,31 @@
                 <p class="modal-card-title">Modal title</p>
                 <button class="delete" aria-label="close" @onclick="()=>file=null"></button>
             </header>
-            <section class="modal-card-body">
-                <Cropper MaxCropedHeight="500" CropperHeight="400" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
+            <section class="modal-card-body" style="overflow-x: hidden">
+                @if (show)
+                {
+                    <Cropper MaxCropedHeight="500" CropperHeight="400" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
                          RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
                          AnimeGifEnable="true"
+                         OffsetX="offsetx"
+                         OffsetY="offsety"
+                         InitCropWidth="initw"
+                         InitCropHeight="inith"
                          PureCSharpProcessing="purecs"
                          IsCropLocked="isCropLocked"
                          IsImageLocked="isImageLocked"
                          OnSizeChanged="t=>{
-                    width = t.Item1;
-                    height = t.Item2;
-                }"></Cropper>
+                        width = t.Item1;
+                        height = t.Item2;
+                    }"></Cropper>   
+                }
             </section>
             <footer class="modal-card-foot">
+                <div>
                 <button class="button is-success" @onclick="DoneCrop">Done</button>
-                @if (cropper != null)
-                {
-                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
-                           @oninput="OnRatioChange" />
-                }
+                <button class="button is-success" @onclick="SaveState">SaveState</button>
+                <button class="button is-success" @onclick="RestoreState">RestoreState</button>
+                <br/>
                 @if (cropper != null)
                 {
                     <div>
@@ -48,12 +54,24 @@
                         height: @height
                     </div>
                 }
-                |IsCropLocked:<input type="checkbox" @bind="isCropLocked" />
-                |IsImageLocked:<input type="checkbox" @bind="isImageLocked" />
-
+                <div> IsCropLocked:<input type="checkbox" @bind="isCropLocked" /></div>
+                <div>IsImageLocked:<input type="checkbox" @bind="isImageLocked" /></div>
+                @if (cropper != null)
+                {
+                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
+                           @oninput="OnRatioChange" />
+                }
+                </div>
             </footer>
         </div>
     </div>
+}
+else
+{
+    offsetx = 0;
+    offsety = 0;
+    initw = 50;
+    inith = 50;
 }
 <br />
 <select @bind-value="enableProportion" @bind-value:event="onchange">
@@ -74,17 +92,38 @@ Pure c# processiing:
     double height;
     string imgUrl = "";
     bool purecs = false;
+    bool show = true;
     string prompt = "Image cropped! Parsing to base64...";
     bool parsing = false;
     string enableProportion = "false";
     double proportion = 1d;
     double ratio = 1;
     bool isCropLocked = false;
-    bool isImageLocked = true;
+    bool isImageLocked = false;
+    int offsetx, offsety;
+    int initw = 50;
+    int inith = 50;
+    CropInfo state;
     void OnRatioChange(ChangeEventArgs args)
     {
         ratio = int.Parse(args.Value.ToString()) / 100.0;
     }
+    void SaveState()
+    {
+        state = cropper.GetCropInfo();
+    }
+    async Task RestoreState()
+    {
+        if (state!=null)
+        {
+            (offsetx, offsety, initw, inith,ratio) = state.GetInitParams();
+            show = false;
+            StateHasChanged();
+            await Task.Delay(10);
+            show = true;
+        }
+    }
+
     protected override void OnInitialized()
     {
 
