@@ -58,7 +58,7 @@
                 <div>IsImageLocked:<input type="checkbox" @bind="isImageLocked" /></div>
                 @if (cropper != null)
                 {
-                    <input type="range" min="@(cropper.MinRatio*100)" max="@(cropper.MaxRatio*100)" value="@(ratio*100)"
+                    <input type="range" min="@(cropper.MinRatio*100)" max="@(200)" value="@(ratio*100)"
                            @oninput="OnRatioChange" />
                 }
                 </div>

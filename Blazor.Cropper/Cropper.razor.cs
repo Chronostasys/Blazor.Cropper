@@ -151,15 +151,20 @@ namespace Blazor.Cropper
         /// </summary>
         [Parameter]
         public EventCallback<(double, double)> OnSizeChanged { get; set; }
+        /// <summary>
+        /// Used to set the cropper initial offset position
+        /// </summary>
+        [Parameter]
+        public double OffsetX { set; get; }
+        /// <summary>
+        /// Used to set the cropper initial offset position
+        /// </summary>
+        [Parameter]
+        public double OffsetY { set; get; }
         #endregion
 
 
         #region public vars
-        /// <summary>
-        /// Max allowed scaling ratio
-        /// </summary>
-        /// <value></value>
-        public double MaxRatio { get; private set; }
         /// <summary>
         /// Min allowed scaling ratio
         /// </summary>
@@ -360,8 +365,6 @@ namespace Blazor.Cropper
                 _evInitialized = true;
             }
             await SetImgContainterSize();
-            MaxRatio = 2;
-            //Ratio = _imgSize / 100;
             await OnLoad.InvokeAsync();
             await SizeChanged();
         }
@@ -434,19 +437,18 @@ namespace Blazor.Cropper
         {
             int deltaX = 0;
             int deltaY = 0;
-            double i = GetI();
 
             if (WiderThanContainer)
             {
-                deltaY = -(int)(_imgContainerHeight / i - _image.Height) / 2;
+                deltaY = -(int)(_imgContainerHeight - _image.Height) / 2;
             }
             else
             {
-                deltaX = -(int)(_imgContainerWidth / i - _image.Width) / 2;
+                deltaX = -(int)(_imgContainerWidth - _image.Width) / 2;
             }
-            var (resizeProp,width,height) = GetCropperInfos(i);
-            double x = ((_prevPosX - _bacx) / i + deltaX);
-            double y = ((_prevPosY - _bacy) / i + deltaY);
+            var (resizeProp,width,height) = GetCropperInfos();
+            double x = ((_prevPosX - _bacx) + deltaX);
+            double y = ((_prevPosY - _bacy) + deltaY);
             double proportionalCropWidth = (width * resizeProp);
             double proportionalCropHeight = (height * resizeProp);
 
@@ -485,29 +487,28 @@ namespace Blazor.Cropper
         }
 
         /// <summary>
-        /// Returns the metadata about the desired cropping.
+        /// Returns the metadata about the cropper state.
         /// </summary>
         /// <returns></returns>
         public CropInfo GetCropInfo()
         {
 
-            var i = GetI();
-            var (_, cw, ch) = GetCropperInfos(i);
+            var (_, cw, ch) = GetCropperInfos();
 
             int deltaX = 0;
             int deltaY = 0;
 
             if (WiderThanContainer)
             {
-                deltaY = -(int)(_imgContainerHeight / i - _image.Height) / 2;
+                deltaY = -(int)(_imgContainerHeight - _image.Height) / 2;
             }
             else
             {
-                deltaX = -(int)(_imgContainerWidth / i - _image.Width) / 2;
+                deltaX = -(int)(_imgContainerWidth - _image.Width) / 2;
             }
 
-            double x = ((_prevPosX - _bacx) / i + deltaX);
-            double y = ((_prevPosY - _bacy) / i + deltaY);
+            double x = ((_prevPosX - _bacx) + deltaX);
+            double y = ((_prevPosY - _bacy) + deltaY);
 
 
             return new CropInfo {Rectangle=new Rectangle((int)(x), (int)(y), (int)(cw), (int)(ch)),Ratio=Ratio};
@@ -528,11 +529,11 @@ namespace Blazor.Cropper
             return FormattableString.Invariant($"clip: rect({top}px, {right}px, {bottom}px, {left}px);");
         }
 
-        private (double resizeProp,double cw,double ch) GetCropperInfos(double i)
+        private (double resizeProp,double cw,double ch) GetCropperInfos()
         {
             double resizeProp = 1d;
-            double cw = (initCropWidth / i);
-            double ch = (initCropHeight / i);
+            double cw = (initCropWidth);
+            double ch = (initCropHeight);
             if (cw > MaxCropedWidth || ch > MaxCropedHeight)
             {
                 if (MaxCropedWidth / MaxCropedHeight > (double)cw / (double)ch)
@@ -547,21 +548,6 @@ namespace Blazor.Cropper
             return (resizeProp, cw, ch);
         }
 
-        private double GetI()
-        {
-            double i;
-            if (WiderThanContainer)
-            {
-                double containerWidth = _imgContainerWidth * _imgSize / 100;
-                i = containerWidth / _image.Width;
-            }
-            else
-            {
-                double containerHeight = _imgContainerHeight * _imgSize / 100;
-                i = containerHeight / _image.Height;
-            }
-            return i;
-        }
 
         private void SetCroppedImgStyle()
         {
@@ -819,6 +805,7 @@ namespace Blazor.Cropper
                     initCropWidth = _unsavedCropW;
                     _prevPosY = _unsavedY;
                     _prevPosX = _unsavedX;
+                    SizeChanged();
                     return;
                 }
                 switch (_dir)
@@ -914,8 +901,7 @@ namespace Blazor.Cropper
 
         private Task SizeChanged()
         {
-            double i = GetI();
-            var (resizeProp, cw, ch) = GetCropperInfos(i);
+            var (resizeProp, cw, ch) = GetCropperInfos();
             return OnSizeChanged.InvokeAsync((cw * resizeProp, ch * resizeProp));
         }
 
@@ -923,12 +909,14 @@ namespace Blazor.Cropper
         {
             return new TouchEventArgs
             {
-                Touches = new[]{
-                new TouchPoint{
-                ClientX = args.ClientX,
-                ClientY = args.ClientY
-            }
-            }
+                Touches = new[]
+                {
+                    new TouchPoint
+                    {
+                        ClientX = args.ClientX,
+                        ClientY = args.ClientY
+                    }
+                }
             };
         }
         private void GuardImgPosition()
@@ -1058,12 +1046,6 @@ namespace Blazor.Cropper
             _imgw = ImgRealW;
             _imgh = ImgRealH;
         }
-
-        [Parameter]
-        public double OffsetX { set; get; }
-
-        [Parameter]
-        public double OffsetY { set; get; }
 
         private void InitStyles()
         {

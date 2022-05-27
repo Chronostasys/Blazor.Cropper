@@ -103,7 +103,7 @@ Example:
 
 ## Api referrence
 We have detailed xml comments on Cropper's properties & methods, simply read it while use it!  
-On the other hand, you can go to [the sample project](CropperSample) for usage examples.  
+On the other hand, you can go to [the sample project](CropperSampleV6) for usage examples.  
 To build it, simply clone it and run it in visual studio. The running result should be like this:  
 ![](2020-09-26-12-29-30.png)  
 

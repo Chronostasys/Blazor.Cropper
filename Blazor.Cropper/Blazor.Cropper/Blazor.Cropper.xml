@@ -14,6 +14,11 @@
             Crop zone
             </summary>
         </member>
+        <member name="P:Blazor.Cropper.CropInfo.Ratio">
+            <summary>
+            ratio
+            </summary>
+        </member>
         <member name="M:Blazor.Cropper.CropInfo.GetInitParams">
             <summary>
             Get init parameters from this function to restore the cropper state
@@ -135,6 +140,16 @@
             Item1 of the return tuple is width, Item2 is height
             </summary>
         </member>
+        <member name="P:Blazor.Cropper.Cropper.OffsetX">
+            <summary>
+            Used to set the cropper initial offset position
+            </summary>
+        </member>
+        <member name="P:Blazor.Cropper.Cropper.OffsetY">
+            <summary>
+            Used to set the cropper initial offset position
+            </summary>
+        </member>
         <member name="P:Blazor.Cropper.Cropper.MaxRatio">
             <summary>
             Max allowed scaling ratio
@@ -155,7 +170,7 @@
         </member>
         <member name="M:Blazor.Cropper.Cropper.GetCropInfo">
             <summary>
-            Returns the metadata about the desired cropping.
+            Returns the metadata about the cropper state.
             </summary>
             <returns></returns>
         </member>

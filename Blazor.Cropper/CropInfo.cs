@@ -16,6 +16,9 @@ namespace Blazor.Cropper
         /// Crop zone
         /// </summary>
         public Rectangle Rectangle { get; init; }
+        /// <summary>
+        /// ratio
+        /// </summary>
         public double Ratio { get; init; }
 
         /// <summary>
