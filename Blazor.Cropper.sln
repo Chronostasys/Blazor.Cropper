@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9C562553-AD99-44D0-80B7-D1E17B1C4D5B}"
 	ProjectSection(SolutionItems) = preProject
 		.bettercodehub.yml = .bettercodehub.yml
+		.github\workflows\cd.yaml = .github\workflows\cd.yaml
 		README.md = README.md
 	EndProjectSection
 EndProject
