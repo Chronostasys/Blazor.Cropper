@@ -34,8 +34,9 @@ namespace Blazor.Cropper
         public bool IsImageLocked { get; set; } = true;
         /// <summary>
         /// the initial width of cropper if possible.
-        /// shall not be smaller than 30
+        /// shall not be smaller than 30.
         /// </summary>
+        /// <remarks>It's unit is not pixel. For more info, see <seealso cref="CropInfo.GetInitParams"/></remarks>
         /// <value>default: 150</value>
         [Parameter]
         public double InitCropWidth { get; set; } = 150;
@@ -43,8 +44,9 @@ namespace Blazor.Cropper
         private double initCropWidth = -1;
         /// <summary>
         /// the initial height of cropper if possible.
-        /// shall not be smaller than 30
+        /// shall not be smaller than 30.
         /// </summary>
+        /// <remarks>It's unit is not pixel. For more info, see <seealso cref="CropInfo.GetInitParams"/></remarks>
         /// <value>default: 150</value>
         [Parameter]
         public double InitCropHeight { get; set; } = 150;
@@ -152,13 +154,15 @@ namespace Blazor.Cropper
         [Parameter]
         public EventCallback<(double, double)> OnSizeChanged { get; set; }
         /// <summary>
-        /// Used to set the cropper initial offset position
+        /// Used to set the cropper initial offset position.
         /// </summary>
+        /// <remarks>It's unit is not pixel. For more info, see <seealso cref="CropInfo.GetInitParams"/></remarks>
         [Parameter]
         public double OffsetX { set; get; }
         /// <summary>
-        /// Used to set the cropper initial offset position
+        /// Used to set the cropper initial offset position.
         /// </summary>
+        /// <remarks>It's unit is not pixel. For more info, see <seealso cref="CropInfo.GetInitParams"/></remarks>
         [Parameter]
         public double OffsetY { set; get; }
         #endregion
@@ -437,36 +441,36 @@ namespace Blazor.Cropper
         {
             int deltaX = 0;
             int deltaY = 0;
+            var (resizeProp, width, height) = GetCropperInfos();
 
             if (WiderThanContainer)
             {
-                deltaY = -(int)(_imgContainerHeight - _image.Height) / 2;
+                deltaY = -(int)(_imgContainerHeight - _image.Height/resizeProp) / 2;
             }
             else
             {
-                deltaX = -(int)(_imgContainerWidth - _image.Width) / 2;
+                deltaX = -(int)(_imgContainerWidth - _image.Width/resizeProp) / 2;
             }
-            var (resizeProp,width,height) = GetCropperInfos();
-            double x = ((_prevPosX - _bacx) + deltaX);
-            double y = ((_prevPosY - _bacy) + deltaY);
+            double x = ((_prevPosX - _bacx) + deltaX)*resizeProp;
+            double y = ((_prevPosY - _bacy) + deltaY)*resizeProp;
             double proportionalCropWidth = (width * resizeProp);
             double proportionalCropHeight = (height * resizeProp);
 
 
-            var rect = Rectangle.FromLTRB((int)x, (int)y, (int)width + (int)x, (int)y + (int)height);
+            var rect = Rectangle.FromLTRB((int)x, (int)y, (int)proportionalCropWidth + (int)x, (int)y + (int)proportionalCropHeight);
             if (_gifimage == null)
             {
                 if (Environment.Version.Major > 5)
                 {
                     // for dotnet version after 5, pass byte array between c# and js is optimized
                     // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
-                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg", (int)x, (int)y, (int)(width), (int)(height), 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
+                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg", (int)x , (int)y , (int)(proportionalCropWidth), (int)(proportionalCropHeight), 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
                     return new ImageCroppedResult(bin);
                 }
                 else
                 {
                     // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
-                    string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)x, (int)y, (int)(width), (int)(height), 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
+                    string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg", (int)x, (int)y , (int)(proportionalCropWidth), (int)(proportionalCropHeight), 0, 0, (int)proportionalCropWidth, (int)proportionalCropHeight, "image/png");
                     return new ImageCroppedResult(s);
                 }
             }
@@ -492,26 +496,22 @@ namespace Blazor.Cropper
         /// <returns></returns>
         public CropInfo GetCropInfo()
         {
-
-            var (_, cw, ch) = GetCropperInfos();
-
             int deltaX = 0;
             int deltaY = 0;
-
+            var (resizeProp, width, height) = GetCropperInfos();
             if (WiderThanContainer)
             {
-                deltaY = -(int)(_imgContainerHeight - _image.Height) / 2;
+                deltaY = -(int)(_imgContainerHeight - _image.Height / resizeProp) / 2;
             }
             else
             {
-                deltaX = -(int)(_imgContainerWidth - _image.Width) / 2;
+                deltaX = -(int)(_imgContainerWidth - _image.Width / resizeProp) / 2;
             }
-
-            double x = ((_prevPosX - _bacx) + deltaX);
+            double x = ((_prevPosX - _bacx) + deltaX) ;
             double y = ((_prevPosY - _bacy) + deltaY);
 
 
-            return new CropInfo {Rectangle=new Rectangle((int)(x), (int)(y), (int)(cw), (int)(ch)),Ratio=Ratio};
+            return new CropInfo {Rectangle=new Rectangle((int)(x*resizeProp), (int)(y * resizeProp), (int)(width * resizeProp), (int)(height * resizeProp)),Ratio=Ratio,ResizeProp=resizeProp};
         }
 
         #endregion
@@ -534,16 +534,13 @@ namespace Blazor.Cropper
             double resizeProp = 1d;
             double cw = (initCropWidth);
             double ch = (initCropHeight);
-            if (cw > MaxCropedWidth || ch > MaxCropedHeight)
+            if (WiderThanContainer)
             {
-                if (MaxCropedWidth / MaxCropedHeight > (double)cw / (double)ch)
-                {
-                    resizeProp = MaxCropedHeight / ch;
-                }
-                else
-                {
-                    resizeProp = MaxCropedWidth / cw;
-                }
+                resizeProp = _image.Width / _imgContainerWidth;
+            }
+            else
+            {
+                resizeProp = _image.Height / _imgContainerHeight;
             }
             return (resizeProp, cw, ch);
         }
