@@ -43,7 +43,10 @@ You may find dotnet 6 sample [here](CropperSampleV6)
 ## Server-side Usage
 Blazor.Cropper is designed to be a client side library. However, [it can be used on server side blazor when setting `PureCSharpProcessing="true"`](https://github.com/Chronostasys/Blazor.Cropper/issues/30).  
 Please note that using Blazor.Cropper on server side could consume remarkable amount of server resources(including bandwidth, cpu and memory).  
-[Sample project](https://github.com/Chronostasys/ServerSideCropperExample)
+[Sample project](https://github.com/Chronostasys/ServerSideCropperExample)  
+
+> **Known issue for server-side blazor**
+> Server-side blazor in dotnet 6 has trouble handling large file transfer, which may cause the cropper stop working. You may find more detail in [this issue](https://github.com/Chronostasys/ServerSideCropperExample/issues/1).
 
 ## Quick Start
 Only 4 steps to use Blazor.Cropper
