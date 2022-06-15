@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -173,7 +174,15 @@ namespace Blazor.Cropper
         /// Min allowed scaling ratio
         /// </summary>
         /// <value>1.0</value>
-        public double MinRatio { get => 1.0; }
+        public double MinRatio => 1.0;
+
+        /// <summary>
+        /// Max allowed scaling ratio
+        /// </summary>
+        /// <remarks>This property is obsolete. Max ratio is no longer limited</remarks>
+        /// <value>2</value>
+        [Obsolete("This property is obsolete. Max ratio is no longer limited")]
+        public double MaxRatio => 2.0;
 
         #endregion
 
@@ -336,7 +345,21 @@ namespace Blazor.Cropper
             if (PureCSharpProcessing || string.IsNullOrEmpty(InputId) || (ext == "gif" && AnimeGifEnable))
             {
                 byte[] buffer = new byte[resizedImageFile.Size];
-                await resizedImageFile.OpenReadStream(100000000).ReadAsync(buffer);
+#if NET6_0
+                var isClientSide = JSRuntime is IJSInProcessRuntime;
+                if (isClientSide)
+                {
+                    await resizedImageFile.OpenReadStream(1024 * 1024 * 90).ReadAsync(buffer);
+                }
+                else
+                {
+                    // WORKAROUND https://github.com/Chronostasys/Blazor.Cropper/issues/43
+                    var fileContent = new StreamContent(resizedImageFile.OpenReadStream(1024 * 1024 * 90));
+                    buffer = await fileContent.ReadAsByteArrayAsync();
+                }
+#else
+                await resizedImageFile.OpenReadStream(1024 * 1024 * 90).ReadAsync(buffer);
+#endif
                 if ((ext == "gif" && AnimeGifEnable) || PureCSharpProcessing)
                 {
                     _gifimage = Image.Load(buffer, out _format);
