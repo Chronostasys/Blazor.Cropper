@@ -345,21 +345,24 @@ namespace Blazor.Cropper
             if (PureCSharpProcessing || string.IsNullOrEmpty(InputId) || (ext == "gif" && AnimeGifEnable))
             {
                 byte[] buffer = new byte[resizedImageFile.Size];
-#if NET6_0
-                var isClientSide = JSRuntime is IJSInProcessRuntime;
-                if (isClientSide)
+                if (Environment.Version.Major==6)
                 {
-                    await resizedImageFile.OpenReadStream(1024 * 1024 * 90).ReadAsync(buffer);
+                    var isClientSide = JSRuntime is IJSInProcessRuntime;
+                    if (isClientSide)
+                    {
+                        await resizedImageFile.OpenReadStream(1024 * 1024 * 90).ReadAsync(buffer);
+                    }
+                    else
+                    {
+                        // WORKAROUND https://github.com/Chronostasys/Blazor.Cropper/issues/43
+                        var fileContent = new StreamContent(resizedImageFile.OpenReadStream(1024 * 1024 * 90));
+                        buffer = await fileContent.ReadAsByteArrayAsync();
+                    }
                 }
                 else
                 {
-                    // WORKAROUND https://github.com/Chronostasys/Blazor.Cropper/issues/43
-                    var fileContent = new StreamContent(resizedImageFile.OpenReadStream(1024 * 1024 * 90));
-                    buffer = await fileContent.ReadAsByteArrayAsync();
+                    await resizedImageFile.OpenReadStream(1024 * 1024 * 90).ReadAsync(buffer);
                 }
-#else
-                await resizedImageFile.OpenReadStream(1024 * 1024 * 90).ReadAsync(buffer);
-#endif
                 if ((ext == "gif" && AnimeGifEnable) || PureCSharpProcessing)
                 {
                     _gifimage = Image.Load(buffer, out _format);

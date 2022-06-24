@@ -166,6 +166,13 @@
             </summary>
             <value>1.0</value>
         </member>
+        <member name="P:Blazor.Cropper.Cropper.MaxRatio">
+            <summary>
+            Max allowed scaling ratio
+            </summary>
+            <remarks>This property is obsolete. Max ratio is no longer limited</remarks>
+            <value>2</value>
+        </member>
         <member name="M:Blazor.Cropper.Cropper.GetCropedResult">
             <summary>
             Get the crop result.
