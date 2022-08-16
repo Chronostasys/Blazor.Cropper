@@ -61,14 +61,24 @@ Then, you should paste following code into your index.html:
 ```
 ### Step2. Add cropper
 Just add cropper to your code. We recommend you to use it inside a modal card.  
-**Note**: to use the cropper, you need to use a `<InputFile>` component to get a file source. 
-You must provide a paramter named `InputId`, which's value is the same as the `id` attribute of the `<InputFile>` component.  
+
+
 Example:
 ```razor
 @* .... some code ...*@
-<InputFile id="input1"></InputFile>
-<Cropper InputId="input1" ></Cropper>
+<InputFile @onchange="OnInputFileChange"></InputFile>
+<Cropper ImageFile="file" ></Cropper>
 @* .... some code ...*@
+    async Task OnInputFileChange(InputFileChangeEventArgs args)
+    {
+        file = args.File;
+    }
+@* .... some code ...*@
+@* Example below shows how to bind Cropper with an InputFile component using InputId.
+    Please note that you must set ImageFile property inorder to use gif crop or PureCSharpProcessing function.
+    <InputFile id="input1"></InputFile>
+    <Cropper InputId="input1" ></Cropper>
+*@
 ```
 
 ### Step3. Get result
@@ -76,7 +86,7 @@ To get the crop result, you need to get the reference of the `Cropper`, then cal
 Example:  
 ```razor
 @* .... some code ...*@
-<Cropper InputId="input1" @ref="cropper"></Cropper>
+<Cropper ImageFile="file" @ref="cropper"></Cropper>
 @* .... some code ...*@
 @code{
     Cropper cropper;

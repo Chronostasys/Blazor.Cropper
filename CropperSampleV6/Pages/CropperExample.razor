@@ -2,7 +2,11 @@
 @inject IJSRuntime JSRuntime;
 
 <h1>Cropper</h1>
-<InputFile id="input1" OnChange="OnInputFileChange"></InputFile>
+<h2>1. Load from file</h2>
+<InputFile OnChange="OnInputFileChange"></InputFile>
+<h2>2. Load from URL</h2>
+<input @bind="webimgurl"/>
+<button @onclick="FetchImage">load</button>
 @if (parsing)
 {
     <center>
@@ -26,7 +30,7 @@
                 @if (show)
                 {
                     <Cropper MaxCropedHeight="500" CropperHeight="400" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
-                         RequireAspectRatio="bool.Parse(enableProportion)" InputId="input1" ImageFile="file" @bind-Ratio="ratio"
+                         RequireAspectRatio="bool.Parse(enableProportion)" ImageFile="file" @bind-Ratio="ratio"
                          AnimeGifEnable="true"
                          OffsetX="offsetx"
                          OffsetY="offsety"
@@ -90,7 +94,7 @@ Pure c# processiing:
     IBrowserFile file;
     double width;
     double height;
-    string imgUrl = "";
+    string webimgurl = "";
     bool purecs = false;
     bool show = true;
     string prompt = "Image cropped! Parsing to base64...";
@@ -104,6 +108,7 @@ Pure c# processiing:
     int initw = 50;
     int inith = 50;
     CropInfo state;
+    HttpClient client = new HttpClient();
     void OnRatioChange(ChangeEventArgs args)
     {
         ratio = int.Parse(args.Value.ToString()) / 100.0;
@@ -122,6 +127,12 @@ Pure c# processiing:
             await Task.Delay(10);
             show = true;
         }
+    }
+
+    async Task FetchImage()
+    {
+        var stream = await client.GetStreamAsync(webimgurl);
+        file = new StreamFile(stream);
     }
 
     protected override void OnInitialized()

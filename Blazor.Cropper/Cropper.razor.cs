@@ -95,7 +95,7 @@ namespace Blazor.Cropper
         /// <summary>
         /// The input element's id value. This param is optional and
         /// can help cropper to init image
-        /// faster on browser.
+        /// faster on browser before dotnet core version 6.
         /// Does't have effect if <see cref="PureCSharpProcessing"/> is true.
         /// </summary>
         [Parameter]
