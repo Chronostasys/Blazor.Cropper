@@ -73,7 +73,7 @@ let version = 5;
 function setVersion(ver) {
     version = ver;
 }
-async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format) {
+async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format, quality) {
     var canvas = document.createElement('canvas');
     var img = document.getElementById(id);
     canvas.width = width;
@@ -85,11 +85,11 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
             canvas.toBlob(async b => {
                 const bin = new Uint8Array(await new Response(b).arrayBuffer());
                 rs(bin)
-            });
+            },format, quality/100);
         })
     }
     else {
-        const s = canvas.toDataURL(format);
+        const s = canvas.toDataURL(format, quality/100);
         return s.substr(s.indexOf(',') + 1)
     }
 }
@@ -142,8 +142,8 @@ var serializeEvent = function (e) {
     }
 };
 
-function setSrc(bin,id) {
+function setSrc(bin,id,type) {
     document.getElementById(id).src = URL.createObjectURL(
-        new Blob([bin], { type: 'image/png' })
+        new Blob([bin], { type: type })
     );
 }

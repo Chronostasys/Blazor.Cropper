@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net6.0;net5.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression></PackageLicenseExpression>
@@ -11,10 +11,11 @@
     <RepositoryUrl>https://github.com/Chronostasys/Blazor.Cropper</RepositoryUrl>
     <PackageTags>Blazor,Cropper,Crop,Image</PackageTags>
     <PackageId>Chronos.Blazor.Cropper</PackageId>
-    <Version>1.2.7</Version>
+    <Version>1.2.8</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>4</WarningLevel>
     <DocumentationFile>.\Blazor.Cropper\Blazor.Cropper.xml</DocumentationFile>
   </PropertyGroup>
 

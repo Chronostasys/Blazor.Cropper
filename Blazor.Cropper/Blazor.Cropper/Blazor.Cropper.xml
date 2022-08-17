@@ -103,7 +103,7 @@
             <summary>
             The input element's id value. This param is optional and
             can help cropper to init image
-            faster on browser.
+            faster on browser before dotnet core version 6.
             Does't have effect if <see cref="P:Blazor.Cropper.Cropper.PureCSharpProcessing"/> is true.
             </summary>
         </member>
@@ -160,6 +160,13 @@
             </summary>
             <remarks>It's unit is not pixel. For more info, see <seealso cref="M:Blazor.Cropper.CropInfo.GetInitParams"/></remarks>
         </member>
+        <member name="P:Blazor.Cropper.Cropper.Quality">
+            <summary>
+            Quality of output image. Should be between 0 and 100.
+            Only takes effect when image is in jpg or webp format.
+            </summary>
+            <value>100</value>
+        </member>
         <member name="P:Blazor.Cropper.Cropper.MinRatio">
             <summary>
             Min allowed scaling ratio
@@ -199,12 +206,24 @@
             <param name="s"></param>
             <returns></returns>
         </member>
+        <member name="M:Blazor.Cropper.ImageCroppedResult.SaveAsync(System.IO.Stream,SixLabors.ImageSharp.Formats.IImageEncoder)">
+            <summary>
+            Save image to a stream with your own
+            <see cref="T:SixLabors.ImageSharp.Formats.IImageEncoder"/>.
+            This can be use to
+            set some advanced options e.g. <see cref="T:SixLabors.ImageSharp.Formats.Png.PngCompressionLevel"/> for png.
+            This method can only be used when the cropper working in pure cs mode
+            </summary>
+            <param name="s"></param>
+            <param name="encoder"></param>
+            <returns></returns>
+        </member>
         <member name="T:Blazor.Cropper.JSInterop">
             <summary>
             js interop methods
             </summary>
         </member>
-        <member name="M:Blazor.Cropper.JSInterop.SetImageAsync(Microsoft.JSInterop.IJSRuntime,System.Byte[],System.String)">
+        <member name="M:Blazor.Cropper.JSInterop.SetImageAsync(Microsoft.JSInterop.IJSRuntime,System.Byte[],System.String,System.String)">
             <summary>
             set html img element to display the image
             this function is the preferred way to display the crop result in dotnet 6
@@ -212,6 +231,7 @@
             <param name="js"></param>
             <param name="bin">image bytes</param>
             <param name="imgid">img element id</param>
+            <param name="format">like image/jpg</param>
             <returns></returns>
         </member>
         <member name="T:Blazor.Cropper.StreamFile">
