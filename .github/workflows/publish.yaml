@@ -14,12 +14,14 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: |
+            6.0.x
+            5.0.x
     - name: Restore dependencies
       run: dotnet restore Blazor.Cropper/Blazor.Cropper.csproj
     - name: Build project
-      run: dotnet build Blazor.Cropper/Blazor.Cropper.csproj --no-restore --configuration Release -o .
+      run: dotnet build Blazor.Cropper/Blazor.Cropper.csproj --no-restore --configuration Release
     - name: Publish to Nuget
-      run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: dotnet nuget push Blazor.Cropper/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
     - name: publish package to GitHub
-      run: dotnet nuget push *.nupkg --api-key ${{secrets.GITHUB_TOKEN}} --source "https://nuget.pkg.github.com/Chronostasys/index.json" --skip-duplicate
+      run: dotnet nuget push Blazor.Cropper/bin/Release/*.nupkg --api-key ${{secrets.GITHUB_TOKEN}} --source "https://nuget.pkg.github.com/Chronostasys/index.json" --skip-duplicate
