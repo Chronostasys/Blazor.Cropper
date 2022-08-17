@@ -5,7 +5,7 @@
 <h2>1. Load from file</h2>
 <InputFile OnChange="OnInputFileChange"></InputFile>
 <h2>2. Load from URL</h2>
-<input @bind="webimgurl"/>
+<input @bind="webimgurl" />
 <button @onclick="FetchImage">load</button>
 @if (parsing)
 {
@@ -30,41 +30,42 @@
                 @if (show)
                 {
                     <Cropper MaxCropedHeight="500" CropperHeight="400" MaxCropedWidth="500" @ref="cropper" AspectRatio="proportion==0?1:proportion"
-                         RequireAspectRatio="bool.Parse(enableProportion)" ImageFile="file" @bind-Ratio="ratio"
-                         AnimeGifEnable="true"
-                         OffsetX="offsetx"
-                         OffsetY="offsety"
-                         InitCropWidth="initw"
-                         InitCropHeight="inith"
-                         PureCSharpProcessing="purecs"
-                         IsCropLocked="isCropLocked"
-                         IsImageLocked="isImageLocked"
-                         OnSizeChanged="t=>{
+                             RequireAspectRatio="bool.Parse(enableProportion)" ImageFile="file" @bind-Ratio="ratio"
+                             AnimeGifEnable="true"
+                             OffsetX="offsetx"
+                             OffsetY="offsety"
+                             InitCropWidth="initw"
+                             InitCropHeight="inith"
+                             PureCSharpProcessing="purecs"
+                             IsCropLocked="isCropLocked"
+                             IsImageLocked="isImageLocked"
+                             Quality="quality"
+                             OnSizeChanged="t=>{
                         width = t.Item1;
                         height = t.Item2;
-                    }"></Cropper>   
+                    }"></Cropper>
                 }
             </section>
             <footer class="modal-card-foot">
                 <div>
-                <button class="button is-success" @onclick="DoneCrop">Done</button>
-                <button class="button is-success" @onclick="SaveState">SaveState</button>
-                <button class="button is-success" @onclick="RestoreState">RestoreState</button>
-                <br/>
-                @if (cropper != null)
-                {
-                    <div>
-                        width: @width |
-                        height: @height
-                    </div>
-                }
-                <div> IsCropLocked:<input type="checkbox" @bind="isCropLocked" /></div>
-                <div>IsImageLocked:<input type="checkbox" @bind="isImageLocked" /></div>
-                @if (cropper != null)
-                {
-                    <input type="range" min="@(cropper.MinRatio*100)" max="@(200)" value="@(ratio*100)"
-                           @oninput="OnRatioChange" />
-                }
+                    <button class="button is-success" @onclick="DoneCrop">Done</button>
+                    <button class="button is-success" @onclick="SaveState">SaveState</button>
+                    <button class="button is-success" @onclick="RestoreState">RestoreState</button>
+                    <br />
+                    @if (cropper != null)
+                    {
+                        <div>
+                            width: @width |
+                            height: @height
+                        </div>
+                    }
+                    <div> IsCropLocked:<input type="checkbox" @bind="isCropLocked" /></div>
+                    <div>IsImageLocked:<input type="checkbox" @bind="isImageLocked" /></div>
+                    @if (cropper != null)
+                    {
+                        <input type="range" min="@(cropper.MinRatio*100)" max="@(200)" value="@(ratio*100)"
+                               @oninput="OnRatioChange" />
+                    }
                 </div>
             </footer>
         </div>
@@ -82,6 +83,8 @@ else
     <option value="true">Enable proportion</option>
     <option value="false">Disable proportion</option>
 </select>
+Quality, only works for jpg and webp
+<input type="range" min="1" max="100" @bind-value="quality" />
 @if (bool.Parse(enableProportion))
 {
     <input type="number" @bind-value="proportion" placeholder="proportion" />
@@ -107,6 +110,7 @@ Pure c# processiing:
     int offsetx, offsety;
     int initw = 50;
     int inith = 50;
+    int quality = 100;
     CropInfo state;
     HttpClient client = new HttpClient();
     void OnRatioChange(ChangeEventArgs args)
@@ -119,9 +123,9 @@ Pure c# processiing:
     }
     async Task RestoreState()
     {
-        if (state!=null)
+        if (state != null)
         {
-            (offsetx, offsety, initw, inith,ratio) = state.GetInitParams();
+            (offsetx, offsety, initw, inith, ratio) = state.GetInitParams();
             show = false;
             StateHasChanged();
             await Task.Delay(10);
@@ -155,7 +159,7 @@ Pure c# processiing:
         await Task.Delay(10);// a hack, otherwise prompt won't show
         await JSRuntime.InvokeVoidAsync("console.log", "converted!");
         var bs = await args.GetDataAsync();
-        await JSRuntime.SetImageAsync(bs, "my-img");
+        await JSRuntime.SetImageAsync(bs, "my-img", args.Format.DefaultMimeType);
         parsing = false;
     }
 }

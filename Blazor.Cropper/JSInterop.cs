@@ -19,10 +19,11 @@ namespace Blazor.Cropper
         /// <param name="js"></param>
         /// <param name="bin">image bytes</param>
         /// <param name="imgid">img element id</param>
+        /// <param name="format">like image/jpg</param>
         /// <returns></returns>
-        public static ValueTask SetImageAsync(this IJSRuntime js,byte[] bin,string imgid)
+        public static ValueTask SetImageAsync(this IJSRuntime js,byte[] bin,string imgid, string format)
         {
-            return js.InvokeVoidAsync("setSrc", bin, imgid);
+            return js.InvokeVoidAsync("setSrc", bin, imgid,format);
         }
     }
 }
