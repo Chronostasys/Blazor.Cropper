@@ -68,18 +68,7 @@ namespace Blazor.Cropper
             if (Img!=null)
             {
                 using MemoryStream memoryStream = new MemoryStream();
-                var encoder = Configuration.Default.ImageFormatsManager.FindEncoder(Format);
-                switch (encoder)
-                {
-                    case JpegEncoder e:
-                        e.Quality = Quality;
-                        break;
-                    case WebpEncoder e:
-                        e.Quality = Quality;
-                        break;
-                    default:
-                        break;
-                }
+                var encoder = GetImageEncoder(Format, Quality);
                 await Img.SaveAsync(memoryStream, encoder);
 
                 _data = memoryStream.ToArray();
@@ -96,20 +85,8 @@ namespace Blazor.Cropper
         {
             if (Img != null)
             {
-                
-                var encoder = Configuration.Default.ImageFormatsManager.FindEncoder(Format);
-                switch (encoder)
-                {   
-                    case JpegEncoder e:
-                        e.Quality = Quality;
-                        break;
-                    case WebpEncoder e:
-                        e.Quality = Quality;
-                        break;
-                    default:
-                        break;
-                }
-                
+
+                var encoder = GetImageEncoder(Format, Quality);
                 return Img.SaveAsync(s, encoder);
             }
             if (_data!=null)
@@ -122,6 +99,23 @@ namespace Blazor.Cropper
                 return s.WriteAsync(_data).AsTask();
             }
             throw new InvalidOperationException();
+        }
+
+        private IImageEncoder GetImageEncoder(IImageFormat format, int quality)
+        {
+            var encoder = Configuration.Default.ImageFormatsManager.FindEncoder(Format);
+            switch (encoder)
+            {
+                case JpegEncoder e:
+                    e.Quality = Quality;
+                    break;
+                case WebpEncoder e:
+                    e.Quality = Quality;
+                    break;
+                default:
+                    break;
+            }
+            return encoder;
         }
 
 #if NET6_0_OR_GREATER
