@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/CropperSample/CropperSample.csproj",
+                "${workspaceFolder}/CropperSampleV6/CropperSampleV6.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/CropperSample/CropperSample.csproj",
+                "${workspaceFolder}/CropperSampleV6/CropperSampleV6.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -32,9 +32,8 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/CropperSample/CropperSample.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "--project",
+                "${workspaceFolder}/CropperSampleV6/CropperSampleV6.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
