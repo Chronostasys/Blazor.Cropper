@@ -554,7 +554,7 @@ namespace Blazor.Cropper
         {
             if (args != null && args.Touches != null && args.Touches.Length > 0)
             {
-                handler(new MouseEventArgs()
+                handler(new MouseEventArgs
                 {
                     ClientX = args.Touches[0].ClientX,
                     ClientY = args.Touches[0].ClientY
