@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Blazor.Cropper
 {
@@ -26,6 +27,8 @@ namespace Blazor.Cropper
 
         private double _minposX => _cropper._minposX;
         private double _minposY => _cropper._minposY;
+        private double _minvalx => _cropper._minvalx;
+        private double _minvaly => _cropper._minvaly;
 
         internal CropBox(Cropper cropper)
         {
@@ -49,42 +52,39 @@ namespace Blazor.Cropper
         }
         internal void DragCorner(double deltaX, double deltaY, MoveDir dir)
         {
-
-            switch (dir)
+            var funcdic = new Dictionary<MoveDir, Action>()
             {
-                case MoveDir.Up:
+                { MoveDir.Up, () =>
+                {
                     Y = _initY + deltaY;
                     H = _initH - deltaY;
-                    break;
-                case MoveDir.Down:
-                    H = _initH + deltaY;
-                    break;
-                case MoveDir.Left:
+                } },
+                { MoveDir.Down, () => H = _initH + deltaY },
+                { MoveDir.Left, () =>
+                {
                     X = _initX + deltaX;
                     W = _initW - deltaX;
-                    break;
-                case MoveDir.Right:
-                    W = _initW + deltaX;
-                    break;
-                case MoveDir.UpLeft:
+                } },
+                { MoveDir.Right, () => W = _initW + deltaX },
+                { MoveDir.UpLeft, () =>
+                {
                     Y = _initY + deltaY;
                     xxLeft(deltaX, deltaY, dir);
-                    break;
-                case MoveDir.UpRight:
+                } },
+                { MoveDir.UpRight, () =>
+                {
                     Y = _initY + deltaY;
                     H = _initH - deltaY;
                     W = _initW + deltaX;
-                    break;
-                case MoveDir.DownLeft:
-                    xxLeft(deltaX, deltaY, dir);
-                    break;
-                case MoveDir.DownRight:
+                } },
+                { MoveDir.DownLeft, () => xxLeft(deltaX, deltaY, dir) },
+                { MoveDir.DownRight, () =>
+                {
                     H = _initH + deltaY;
                     W = _initW + deltaX;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(dir), dir, null);
-            }
+                } },
+            };
+            funcdic[dir]();
             AdjustWH(dir);
             CheckOutOfBox();
             CheckMinWH();
@@ -110,41 +110,61 @@ namespace Blazor.Cropper
                 var ydelta = Y - _minposY;
                 Y = _minposY;
                 H += ydelta;
+                W = _requestRatio? H / _ratio : W;
+                if (X-_unsavedX<0)
+                {
+                    X = _unsavedX - (W-_unsavedW);   
+                }
             }
             if (X < _minposX)
             {
                 var xdelta = X - _minposX;
                 X = _minposX;
                 W += xdelta;
+                H = _requestRatio? W * _ratio : H;
+                if (Y-_unsavedY<0)
+                {
+                    Y = _unsavedY - (H-_unsavedH);
+                }
             }
             if (Y + H > (_minposY + _imgh))
             {
                 H = (_minposY + _imgh) - Y;
-                if (_requestRatio)
+                W = _requestRatio? H / _ratio : W;
+                if (Y-_unsavedY<0)
                 {
-                    W = H / _ratio;
+                    Y = _unsavedY - (H-_unsavedH);
+                }
+                if (X-_unsavedX<0)
+                {
+                    X = _unsavedX - (W-_unsavedW);   
                 }
             }
             if (X + W > (_minposX + _imgw))
             {
                 W = (_minposX + _imgw) - X;
-                if (_requestRatio)
+                H = _requestRatio? W * _ratio : H;
+                if (Y-_unsavedY<0)
                 {
-                    H = W / _ratio;
+                    Y = _unsavedY - (H-_unsavedH);
                 }
             }
         }
         internal void CheckMinWH()
         {
-            if (H < _minval)
+            if (H < _minvaly)
             {
                 H = _unsavedH;
                 Y = _unsavedY;
+                W = _unsavedW;
+                X = _unsavedX;
             }
-            if (W < _minval)
+            if (W < _minvalx)
             {
                 W = _unsavedW;
                 X = _unsavedX;
+                H = _unsavedH;
+                Y = _unsavedY;
             }
         }
     }

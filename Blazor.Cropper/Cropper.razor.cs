@@ -286,6 +286,8 @@ namespace Blazor.Cropper
         internal Image _gifimage;
         internal double _ratio = 1d;
         internal bool _evInitialized = false;
+        internal double _minvalx;
+        internal double _minvaly;
 
         #endregion
 
@@ -322,15 +324,19 @@ namespace Blazor.Cropper
         protected override async Task OnParametersSetAsync()
         {
             await base.OnParametersSetAsync();
+            _minvalx = _minval;
+            _minvaly = _minval;
             if (RequireAspectRatio)
             {
                 if (initCropHeight > initCropWidth * AspectRatio)
                 {
-                    initCropHeight = initCropWidth * AspectRatio;
+                    initCropWidth = initCropHeight / AspectRatio;
+                    _minvalx = _minvaly/AspectRatio;
                 }
                 else
                 {
-                    initCropWidth = initCropHeight / AspectRatio;
+                    initCropHeight = initCropWidth * AspectRatio;
+                    _minvaly = _minvalx * AspectRatio;
                 }
                 SetCropperStyle();
                 SetCroppedImgStyle();
