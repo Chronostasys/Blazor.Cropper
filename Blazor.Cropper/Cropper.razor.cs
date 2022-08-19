@@ -321,9 +321,8 @@ namespace Blazor.Cropper
             await JSRuntime.InvokeVoidAsync("rmCropperEventListeners");
         }
 
-        protected override async Task OnParametersSetAsync()
+        private void InitAspectRatio()
         {
-            await base.OnParametersSetAsync();
             _minvalx = _minval;
             _minvaly = _minval;
             if (RequireAspectRatio)
@@ -341,6 +340,11 @@ namespace Blazor.Cropper
                 SetCropperStyle();
                 SetCroppedImgStyle();
             }
+        }
+        protected override async Task OnParametersSetAsync()
+        {
+            await base.OnParametersSetAsync();
+            InitAspectRatio();
             if (_prevFile == ImageFile)
             {
                 return;
@@ -352,11 +356,16 @@ namespace Blazor.Cropper
             string ext = ImageFile.Name.Split('.').Last().ToLower();
             IBrowserFile resizedImageFile = ImageFile;
             await Task.Delay(10);
-
-
             _gifimage?.Dispose();
             await LoadImage(ext, resizedImageFile);
+            await InitJSAsync();
+            await SetImgContainterSize();
+            await OnLoad.InvokeAsync();
+            await SizeChanged();
+        }
 
+        private async Task InitJSAsync()
+        {
             double[] data = new double[] { 0, 0 };
             while (data[0] == 0d)
             {
@@ -373,9 +382,6 @@ namespace Blazor.Cropper
                 await JSRuntime.InvokeVoidAsync("addCropperEventListeners");
                 _evInitialized = true;
             }
-            await SetImgContainterSize();
-            await OnLoad.InvokeAsync();
-            await SizeChanged();
         }
 
         protected override async Task OnAfterRenderAsync(bool first)
