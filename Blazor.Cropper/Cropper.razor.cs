@@ -17,7 +17,7 @@ namespace Blazor.Cropper
     public partial class Cropper : IAsyncDisposable
     {
         [Inject]
-        private IJSRuntime JSRuntime { get; set; }
+        internal IJSRuntime JSRuntime { get; set; }
 
         #region params
 
@@ -43,7 +43,7 @@ namespace Blazor.Cropper
         [Parameter]
         public double InitCropWidth { get; set; } = 150;
 
-        private double initCropWidth = -1;
+        internal double initCropWidth = -1;
         /// <summary>
         /// the initial height of cropper if possible.
         /// shall not be smaller than 30.
@@ -53,7 +53,7 @@ namespace Blazor.Cropper
         [Parameter]
         public double InitCropHeight { get; set; } = 150;
 
-        private double initCropHeight = -1;
+        internal double initCropHeight = -1;
         /// <summary>
         /// sepecify whether the cropper's aspect ratio is fixed
         /// </summary>
@@ -195,14 +195,14 @@ namespace Blazor.Cropper
         #endregion
 
 
-        #region private props
-        private bool WiderThanContainer
+        #region internal props
+        internal bool WiderThanContainer
         {
             get => (double)_image.Width / (double)_image.Height
                 > _imgContainerWidth / _imgContainerHeight;
         }
 
-        private double ImgRealW
+        internal double ImgRealW
         {
             get
             {
@@ -218,7 +218,7 @@ namespace Blazor.Cropper
             }
         }
 
-        private double ImgRealH
+        internal double ImgRealH
         {
             get
             {
@@ -234,15 +234,15 @@ namespace Blazor.Cropper
             }
         }
 
-        private string BackgroundImgStyle
+        internal string BackgroundImgStyle
         {
             get => FormattableString.Invariant($"left:{_bacx}px;top:{_bacy}px;");
         }
-        private string RatioStyle
+        internal string RatioStyle
         {
             get => FormattableString.Invariant($"transform:scale({Ratio});");
         }
-        private string ImglistStyle
+        internal string ImglistStyle
         {
             get => FormattableString.Invariant($"height:{CropperHeight}px;");
         }
@@ -250,53 +250,54 @@ namespace Blazor.Cropper
 
 
         #region vars
-        private double _prevBacX = 0;
-        private double _prevBacY = 0;
-        private double _bacx = 0;
-        private double _bacy = 0;
-        private double _imgSize = 100;
-        private bool _onTwoFingerResizing = false;
-        private bool _isBacMoving = false;
-        private double _prevTouchPointDistance = -1;
-        private double _imgContainerWidth = 500;
-        private double _imgContainerHeight = 150;
-        private double _prevPosX = 0;
-        private double _prevPosY = 0;
-        private double _layoutX = 0;
-        private double _layoutY = 0;
-        private double _offsetX;
-        private double _offsetY;
-        private string _cropperStyle = "";
-        private string _cropedImgStyle = "clip: rect(0, 150px, 150px, 0);";
-        private bool _dragging = false;
-        private bool _reSizing = false;
-        private MoveDir _dir = MoveDir.UnKnown;
-        private readonly double _minval = 30;
-        private ImageData _image;
-        private double _minposX;
-        private double _minposY;
-        private double _imgw;
-        private double _imgh;
-        private double _unsavedX;
-        private double _unsavedY;
-        private double _unsavedCropW;
-        private double _unsavedCropH;
-        private bool _outOfBox = false;
-        private IBrowserFile _prevFile;
-        private IImageFormat _format;
-        private Image _gifimage;
-        private double _ratio = 1d;
-        private bool _evInitialized = false;
+        internal double _prevBacX = 0;
+        internal double _prevBacY = 0;
+        internal double _bacx = 0;
+        internal double _bacy = 0;
+        internal double _imgSize = 100;
+        internal bool _onTwoFingerResizing = false;
+        internal bool _isBacMoving = false;
+        internal double _prevTouchPointDistance = -1;
+        internal double _imgContainerWidth = 500;
+        internal double _imgContainerHeight = 150;
+        internal double _prevPosX = 0;
+        internal double _prevPosY = 0;
+        internal double _layoutX = 0;
+        internal double _layoutY = 0;
+        internal double _offsetX;
+        internal double _offsetY;
+        internal string _cropperStyle = "";
+        internal string _cropedImgStyle = "clip: rect(0, 150px, 150px, 0);";
+        internal bool _dragging = false;
+        internal bool _reSizing = false;
+        internal MoveDir _dir = MoveDir.UnKnown;
+        internal readonly double _minval = 30;
+        internal ImageData _image;
+        internal double _minposX;
+        internal double _minposY;
+        internal double _imgw;
+        internal double _imgh;
+        internal double _unsavedX;
+        internal double _unsavedY;
+        internal double _unsavedCropW;
+        internal double _unsavedCropH;
+        internal IBrowserFile _prevFile;
+        internal IImageFormat _format;
+        internal Image _gifimage;
+        internal double _ratio = 1d;
+        internal bool _evInitialized = false;
+        internal double _minvalx;
+        internal double _minvaly;
 
         #endregion
 
 
         #region static actions
-        private static Action _setaction;
-        private static Action<MouseEventArgs> _mouseMoveAction;
-        private static Action<MouseEventArgs> _touchMoveAction;
-        private static Action<MouseEventArgs> _touchEndAction;
-        private static Action<MouseEventArgs> _mouseUpAction;
+        internal static Action _setaction;
+        internal static Action<MouseEventArgs> _mouseMoveAction;
+        internal static Action<MouseEventArgs> _touchMoveAction;
+        internal static Action<MouseEventArgs> _touchEndAction;
+        internal static Action<MouseEventArgs> _mouseUpAction;
         #endregion
 
 
@@ -320,22 +321,30 @@ namespace Blazor.Cropper
             await JSRuntime.InvokeVoidAsync("rmCropperEventListeners");
         }
 
-        protected override async Task OnParametersSetAsync()
+        private void InitAspectRatio()
         {
-            await base.OnParametersSetAsync();
+            _minvalx = _minval;
+            _minvaly = _minval;
             if (RequireAspectRatio)
             {
                 if (initCropHeight > initCropWidth * AspectRatio)
                 {
-                    initCropHeight = initCropWidth * AspectRatio;
+                    initCropWidth = initCropHeight / AspectRatio;
+                    _minvalx = _minvaly/AspectRatio;
                 }
                 else
                 {
-                    initCropWidth = initCropHeight / AspectRatio;
+                    initCropHeight = initCropWidth * AspectRatio;
+                    _minvaly = _minvalx * AspectRatio;
                 }
                 SetCropperStyle();
                 SetCroppedImgStyle();
             }
+        }
+        protected override async Task OnParametersSetAsync()
+        {
+            await base.OnParametersSetAsync();
+            InitAspectRatio();
             if (_prevFile == ImageFile)
             {
                 return;
@@ -347,11 +356,16 @@ namespace Blazor.Cropper
             string ext = ImageFile.Name.Split('.').Last().ToLower();
             IBrowserFile resizedImageFile = ImageFile;
             await Task.Delay(10);
-
-
             _gifimage?.Dispose();
             await LoadImage(ext, resizedImageFile);
+            await InitJSAsync();
+            await SetImgContainterSize();
+            await OnLoad.InvokeAsync();
+            await SizeChanged();
+        }
 
+        private async Task InitJSAsync()
+        {
             double[] data = new double[] { 0, 0 };
             while (data[0] == 0d)
             {
@@ -368,9 +382,6 @@ namespace Blazor.Cropper
                 await JSRuntime.InvokeVoidAsync("addCropperEventListeners");
                 _evInitialized = true;
             }
-            await SetImgContainterSize();
-            await OnLoad.InvokeAsync();
-            await SizeChanged();
         }
 
         protected override async Task OnAfterRenderAsync(bool first)
@@ -397,7 +408,6 @@ namespace Blazor.Cropper
                 _touchMoveAction = OnSizeChanging;
                 _touchEndAction = (args) =>
                 {
-                    _outOfBox = true;
                     OnSizeChangeEnd(args);
                 };
             }
@@ -443,7 +453,7 @@ namespace Blazor.Cropper
 
             var info = GetCropInfo();
             var rect = info.Rectangle;
-            var (x, y, proportionalCropWidth, proportionalCropHeight, resizeProp) = (rect.X, rect.Y,rect.Width,rect.Height,info.ResizeProp);
+            var (x, y, proportionalCropWidth, proportionalCropHeight, resizeProp) = (rect.X, rect.Y, rect.Width, rect.Height, info.ResizeProp);
             if (_gifimage == null)
             {
                 if (Environment.Version.Major > 5)
@@ -453,7 +463,7 @@ namespace Blazor.Cropper
                     var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg",
                         x, y, (proportionalCropWidth), (proportionalCropHeight), 0, 0,
                         proportionalCropWidth, proportionalCropHeight, _format.DefaultMimeType, Quality);
-                    return new ImageCroppedResult(bin,_format);
+                    return new ImageCroppedResult(bin, _format);
                 }
                 else
                 {
@@ -461,7 +471,7 @@ namespace Blazor.Cropper
                     string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg",
                         x, y, (proportionalCropWidth), (proportionalCropHeight), 0, 0,
                         proportionalCropWidth, proportionalCropHeight, _format.DefaultMimeType, Quality);
-                    return new ImageCroppedResult(s,_format);
+                    return new ImageCroppedResult(s, _format);
                 }
             }
             else
@@ -501,26 +511,31 @@ namespace Blazor.Cropper
             double y = ((_prevPosY - _bacy) + deltaY);
 
 
-            return new CropInfo { Rectangle = new Rectangle((int)(x * resizeProp), (int)(y * resizeProp),
-                (int)(width * resizeProp), (int)(height * resizeProp)), Ratio = Ratio, ResizeProp = resizeProp };
+            return new CropInfo
+            {
+                Rectangle = new Rectangle((int)(x * resizeProp), (int)(y * resizeProp),
+                (int)(width * resizeProp), (int)(height * resizeProp)),
+                Ratio = Ratio,
+                ResizeProp = resizeProp
+            };
         }
 
         #endregion
 
 
-        #region private methods
+        #region internal methods
 
-        private string GetCropperStyle(double top, double left, double height, double width)
+        internal string GetCropperStyle(double top, double left, double height, double width)
         {
             return FormattableString.Invariant($"top:{top}px;left:{left}px;height:{height}px;width:{width}px;");
         }
 
-        private string GetCroppedImgStyle(double top, double right, double bottom, double left)
+        internal string GetCroppedImgStyle(double top, double right, double bottom, double left)
         {
             return FormattableString.Invariant($"clip: rect({top}px, {right}px, {bottom}px, {left}px);");
         }
 
-        private (double resizeProp, double cw, double ch) GetCropperInfos()
+        internal (double resizeProp, double cw, double ch) GetCropperInfos()
         {
             double resizeProp = 1d;
             double cw = (initCropWidth);
@@ -537,36 +552,30 @@ namespace Blazor.Cropper
         }
 
 
-        private void SetCroppedImgStyle()
+        internal void SetCroppedImgStyle()
         {
             _cropedImgStyle = GetCroppedImgStyle(_prevPosY - _layoutY, _prevPosX - _layoutX + initCropWidth, _prevPosY - _layoutY + initCropHeight, _prevPosX - _layoutX);
         }
 
-        private void SetCropperStyle()
+        internal void SetCropperStyle()
         {
             _cropperStyle = GetCropperStyle(_prevPosY, _prevPosX, initCropHeight, initCropWidth);
         }
 
-        private MouseEventArgs TouchToMouse(TouchEventArgs args)
+        internal void TouchToMouse(TouchEventArgs args, Action<MouseEventArgs> handler)
         {
-            try
+            if (args != null && args.Touches != null && args.Touches.Length > 0)
             {
-                return new MouseEventArgs()
+                handler(new MouseEventArgs
                 {
                     ClientX = args.Touches[0].ClientX,
                     ClientY = args.Touches[0].ClientY
-                };
-            }
-            catch (System.Exception)
-            {
-                _outOfBox = true;
-                return new MouseEventArgs();
+                });
             }
         }
 
-        private void OnDragStart(MouseEventArgs args)
+        internal void OnDragStart(MouseEventArgs args)
         {
-            _outOfBox = false;
             if (_reSizing)
             {
                 return;
@@ -577,7 +586,7 @@ namespace Blazor.Cropper
             _dragging = true;
         }
 
-        private void OnDragging(MouseEventArgs args)
+        internal void OnDragging(MouseEventArgs args)
         {
             if (_dragging && !_reSizing)
             {
@@ -585,22 +594,18 @@ namespace Blazor.Cropper
                 double y = _prevPosY - (_offsetY - args.ClientY) / Ratio;
                 if (y < _minposY)
                 {
-                    _outOfBox = true;
                     y = _minposY;
                 }
                 if (x < _minposX)
                 {
-                    _outOfBox = true;
                     x = _minposX;
                 }
                 if (y + initCropHeight > (_minposY + _imgh))
                 {
-                    _outOfBox = true;
                     y = (_minposY + _imgh) - initCropHeight;
                 }
                 if (x + initCropWidth > (_minposX + _imgw))
                 {
-                    _outOfBox = true;
                     x = (_minposX + _imgw) - initCropWidth;
                 }
                 _unsavedX = x;
@@ -612,23 +617,16 @@ namespace Blazor.Cropper
             }
         }
 
-        private void OnDragEnd(MouseEventArgs args)
+        internal void OnDragEnd(MouseEventArgs args)
         {
             _dragging = false;
             OnDragging(args);
-            if (_outOfBox)
-            {
-                _prevPosX = _unsavedX;
-                _prevPosY = _unsavedY;
-                return;
-            }
-            _prevPosX -= (_offsetX - args.ClientX) / Ratio;
-            _prevPosY -= (_offsetY - args.ClientY) / Ratio;
+            _prevPosX = _unsavedX;
+            _prevPosY = _unsavedY;
         }
 
-        private void OnResizeStart(MouseEventArgs args, MoveDir dir)
+        internal void OnResizeStart(MouseEventArgs args, MoveDir dir)
         {
-            _outOfBox = false;
             this._dir = dir;
             if (_dragging)
             {
@@ -645,7 +643,7 @@ namespace Blazor.Cropper
             _reSizing = true;
         }
 
-        private async ValueTask LoadImage(string ext, IBrowserFile resizedImageFile)
+        internal async ValueTask LoadImage(string ext, IBrowserFile resizedImageFile)
         {
             if (PureCSharpProcessing || string.IsNullOrEmpty(InputId) || (ext == "gif" && AnimeGifEnable))
             {
@@ -688,240 +686,37 @@ namespace Blazor.Cropper
             }
         }
 
-        private void OnSizeChanging(MouseEventArgs args)
+        internal void OnSizeChanging(MouseEventArgs args)
         {
             if (_reSizing && !_dragging)
             {
-                double delta = (args.ClientY - _offsetY) / Ratio;
+                double deltaY = (args.ClientY - _offsetY) / Ratio;
                 double deltaX = (args.ClientX - _offsetX) / Ratio;
-                double ytemp = _prevPosY;
-                double tempCropHeight = initCropHeight;
-                double xtemp = _prevPosX;
-                double tempCropWidth = initCropWidth;
-                void xxLeft()
-                {
-                    tempCropHeight = initCropHeight +
-                        ((_dir == MoveDir.UpLeft) ? (-delta) : delta);
-                    tempCropWidth = initCropWidth - deltaX;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                        deltaX = initCropWidth - tempCropWidth;
-                    }
-                    xtemp = _prevPosX + deltaX;
-                };
-                switch (_dir)
-                {
-                    case MoveDir.Up:
-                        {
-                            ytemp = _prevPosY + delta;
-                            tempCropHeight = initCropHeight - delta;
-                            break;
-                        }
-                    case MoveDir.Down:
-                        {
-                            tempCropHeight = initCropHeight + delta;
-                            break;
-                        }
-                    case MoveDir.Left:
-                        {
-                            xtemp = _prevPosX + deltaX;
-                            tempCropWidth = initCropWidth - deltaX;
-                            break;
-                        }
-                    case MoveDir.Right:
-                        {
-                            tempCropWidth = initCropWidth + deltaX;
-                            break;
-                        }
-                    case MoveDir.UpLeft:
-                        {
-                            ytemp = _prevPosY + delta;
-                            xxLeft();
-                            break;
-                        }
-                    case MoveDir.UpRight:
-                        {
-                            ytemp = _prevPosY + delta;
-                            tempCropHeight = initCropHeight - delta;
-                            tempCropWidth = initCropWidth + deltaX;
-                            break;
-                        }
-                    case MoveDir.DownLeft:
-                        {
-                            xxLeft();
-                            break;
-                        }
-                    case MoveDir.DownRight:
-                        {
-                            tempCropHeight = initCropHeight + delta;
-                            tempCropWidth = initCropWidth + deltaX;
-                            break;
-                        }
-                    default:
-                        break;
-                }
-                if (RequireAspectRatio)
-                {
-                    _ = _dir switch
-                    {
-                        MoveDir.Left or MoveDir.Right =>
-                            tempCropHeight = tempCropWidth * AspectRatio,
-                        MoveDir.UpLeft or MoveDir.DownLeft => 0,
-                        MoveDir.UnKnown => throw new NotImplementedException(),
-                        _ => tempCropWidth = tempCropHeight / AspectRatio
-                    };
-                }
-                if (ytemp < _minposY)
-                {
-                    _outOfBox = true;
-                    ytemp = _minposY;
-                }
-                if (xtemp < _minposX)
-                {
-                    _outOfBox = true;
-                    xtemp = _minposX;
-                }
-                if (ytemp + tempCropHeight > (_minposY + _imgh))
-                {
-                    _outOfBox = true;
-                    tempCropHeight = (_minposY + _imgh) - ytemp;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropWidth = tempCropHeight / AspectRatio;
-                    }
-                }
-                if (xtemp + tempCropWidth > (_minposX + _imgw))
-                {
-                    _outOfBox = true;
-                    tempCropWidth = (_minposX + _imgw) - xtemp;
-                    if (RequireAspectRatio)
-                    {
-                        tempCropHeight = tempCropWidth / AspectRatio;
-                    }
-                }
-                void CheckMin(ref double len)
-                {
-                    if (len < _minval)
-                    {
-                        len = _minval;
-                        ytemp = _unsavedY;
-                        xtemp = _unsavedX;
-                    }
-                }
-                CheckMin(ref tempCropHeight);
-                CheckMin(ref tempCropWidth);
-                _unsavedX = xtemp;
-                _unsavedY = ytemp;
-                _unsavedCropH = tempCropHeight;
-                _unsavedCropW = tempCropWidth;
-                _cropperStyle = GetCropperStyle(ytemp, xtemp, tempCropHeight, tempCropWidth);
-                _cropedImgStyle = GetCroppedImgStyle(ytemp - _layoutY, xtemp - _layoutX + tempCropWidth, ytemp - _layoutY + tempCropHeight, xtemp - _layoutX);
+                var cb = new CropBox(this);
+                cb.DragCorner(deltaX, deltaY,_dir);
+                _unsavedX = cb.X;
+                _unsavedY = cb.Y;
+                _unsavedCropH = cb.H;
+                _unsavedCropW = cb.W;
+                _cropperStyle = GetCropperStyle(cb.Y, cb.X, cb.H, cb.W);
+                _cropedImgStyle = GetCroppedImgStyle(cb.Y - _layoutY, cb.X - _layoutX + cb.W, cb.Y - _layoutY + cb.H, cb.X - _layoutX);
             }
             OnDragging(args);
             base.StateHasChanged();
         }
 
-        private void OnSizeChangeEnd(MouseEventArgs args)
+        internal void OnSizeChangeEnd(MouseEventArgs args)
         {
             if (_reSizing)
             {
                 _reSizing = false;
                 OnSizeChanging(args);
-                double delta = (args.ClientY - _offsetY) / Ratio;
-                double deltaX = (args.ClientX - _offsetX) / Ratio;
-                if (_outOfBox)
-                {
-                    initCropHeight = _unsavedCropH;
-                    initCropWidth = _unsavedCropW;
-                    _prevPosY = _unsavedY;
-                    _prevPosX = _unsavedX;
-                    SizeChanged();
-                    return;
-                }
-                switch (_dir)
-                {
-                    case MoveDir.Up:
-                        {
-                            _prevPosY = _prevPosY + delta;
-                            initCropHeight -= delta;
-                            break;
-                        }
-                    case MoveDir.Down:
-                        {
-                            initCropHeight += delta;
-                            break;
-                        }
-                    case MoveDir.Left:
-                        {
-                            _prevPosX += deltaX;
-                            initCropWidth -= deltaX;
-                            break;
-                        }
-                    case MoveDir.Right:
-                        {
-                            initCropWidth += deltaX;
-                            break;
-                        }
-                    case MoveDir.UpLeft:
-                        {
-                            _prevPosY = _prevPosY + delta;
-                            initCropHeight -= delta;
-                            break;
-                        }
-                    case MoveDir.DownLeft:
-                        {
-                            initCropHeight += delta;
-                            break;
-                        }
-                    case MoveDir.UpRight:
-                        {
-                            _prevPosY = _prevPosY + delta;
-                            initCropHeight -= delta;
-                            initCropWidth += deltaX;
-                            break;
-                        }
-                    case MoveDir.DownRight:
-                        {
-                            initCropHeight += delta;
-                            initCropWidth += deltaX;
-                            break;
-                        }
-                    default:
-                        break;
-                }
-                double xxLeft()
-                {
-                    double ori = initCropWidth;
-                    initCropWidth = initCropHeight / AspectRatio;
-                    deltaX = ori - initCropWidth;
-                    _prevPosX += deltaX;
-                    return 0;
-                }
-                if (RequireAspectRatio)
-                {
-                    _ = _dir switch
-                    {
-                        MoveDir.Left or MoveDir.Right =>
-                            initCropHeight = initCropWidth * AspectRatio,
-                        MoveDir.UpLeft or MoveDir.DownLeft => xxLeft(),
-                        MoveDir.UnKnown => throw new NotImplementedException(),
-                        _ => initCropWidth = initCropHeight / AspectRatio
-                    };
-                }
-                else if (!RequireAspectRatio && (_dir is MoveDir.UpLeft or MoveDir.DownLeft))
-                {
-                    _prevPosX += deltaX;
-                    initCropWidth -= deltaX;
-                }
-                if (initCropHeight < _minval)
-                {
-                    initCropHeight = _minval;
-                }
-                if (initCropWidth < _minval)
-                {
-                    initCropWidth = _minval;
-                }
+                initCropHeight = _unsavedCropH;
+                initCropWidth = _unsavedCropW;
+                _prevPosY = _unsavedY;
+                _prevPosX = _unsavedX;
+                SizeChanged();
+                return;
             }
             if (_dragging)
             {
@@ -930,13 +725,13 @@ namespace Blazor.Cropper
             SizeChanged();
         }
 
-        private Task SizeChanged()
+        internal Task SizeChanged()
         {
             var (resizeProp, cw, ch) = GetCropperInfos();
             return OnSizeChanged.InvokeAsync((cw * resizeProp, ch * resizeProp));
         }
 
-        private TouchEventArgs MouseToTouch(MouseEventArgs args)
+        internal TouchEventArgs MouseToTouch(MouseEventArgs args)
         {
             return new TouchEventArgs
             {
@@ -950,7 +745,7 @@ namespace Blazor.Cropper
                 }
             };
         }
-        private void GuardImgPosition()
+        internal void GuardImgPosition()
         {
             if (WiderThanContainer)
             {
@@ -963,7 +758,7 @@ namespace Blazor.Cropper
                 _minposX = (_imgContainerWidth - ImgRealW) / 2;
             }
         }
-        private void ResizeBac(double i)
+        internal void ResizeBac(double i)
         {
             double temp = _imgSize;
             if (_imgSize * i < 100 && i < 1 ||
@@ -984,7 +779,7 @@ namespace Blazor.Cropper
             }
         }
 
-        private void OnResizeBackGroundImage(TouchEventArgs args)
+        internal void OnResizeBackGroundImage(TouchEventArgs args)
         {
             if (args.Touches.Length == 1)
             {
@@ -1038,7 +833,7 @@ namespace Blazor.Cropper
 
         }
 
-        private async Task SetImgContainterSize()
+        internal async Task SetImgContainterSize()
         {
             double[] t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
             // in the case that container has not yet loaded 
@@ -1052,13 +847,13 @@ namespace Blazor.Cropper
             InitStyles();
         }
 
-        private void InitBox()
+        internal void InitBox()
         {
             double prevPosX = 0d, prevPosY = 0d;
 
             InitPos(ref prevPosX, ref prevPosY);
         }
-        private void InitPos(ref double prevPosX, ref double prevPosY)
+        internal void InitPos(ref double prevPosX, ref double prevPosY)
         {
             if (WiderThanContainer)
             {
@@ -1078,7 +873,7 @@ namespace Blazor.Cropper
             _imgh = ImgRealH;
         }
 
-        private void InitStyles()
+        internal void InitStyles()
         {
             InitPos(ref _prevPosX, ref _prevPosY);
             _prevPosX += OffsetX;

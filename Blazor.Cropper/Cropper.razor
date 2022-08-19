@@ -23,19 +23,19 @@
                   _isBacMoving = true;
               }"/>
     <div draggable="false" id="mainBox" @ontouchstart:stopPropagation
-        @ontouchend="args=> OnSizeChangeEnd(TouchToMouse(args))"
+        @ontouchend="args=> TouchToMouse(args,OnSizeChangeEnd)"
         style="@_cropperStyle">
-        <div id="left-up" class="minBox left-up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.UpLeft)" @onmousedown="args=> OnResizeStart(args,MoveDir.UpLeft)"></div>
-        <div id="up" class="minBox up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Up)" @onmousedown="args=> OnResizeStart(args,MoveDir.Up)"></div>
-        <div id="right-up" class="minBox right-up" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.UpRight)" @onmousedown="args=> OnResizeStart(args,MoveDir.UpRight)"></div>
-        <div id="left" class="minBox left" @onmousedown="args=> OnResizeStart(args,MoveDir.Left)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Left)"></div>
-        <div id="right" class="minBox right" @onmousedown="args=> OnResizeStart(args,MoveDir.Right)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Right)"></div>
-        <div id="left-down" class="minBox left-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownLeft)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.DownLeft)"></div>
-        <div id="down" class="minBox down" @onmousedown="args=> OnResizeStart(args,MoveDir.Down)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.Down)"></div>
-        <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> OnResizeStart(TouchToMouse(args),MoveDir.DownRight)"></div>
+        <div id="left-up" class="minBox left-up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.UpLeft))" @onmousedown="args=> OnResizeStart(args,MoveDir.UpLeft)"></div>
+        <div id="up" class="minBox up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Up))" @onmousedown="args=> OnResizeStart(args,MoveDir.Up)"></div>
+        <div id="right-up" class="minBox right-up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.UpRight))" @onmousedown="args=> OnResizeStart(args,MoveDir.UpRight)"></div>
+        <div id="left" class="minBox left" @onmousedown="args=> OnResizeStart(args,MoveDir.Left)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Left))"></div>
+        <div id="right" class="minBox right" @onmousedown="args=> OnResizeStart(args,MoveDir.Right)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Right))"></div>
+        <div id="left-down" class="minBox left-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownLeft)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.DownLeft))"></div>
+        <div id="down" class="minBox down" @onmousedown="args=> OnResizeStart(args,MoveDir.Down)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Down))"></div>
+        <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.DownRight))"></div>
     </div>
-    <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> OnDragStart(TouchToMouse(args))"
-        @ontouchend="args=> OnDragEnd(TouchToMouse(args))"
+    <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> TouchToMouse(args,OnDragStart)"
+        @ontouchend="args=> TouchToMouse(args,OnDragEnd)"
         class="img" draggable="false"  style="@(BackgroundImgStyle+_cropedImgStyle)" src="" @ontouchstart:stopPropagation />
 </div>
 </div>

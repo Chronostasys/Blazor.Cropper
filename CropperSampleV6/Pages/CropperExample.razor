@@ -83,12 +83,13 @@ else
     <option value="true">Enable proportion</option>
     <option value="false">Disable proportion</option>
 </select>
-Quality, only works for jpg and webp
-<input type="range" min="1" max="100" @bind-value="quality" />
 @if (bool.Parse(enableProportion))
 {
     <input type="number" @bind-value="proportion" placeholder="proportion" />
 }
+<br />
+Quality, only works for jpg and webp
+<input type="range" min="1" max="100" @bind-value="quality" />
 <br />
 Pure c# processiing:
 <input type="checkbox" @bind="purecs" />
