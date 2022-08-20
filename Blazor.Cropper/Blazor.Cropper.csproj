@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/Chronostasys/Blazor.Cropper</RepositoryUrl>
     <PackageTags>Blazor,Cropper,Crop,Image</PackageTags>
     <PackageId>Chronos.Blazor.Cropper</PackageId>
-    <Version>1.2.10</Version>
+    <Version>1.2.11</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
