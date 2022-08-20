@@ -23,7 +23,7 @@
                   _isBacMoving = true;
               }"/>
     <div draggable="false" id="mainBox" @ontouchstart:stopPropagation
-        @ontouchend="args=> TouchToMouse(args,OnSizeChangeEnd)"
+        @ontouchend="OnSizeChangeEnd"
         style="@_cropperStyle">
         <div id="left-up" class="minBox left-up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.UpLeft))" @onmousedown="args=> OnResizeStart(args,MoveDir.UpLeft)"></div>
         <div id="up" class="minBox up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Up))" @onmousedown="args=> OnResizeStart(args,MoveDir.Up)"></div>
@@ -35,7 +35,7 @@
         <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.DownRight))"></div>
     </div>
     <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> TouchToMouse(args,OnDragStart)"
-        @ontouchend="args=> TouchToMouse(args,OnDragEnd)"
+        @ontouchend="OnDragEnd"
         class="img" draggable="false"  style="@(BackgroundImgStyle+_cropedImgStyle)" src="" @ontouchstart:stopPropagation />
 </div>
 </div>

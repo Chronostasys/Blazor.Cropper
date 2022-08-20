@@ -14,6 +14,9 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace Blazor.Cropper
 {
+    /// <summary>
+    /// Cropper component
+    /// </summary>
     public partial class Cropper : IAsyncDisposable
     {
         [Inject]
@@ -296,17 +299,19 @@ namespace Blazor.Cropper
         internal static Action _setaction;
         internal static Action<MouseEventArgs> _mouseMoveAction;
         internal static Action<MouseEventArgs> _touchMoveAction;
-        internal static Action<MouseEventArgs> _touchEndAction;
-        internal static Action<MouseEventArgs> _mouseUpAction;
+        internal static Action _touchEndAction;
+        internal static Action _mouseUpAction;
         #endregion
 
 
 
         #region Override methods
+        /// <inheritdoc/>
         protected override async Task OnInitializedAsync()
         {
             await JSRuntime.InvokeVoidAsync("setVersion", Environment.Version.Major);
         }
+        /// <inheritdoc/>
         protected override void OnParametersSet()
         {
             base.OnParametersSet();
@@ -316,6 +321,7 @@ namespace Blazor.Cropper
                 initCropHeight = InitCropHeight;
             }
         }
+        /// <inheritdoc/>
         public async ValueTask DisposeAsync()
         {
             await JSRuntime.InvokeVoidAsync("rmCropperEventListeners");
@@ -341,6 +347,7 @@ namespace Blazor.Cropper
                 SetCroppedImgStyle();
             }
         }
+        /// <inheritdoc/>
         protected override async Task OnParametersSetAsync()
         {
             await base.OnParametersSetAsync();
@@ -383,7 +390,7 @@ namespace Blazor.Cropper
                 _evInitialized = true;
             }
         }
-
+        /// <inheritdoc/>
         protected override async Task OnAfterRenderAsync(bool first)
         {
             await base.OnAfterRenderAsync(first);
@@ -395,7 +402,7 @@ namespace Blazor.Cropper
                     OnSizeChanging(args);
                     OnResizeBackGroundImage(MouseToTouch(args));
                 };
-                _mouseUpAction = args =>
+                _mouseUpAction = () =>
                 {
                     if (_onTwoFingerResizing || _isBacMoving)
                     {
@@ -403,12 +410,12 @@ namespace Blazor.Cropper
                         _onTwoFingerResizing = false;
                         InitBox();
                     }
-                    OnSizeChangeEnd(args);
+                    OnSizeChangeEnd();
                 };
                 _touchMoveAction = OnSizeChanging;
-                _touchEndAction = (args) =>
+                _touchEndAction = () =>
                 {
-                    OnSizeChangeEnd(args);
+                    OnSizeChangeEnd();
                 };
             }
         }
@@ -416,9 +423,9 @@ namespace Blazor.Cropper
 
         #region JsInvokable methods
         [JSInvokable("OnTouchEnd")]
-        public static void TouchEndCaller(MouseEventArgs args)
+        public static void TouchEndCaller()
         {
-            _touchEndAction?.Invoke(args);
+            _touchEndAction?.Invoke();
         }
         [JSInvokable("OnTouchMove")]
         public static void TouchMoveCaller(MouseEventArgs args)
@@ -426,9 +433,9 @@ namespace Blazor.Cropper
             _touchMoveAction?.Invoke(args);
         }
         [JSInvokable("OnMouseUp")]
-        public static void MouseUpCaller(MouseEventArgs args)
+        public static void MouseUpCaller()
         {
-            _mouseUpAction?.Invoke(args);
+            _mouseUpAction?.Invoke();
         }
         [JSInvokable("OnMouseMove")]
         public static void MouseMoveCaller(MouseEventArgs args)
@@ -617,10 +624,9 @@ namespace Blazor.Cropper
             }
         }
 
-        internal void OnDragEnd(MouseEventArgs args)
+        internal void OnDragEnd()
         {
             _dragging = false;
-            OnDragging(args);
             _prevPosX = _unsavedX;
             _prevPosY = _unsavedY;
         }
@@ -705,12 +711,11 @@ namespace Blazor.Cropper
             base.StateHasChanged();
         }
 
-        internal void OnSizeChangeEnd(MouseEventArgs args)
+        internal void OnSizeChangeEnd()
         {
             if (_reSizing)
             {
                 _reSizing = false;
-                OnSizeChanging(args);
                 initCropHeight = _unsavedCropH;
                 initCropWidth = _unsavedCropW;
                 _prevPosY = _unsavedY;
@@ -720,7 +725,7 @@ namespace Blazor.Cropper
             }
             if (_dragging)
             {
-                OnDragEnd(args);
+                OnDragEnd();
             }
             SizeChanged();
         }

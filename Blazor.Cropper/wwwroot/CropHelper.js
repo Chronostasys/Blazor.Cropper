@@ -9,7 +9,7 @@ const onMousemove = (ev) => {
 const onMouseup = (ev) => {
     console.log("up")
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp', serializeEvent(ev));
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp');
     } catch (error) {
     }
 }
@@ -25,10 +25,7 @@ const onTouchmove = (ev) => {
 }
 const onTouchend = (ev) => {
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd', {
-            clientX: ev.touches[0].clientX,
-            clientY: ev.touches[0].clientY
-        });
+        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd');
     } catch (error) {
 
     }

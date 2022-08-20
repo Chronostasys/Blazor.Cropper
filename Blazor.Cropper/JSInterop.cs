@@ -25,5 +25,10 @@ namespace Blazor.Cropper
         {
             return js.InvokeVoidAsync("setSrc", bin, imgid,format);
         }
+
+        public static ValueTask LogAsync(this IJSRuntime js,params object[] objs)
+        {
+            return js.InvokeVoidAsync("console.log", objs);
+        }
     }
 }
