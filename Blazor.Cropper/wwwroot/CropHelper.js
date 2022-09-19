@@ -7,7 +7,7 @@ const onMousemove = (ev) => {
     }
 }
 const onMouseup = (ev) => {
-    console.log("up")
+    console.debug("up")
     try {
         DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp');
     } catch (error) {
