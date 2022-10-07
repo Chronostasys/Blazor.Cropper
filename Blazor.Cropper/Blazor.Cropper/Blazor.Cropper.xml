@@ -230,7 +230,7 @@
             </summary>
             <param name="js"></param>
             <param name="bin">image bytes</param>
-            <param name="imgid">img element id</param>
+            <param name="imgId">img element id</param>
             <param name="format">like image/jpg</param>
             <returns></returns>
         </member>

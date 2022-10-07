@@ -1,155 +1,137 @@
 ﻿<div class="image-list">
-<div id="blazor_cropper" class="image-list unSelectAble" style="@(RatioStyle+ImglistStyle)" >
-    <img id="oriimg" class="imgbac" draggable="false" src="" style="@(BackgroundImgStyle)"
-        @ontouchend="(args)=>{
-                 if(_onTwoFingerResizing||_isBacMoving)
-                 {
-                     _isBacMoving = false;
-                     _onTwoFingerResizing=false;
-                     InitBox();
-                 }
-             }"
-        @ontouchmove:stopPropagation
-        @ontouchstart:stopPropagation
-        @ontouchmove="OnResizeBackGroundImage"
-        @ontouchstart="args=>{
-                   _prevBacX = args.Touches[0].ClientX;
-                   _prevBacY = args.Touches[0].ClientY;
-                   _isBacMoving = true;
-               }"
-        @onmousedown="args=>{
-                  _prevBacX = args.ClientX;
-                  _prevBacY = args.ClientY;
-                  _isBacMoving = true;
-              }"/>
-    <div draggable="false" id="mainBox" @ontouchstart:stopPropagation
-        @ontouchend="OnSizeChangeEnd"
-        style="@_cropperStyle">
-        <div id="left-up" class="minBox left-up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.UpLeft))" @onmousedown="args=> OnResizeStart(args,MoveDir.UpLeft)"></div>
-        <div id="up" class="minBox up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Up))" @onmousedown="args=> OnResizeStart(args,MoveDir.Up)"></div>
-        <div id="right-up" class="minBox right-up" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.UpRight))" @onmousedown="args=> OnResizeStart(args,MoveDir.UpRight)"></div>
-        <div id="left" class="minBox left" @onmousedown="args=> OnResizeStart(args,MoveDir.Left)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Left))"></div>
-        <div id="right" class="minBox right" @onmousedown="args=> OnResizeStart(args,MoveDir.Right)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Right))"></div>
-        <div id="left-down" class="minBox left-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownLeft)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.DownLeft))"></div>
-        <div id="down" class="minBox down" @onmousedown="args=> OnResizeStart(args,MoveDir.Down)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Down))"></div>
-        <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.DownRight))"></div>
+    <div id="blazor_cropper" class="image-list unSelectAble" style="@(RatioStyle + ImglistStyle)">
+        <img id="oriimg" class="imgbac" draggable="false" src="" style="@(BackgroundImgStyle)"
+             @ontouchend="args =>{ if (_onTwoFingerResizing || _isBacMoving) { _isBacMoving = false; _onTwoFingerResizing = false; InitBox(); } }"
+             @ontouchmove:stopPropagation
+             @ontouchstart:stopPropagation
+             @ontouchmove="OnResizeBackGroundImage"
+             @ontouchstart="args =>{ _prevBacX = args.Touches[0].ClientX; _prevBacY = args.Touches[0].ClientY; _isBacMoving = true; }"
+             @onmousedown="args =>{ _prevBacX = args.ClientX; _prevBacY = args.ClientY; _isBacMoving = true; }"/>
+        <div draggable="false" id="mainBox" @ontouchstart:stopPropagation
+                                            @ontouchend="OnSizeChangeEnd"
+             style="@_cropperStyle">
+            <div id="left-up" class="minBox left-up" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.UpLeft))" @onmousedown="args => OnResizeStart(args, MoveDir.UpLeft)"></div>
+            <div id="up" class="minBox up" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.Up))" @onmousedown="args => OnResizeStart(args, MoveDir.Up)"></div>
+            <div id="right-up" class="minBox right-up" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.UpRight))" @onmousedown="args => OnResizeStart(args, MoveDir.UpRight)"></div>
+            <div id="left" class="minBox left" @onmousedown="args => OnResizeStart(args, MoveDir.Left)" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.Left))"></div>
+            <div id="right" class="minBox right" @onmousedown="args => OnResizeStart(args, MoveDir.Right)" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.Right))"></div>
+            <div id="left-down" class="minBox left-down" @onmousedown="args => OnResizeStart(args, MoveDir.DownLeft)" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.DownLeft))"></div>
+            <div id="down" class="minBox down" @onmousedown="args => OnResizeStart(args, MoveDir.Down)" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.Down))"></div>
+            <div id="right-down" class="minBox right-down" @onmousedown="args => OnResizeStart(args, MoveDir.DownRight)" @ontouchstart="args => TouchToMouse(args, arg => OnResizeStart(arg, MoveDir.DownRight))"></div>
+        </div>
+        <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args => TouchToMouse(args, OnDragStart)"
+             @ontouchend="OnDragEnd"
+             class="img" draggable="false" style="@(BackgroundImgStyle + _cropedImgStyle)" src="" @ontouchstart:stopPropagation/>
     </div>
-    <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> TouchToMouse(args,OnDragStart)"
-        @ontouchend="OnDragEnd"
-        class="img" draggable="false"  style="@(BackgroundImgStyle+_cropedImgStyle)" src="" @ontouchstart:stopPropagation />
-</div>
 </div>
 
 <style>
-.unSelectAble{
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-    touch-action: none;
-    -ms-touch-action: none;
-}
-
-.image-list{
-    position: relative;
-    background-color: grey;
-    overflow: auto;
-    scrollbar-width: none;
-}
-
-.image-list::-webkit-scrollbar {
-    display: none;
-}
-
-.imgbac{
-    opacity: 0.5;
-    position: absolute;
-    object-fit: contain;
-    width: 100%;
-    height: 100%;
-
-}
-.img{
-    position: absolute;
-    clip: rect(0, 150px, 150px, 0);
-    cursor: move;
-    object-fit: contain;
-    width: 100%;
-    height: 100%;
-}
-#mainBox {
-    border: 1px solid white;
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    cursor: move!important;
-}
-
-.minBox {
-    position: absolute;
-    height: 12px;
-    width: 12px;
-    background-color: white;
-}
-
-.left-up {
-    top: -6px;
-    left: -6px;
-    cursor: nw-resize;
-}
-
-.up {
-    left: 50%;
-    margin-left: -6px;
-    top: -6px;
-    cursor: n-resize;
-}
-
-.right-up {
-    right: -6px;
-    top: -6px;
-    cursor: ne-resize;
-}
-
-.left {
-    top: 50%;
-    margin-top: -6px;
-    left: -6px;
-    cursor: w-resize;
-}
-
-.right {
-    top: 50%;
-    margin-top: -6px;
-    right: -6px;
-    cursor: e-resize;
-}
-
-.left-down {
-    bottom: -6px;
-    left: -6px;
-    cursor: sw-resize;
-}
-
-.down {
-    bottom: -6px;
-    left: 50%;
-    margin-left: -6px;
-    cursor: s-resize;
-}
-
-.right-down {
-    bottom: -6px;
-    right: -6px;
-    cursor: se-resize;
-}
-@@media screen and (max-width: 1080px) {
-    .right-down,.left-down,.left-up,.right-up{
-        z-index: 99;
+    .unSelectAble {
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-touch-action: none;
+        -o-user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+        user-select: none;
     }
-    .right,.left,.down,.up{
-        display: none;
+
+    .image-list {
+        background-color: grey;
+        overflow: auto;
+        position: relative;
+        scrollbar-width: none;
     }
-}
+
+    .image-list::-webkit-scrollbar { display: none; }
+
+    .imgbac {
+        height: 100%;
+        object-fit: contain;
+        opacity: 0.5;
+        position: absolute;
+        width: 100%;
+    }
+
+    .img {
+        clip: rect(0, 150px, 150px, 0);
+        cursor: move;
+        height: 100%;
+        object-fit: contain;
+        position: absolute;
+        width: 100%;
+    }
+
+    #mainBox {
+        border: 1px solid white;
+        cursor: move !important;
+        height: 150px;
+        position: absolute;
+        width: 150px;
+    }
+
+    .minBox {
+        background-color: white;
+        height: 12px;
+        position: absolute;
+        width: 12px;
+    }
+
+    .left-up {
+        cursor: nw-resize;
+        left: -6px;
+        top: -6px;
+    }
+
+    .up {
+        cursor: n-resize;
+        left: 50%;
+        margin-left: -6px;
+        top: -6px;
+    }
+
+    .right-up {
+        cursor: ne-resize;
+        right: -6px;
+        top: -6px;
+    }
+
+    .left {
+        cursor: w-resize;
+        left: -6px;
+        margin-top: -6px;
+        top: 50%;
+    }
+
+    .right {
+        cursor: e-resize;
+        margin-top: -6px;
+        right: -6px;
+        top: 50%;
+    }
+
+    .left-down {
+        bottom: -6px;
+        cursor: sw-resize;
+        left: -6px;
+    }
+
+    .down {
+        bottom: -6px;
+        cursor: s-resize;
+        left: 50%;
+        margin-left: -6px;
+    }
+
+    .right-down {
+        bottom: -6px;
+        cursor: se-resize;
+        right: -6px;
+    }
+
+    @@media screen and (max-width: 1080px) {
+        .right-down, .left-down, .left-up, .right-up { z-index: 99; }
+
+        .right, .left, .down, .up { display: none; }
+    }
 </style>
