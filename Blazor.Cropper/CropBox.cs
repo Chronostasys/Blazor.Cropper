@@ -107,14 +107,15 @@ internal class CropBox
     internal void AdjustWH(MoveDir dir)
     {
         if (_requestRatio)
+        {
             _ = dir switch
             {
-                MoveDir.Left or MoveDir.Right =>
-                    H = W * _ratio,
+                MoveDir.Left or MoveDir.Right => H = W * _ratio,
                 MoveDir.UpLeft or MoveDir.DownLeft => 0,
                 MoveDir.UnKnown => throw new NotImplementedException(),
                 _ => W = H / _ratio
             };
+        }
     }
 
     internal void CheckOutOfBox()
@@ -125,7 +126,10 @@ internal class CropBox
             Y = _minposY;
             H += ydelta;
             W = _requestRatio ? H / _ratio : W;
-            if (X - _unsavedX < 0) X = _unsavedX - (W - _unsavedW);
+            if (X - _unsavedX < 0)
+            {
+                X = _unsavedX - (W - _unsavedW);
+            }
         }
 
         if (X < _minposX)
@@ -134,7 +138,10 @@ internal class CropBox
             X = _minposX;
             W += xdelta;
             H = _requestRatio ? W * _ratio : H;
-            if (Y - _unsavedY < 0) Y = _unsavedY - (H - _unsavedH);
+            if (Y - _unsavedY < 0)
+            {
+                Y = _unsavedY - (H - _unsavedH);
+            }
         }
 
         if (Y + H > _minposY + _imgh)

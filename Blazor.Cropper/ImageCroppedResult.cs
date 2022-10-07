@@ -55,7 +55,11 @@ public class ImageCroppedResult : IDisposable
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<byte[]> GetDataAsync()
     {
-        if (_data != null) return _data;
+        if (_data != null)
+        {
+            return _data;
+        }
+
         if (_base64 != null)
         {
             _data = Convert.FromBase64String(_base64);
@@ -88,8 +92,15 @@ public class ImageCroppedResult : IDisposable
             return Img.SaveAsync(s, encoder);
         }
 
-        if (_data != null) return s.WriteAsync(_data).AsTask();
-        if (_base64 == null) throw new InvalidOperationException();
+        if (_data != null)
+        {
+            return s.WriteAsync(_data).AsTask();
+        }
+
+        if (_base64 == null)
+        {
+            throw new InvalidOperationException();
+        }
 
         _data = Convert.FromBase64String(_base64);
         return s.WriteAsync(_data).AsTask();
@@ -105,6 +116,8 @@ public class ImageCroppedResult : IDisposable
                 break;
             case WebpEncoder e:
                 e.Quality = Quality;
+                break;
+            default:
                 break;
         }
 
