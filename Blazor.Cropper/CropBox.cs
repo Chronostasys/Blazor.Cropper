@@ -148,15 +148,25 @@ internal class CropBox
         {
             H = _minposY + _imgh - Y;
             W = _requestRatio ? H / _ratio : W;
-            if (Y - _unsavedY < 0) Y = _unsavedY - (H - _unsavedH);
-            if (X - _unsavedX < 0) X = _unsavedX - (W - _unsavedW);
+            if (Y - _unsavedY < 0)
+            {
+                Y = _unsavedY - (H - _unsavedH);
+            }
+
+            if (X - _unsavedX < 0)
+            {
+                X = _unsavedX - (W - _unsavedW);
+            }
         }
 
         if (X + W > _minposX + _imgw)
         {
             W = _minposX + _imgw - X;
             H = _requestRatio ? W * _ratio : H;
-            if (Y - _unsavedY < 0) Y = _unsavedY - (H - _unsavedH);
+            if (Y - _unsavedY < 0)
+            {
+                Y = _unsavedY - (H - _unsavedH);
+            }
         }
     }
 
