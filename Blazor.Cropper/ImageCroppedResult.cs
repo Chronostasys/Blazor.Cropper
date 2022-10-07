@@ -7,7 +7,6 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
 
-namespace Blazor.Cropper;
 
 public class ImageCroppedResult : IDisposable
 {

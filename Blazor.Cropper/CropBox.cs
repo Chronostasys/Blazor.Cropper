@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Blazor.Cropper;
 
-namespace Blazor.Cropper;
 
 internal class CropBox
 {

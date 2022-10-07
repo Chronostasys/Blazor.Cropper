@@ -1,6 +1,5 @@
 ﻿using SixLabors.ImageSharp;
 
-namespace Blazor.Cropper;
 
 /// <summary>
 ///     Crop metadata

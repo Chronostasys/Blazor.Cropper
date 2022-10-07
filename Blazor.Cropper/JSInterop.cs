@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace Blazor.Cropper;
-
 /// <summary>
 ///     js interop methods
 /// </summary>

@@ -3,8 +3,6 @@ using System.IO;
 using System.Threading;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace Blazor.Cropper;
-
 /// <summary>
 ///     mock a browserfile from a stream
 /// </summary>

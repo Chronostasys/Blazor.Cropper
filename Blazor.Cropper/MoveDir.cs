@@ -1,5 +1,3 @@
-namespace Blazor.Cropper;
-
 internal enum MoveDir
 {
     Up,
