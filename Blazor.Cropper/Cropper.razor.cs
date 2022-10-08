@@ -23,7 +23,16 @@ namespace Blazor.Cropper
         internal IJSRuntime JSRuntime { get; set; }
 
         #region params
-
+        /// <summary>
+        /// choose the final Height of the cropped image
+        /// </summary>
+        [Parameter]
+        public double FinalCropHeight { get; set; }
+        /// <summary>
+        /// choose the final Width of the cropped image
+        /// </summary>
+        [Parameter]
+        public double FinalCropWidth { get; set; }
         /// <summary>
         /// whether use c# for ordinary img processing
         /// </summary>
@@ -461,6 +470,8 @@ namespace Blazor.Cropper
             var info = GetCropInfo();
             var rect = info.Rectangle;
             var (x, y, proportionalCropWidth, proportionalCropHeight, resizeProp) = (rect.X, rect.Y, rect.Width, rect.Height, info.ResizeProp);
+            double finalImageHeight = FinalCropHeight != 0 ? FinalCropHeight : proportionalCropHeight;
+            double finalImageWidth = FinalCropWidth != 0 ? FinalCropWidth : proportionalCropWidth;
             if (_gifimage == null)
             {
                 if (Environment.Version.Major > 5)
@@ -469,7 +480,7 @@ namespace Blazor.Cropper
                     // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
                     var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg",
                         x, y, (proportionalCropWidth), (proportionalCropHeight), 0, 0,
-                        proportionalCropWidth, proportionalCropHeight, _format.DefaultMimeType, Quality);
+                        finalImageWidth, finalImageHeight, _format.DefaultMimeType, Quality);
                     return new ImageCroppedResult(bin, _format);
                 }
                 else
@@ -477,7 +488,7 @@ namespace Blazor.Cropper
                     // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
                     string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg",
                         x, y, (proportionalCropWidth), (proportionalCropHeight), 0, 0,
-                        proportionalCropWidth, proportionalCropHeight, _format.DefaultMimeType, Quality);
+                        finalImageWidth, finalImageHeight, _format.DefaultMimeType, Quality);
                     return new ImageCroppedResult(s, _format);
                 }
             }
