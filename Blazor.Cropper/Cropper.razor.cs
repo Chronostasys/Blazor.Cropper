@@ -665,7 +665,7 @@ namespace Blazor.Cropper
             if (PureCSharpProcessing || string.IsNullOrEmpty(InputId) || (ext == "gif" && AnimeGifEnable))
             {
                 byte[] buffer = new byte[resizedImageFile.Size];
-                if (Environment.Version.Major == 6)
+                if (Environment.Version.Major >= 6)
                 {
                     var isClientSide = JSRuntime is IJSInProcessRuntime;
                     if (isClientSide)
