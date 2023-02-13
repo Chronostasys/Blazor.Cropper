@@ -66,7 +66,7 @@ Just add cropper to your code. We recommend you to use it inside a modal card.
 Example:
 ```razor
 @* .... some code ...*@
-<InputFile @onchange="OnInputFileChange"></InputFile>
+<InputFile OnChange="OnInputFileChange"></InputFile>
 <Cropper ImageFile="file" ></Cropper>
 @* .... some code ...*@
     async Task OnInputFileChange(InputFileChangeEventArgs args)
