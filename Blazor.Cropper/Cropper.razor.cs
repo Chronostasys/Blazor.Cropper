@@ -300,21 +300,30 @@ namespace Blazor.Cropper
         internal bool _evInitialized = false;
         internal double _minvalx;
         internal double _minvaly;
+        internal ElementReference _cropperElmRef;
+        internal ElementReference _oriImg;
+        internal ElementReference _dimg;
+        internal DotNetObjectReference<Cropper> _cropperRef;
 
         #endregion
 
 
-        #region static actions
-        internal static Action _setaction;
-        internal static Action<MouseEventArgs> _mouseMoveAction;
-        internal static Action<MouseEventArgs> _touchMoveAction;
-        internal static Action _touchEndAction;
-        internal static Action _mouseUpAction;
+        #region  actions
+        internal Action _setaction;
+        internal Action<MouseEventArgs> _mouseMoveAction;
+        internal Action<MouseEventArgs> _touchMoveAction;
+        internal Action _touchEndAction;
+        internal Action _mouseUpAction;
         #endregion
 
 
 
         #region Override methods
+        /// <inheritdoc/>
+        protected override void OnInitialized()
+        {
+            _cropperRef = DotNetObjectReference.Create(this);
+        }
         /// <inheritdoc/>
         protected override async Task OnInitializedAsync()
         {
@@ -345,7 +354,7 @@ namespace Blazor.Cropper
                 if (initCropHeight > initCropWidth * AspectRatio)
                 {
                     initCropWidth = initCropHeight / AspectRatio;
-                    _minvalx = _minvaly/AspectRatio;
+                    _minvalx = _minvaly / AspectRatio;
                 }
                 else
                 {
@@ -386,7 +395,7 @@ namespace Blazor.Cropper
             while (data[0] == 0d)
             {
                 await Task.Delay(10);
-                data = await JSRuntime.InvokeAsync<double[]>("getOriImgSize");
+                data = await JSRuntime.InvokeAsync<double[]>("getOriImgSize", _oriImg);
             }
             _image = new ImageData
             {
@@ -395,7 +404,7 @@ namespace Blazor.Cropper
             };
             if (!_evInitialized)
             {
-                await JSRuntime.InvokeVoidAsync("addCropperEventListeners");
+                await JSRuntime.InvokeVoidAsync("addCropperEventListeners", _cropperRef);
                 _evInitialized = true;
             }
         }
@@ -432,27 +441,27 @@ namespace Blazor.Cropper
 
         #region JsInvokable methods
         [JSInvokable("OnTouchEnd")]
-        public static void TouchEndCaller()
+        public void TouchEndCaller()
         {
             _touchEndAction?.Invoke();
         }
         [JSInvokable("OnTouchMove")]
-        public static void TouchMoveCaller(MouseEventArgs args)
+        public void TouchMoveCaller(MouseEventArgs args)
         {
             _touchMoveAction?.Invoke(args);
         }
         [JSInvokable("OnMouseUp")]
-        public static void MouseUpCaller()
+        public void MouseUpCaller()
         {
             _mouseUpAction?.Invoke();
         }
         [JSInvokable("OnMouseMove")]
-        public static void MouseMoveCaller(MouseEventArgs args)
+        public void MouseMoveCaller(MouseEventArgs args)
         {
             _mouseMoveAction?.Invoke(args);
         }
         [JSInvokable("SetWidthHeight")]
-        public static void SetWidthHeightCaller()
+        public void SetWidthHeightCaller()
         {
             _setaction?.Invoke();
         }
@@ -460,6 +469,10 @@ namespace Blazor.Cropper
 
 
         #region Public methods
+        public void Dispose()
+        {
+            _cropperRef?.Dispose();
+        }
         /// <summary>
         /// Get the crop result.
         /// </summary>
@@ -478,7 +491,7 @@ namespace Blazor.Cropper
                 {
                     // for dotnet version after 5, pass byte array between c# and js is optimized
                     // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
-                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", "oriimg",
+                    var bin = await JSRuntime.InvokeAsync<byte[]>("cropAsync", _oriImg,
                         x, y, (proportionalCropWidth), (proportionalCropHeight), 0, 0,
                         finalImageWidth, finalImageHeight, _format.DefaultMimeType, Quality);
                     return new ImageCroppedResult(bin, _format);
@@ -486,7 +499,7 @@ namespace Blazor.Cropper
                 else
                 {
                     // async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format)
-                    string s = await JSRuntime.InvokeAsync<string>("cropAsync", "oriimg",
+                    string s = await JSRuntime.InvokeAsync<string>("cropAsync", _oriImg,
                         x, y, (proportionalCropWidth), (proportionalCropHeight), 0, 0,
                         finalImageWidth, finalImageHeight, _format.DefaultMimeType, Quality);
                     return new ImageCroppedResult(s, _format);
@@ -686,7 +699,7 @@ namespace Blazor.Cropper
                 if ((ext == "gif" && AnimeGifEnable) || PureCSharpProcessing)
                 {
                     _gifimage = Image.Load(buffer, out _format);
-                    await JSRuntime.InvokeVoidAsync("setImgSrc", buffer, _format.DefaultMimeType);
+                    await JSRuntime.InvokeVoidAsync("setImgSrc", buffer, _format.DefaultMimeType, _cropperElmRef, _dimg, _oriImg);
                 }
                 else
                 {
@@ -694,12 +707,12 @@ namespace Blazor.Cropper
                     var m = Configuration.Default.ImageFormatsManager;
 
                     _format = m.FindFormatByFileExtension(ext) ?? PngFormat.Instance;
-                    await JSRuntime.InvokeVoidAsync("setImgSrc", buffer, "image/" + ext);
+                    await JSRuntime.InvokeVoidAsync("setImgSrc", buffer, "image/" + ext, _cropperElmRef, _dimg, _oriImg);
                 }
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("setImg", InputId);
+                await JSRuntime.InvokeVoidAsync("setImg", InputId, _cropperElmRef, _dimg, _oriImg);
             }
         }
 
@@ -710,7 +723,7 @@ namespace Blazor.Cropper
                 double deltaY = (args.ClientY - _offsetY) / Ratio;
                 double deltaX = (args.ClientX - _offsetX) / Ratio;
                 var cb = new CropBox(this);
-                cb.DragCorner(deltaX, deltaY,_dir);
+                cb.DragCorner(deltaX, deltaY, _dir);
                 _unsavedX = cb.X;
                 _unsavedY = cb.Y;
                 _unsavedCropH = cb.H;
@@ -851,12 +864,12 @@ namespace Blazor.Cropper
 
         internal async Task SetImgContainterSize()
         {
-            double[] t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
+            double[] t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight", _cropperElmRef);
             // in the case that container has not yet loaded 
             while (t[0] == 0)
             {
                 await Task.Delay(10);
-                t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight");
+                t = await JSRuntime.InvokeAsync<double[]>("getWidthHeight", _cropperElmRef);
             }
             _imgContainerWidth = t[0];
             _imgContainerHeight = t[1];

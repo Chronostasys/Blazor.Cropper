@@ -1,6 +1,6 @@
 ﻿<div class="image-list">
-<div id="blazor_cropper" class="image-list unSelectAble" style="@(RatioStyle+ImglistStyle)" >
-    <img id="oriimg" class="imgbac" draggable="false" src="" style="@(BackgroundImgStyle)"
+<div @ref="_cropperElmRef" class="image-list unSelectAble" style="@(RatioStyle+ImglistStyle)" >
+    <img @ref="_oriImg" class="imgbac" draggable="false" src="" style="@(BackgroundImgStyle)"
         @ontouchend="(args)=>{
                  if(_onTwoFingerResizing||_isBacMoving)
                  {
@@ -34,7 +34,7 @@
         <div id="down" class="minBox down" @onmousedown="args=> OnResizeStart(args,MoveDir.Down)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.Down))"></div>
         <div id="right-down" class="minBox right-down" @onmousedown="args=> OnResizeStart(args,MoveDir.DownRight)" @ontouchstart="args=> TouchToMouse(args,arg=>OnResizeStart(arg,MoveDir.DownRight))"></div>
     </div>
-    <img id="dimg" @onmousedown="OnDragStart" @ontouchstart="args=> TouchToMouse(args,OnDragStart)"
+    <img @ref="_dimg" @onmousedown="OnDragStart" @ontouchstart="args=> TouchToMouse(args,OnDragStart)"
         @ontouchend="OnDragEnd"
         class="img" draggable="false"  style="@(BackgroundImgStyle+_cropedImgStyle)" src="" @ontouchstart:stopPropagation />
 </div>
