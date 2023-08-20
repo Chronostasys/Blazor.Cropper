@@ -1,21 +1,20 @@
 // blazor.cropper code MIT license
 
-const onMousemove = (ev) => {
+const onMousemove = (ev, dotNetHelper) => {
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseMove', serializeEvent(ev));
+        dotNetHelper.invokeMethodAsync('OnMouseMove', serializeEvent(ev));
     } catch (error) {
     }
 }
-const onMouseup = (ev) => {
-    console.debug("up")
+const onMouseup = (ev, dotNetHelper) => {
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnMouseUp');
+        dotNetHelper.invokeMethodAsync('OnMouseUp');
     } catch (error) {
     }
 }
-const onTouchmove = (ev) => {
+const onTouchmove = (ev, dotNetHelper) => {
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchMove', {
+        dotNetHelper.invokeMethodAsync('OnTouchMove', {
             clientX: ev.touches[0].clientX,
             clientY: ev.touches[0].clientY
         });
@@ -23,45 +22,43 @@ const onTouchmove = (ev) => {
 
     }
 }
-const onTouchend = (ev) => {
+const onTouchend = (ev, dotNetHelper) => {
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'OnTouchEnd');
+        dotNetHelper.invokeMethodAsync('OnTouchEnd');
     } catch (error) {
 
     }
 }
-const onResize = (ev) => {
+const onResize = (ev, dotNetHelper) => {
     try {
-        DotNet.invokeMethodAsync('Blazor.Cropper', 'SetWidthHeight');
+        dotNetHelper.invokeMethodAsync('SetWidthHeight');
     } catch (error) {
     }
 }
-function addCropperEventListeners() {
-    document.addEventListener('mousemove', onMousemove)
-    document.addEventListener('mouseup', onMouseup)
-    document.addEventListener('touchmove', onTouchmove)
-    document.addEventListener('touchend', onTouchend)
-    window.addEventListener('resize', onResize)
+function addCropperEventListeners(dotNetHelper) {
+    document.addEventListener('mousemove', (ev) => onMousemove(ev, dotNetHelper))
+    document.addEventListener('mouseup', (ev) => onMouseup(ev, dotNetHelper))
+    document.addEventListener('touchmove', (ev) => onTouchmove(ev, dotNetHelper))
+    document.addEventListener('touchend', (ev) => onTouchend(ev, dotNetHelper))
+    window.addEventListener('resize', (ev) => onResize(ev, dotNetHelper))
 }
 function rmCropperEventListeners() {
-    document.removeEventListener('mousemove', onMousemove)
-    document.removeEventListener('mouseup', onMouseup)
-    document.removeEventListener('touchmove', onTouchmove)
-    document.removeEventListener('touchend', onTouchend)
-    window.removeEventListener('resize', onResize)
+    // document.removeEventListener('mousemove', onMousemove)
+    // document.removeEventListener('mouseup', onMouseup)
+    // document.removeEventListener('touchmove', onTouchmove)
+    // document.removeEventListener('touchend', onTouchend)
+    // window.removeEventListener('resize', onResize)
 }
 
 
-function getWidthHeight() {
+function getWidthHeight(e) {
     var a = [];
-    var e = document.getElementById("blazor_cropper");
     a.push(e.clientWidth);
     a.push(e.clientHeight);
     return a;
 }
-function getOriImgSize() {
+function getOriImgSize(e) {
     var a = [];
-    var e = document.getElementById("oriimg");
     a.push(e.naturalWidth);
     a.push(e.naturalHeight);
     return a;
@@ -70,9 +67,8 @@ let version = 5;
 function setVersion(ver) {
     version = ver;
 }
-async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, format, quality) {
+async function cropAsync(img, sx, sy, swidth, sheight, x, y, width, height, format, quality) {
     var canvas = document.createElement('canvas');
-    var img = document.getElementById(id);
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d')
@@ -82,38 +78,38 @@ async function cropAsync(id, sx, sy, swidth, sheight, x, y, width, height, forma
             canvas.toBlob(async b => {
                 const bin = new Uint8Array(await new Response(b).arrayBuffer());
                 rs(bin)
-            },format, quality/100);
+            }, format, quality / 100);
         })
     }
     else {
-        const s = canvas.toDataURL(format, quality/100);
+        const s = canvas.toDataURL(format, quality / 100);
         return s.substr(s.indexOf(',') + 1)
     }
 }
-function setImg(id) {
-    var e = document.getElementById("blazor_cropper");
+function setImg(id, cropper, dimg, oriimg) {
+    var e = cropper;
     e.parentElement.style.overflowX = 'hidden';
     var input = document.getElementById(id);
     var src = URL.createObjectURL(input.files[0]);
-    document.getElementById('dimg').setAttribute('src', src);
-    document.getElementById('oriimg').setAttribute('src', src);
+    dimg.setAttribute('src', src);
+    oriimg.setAttribute('src', src);
 
 }
-function setImgSrc(bin, format) {
+function setImgSrc(bin, format, cropper, dimg, oriimg) {
     if (bin.constructor === Uint8Array) {
-        document.getElementById('dimg').src = URL.createObjectURL(
+        dimg.src = URL.createObjectURL(
             new Blob([bin], { type: format })
         );
-        document.getElementById('oriimg').src = URL.createObjectURL(
+        oriimg.src = URL.createObjectURL(
             new Blob([bin], { type: format })
         );
         return
     }
-    var e = document.getElementById("blazor_cropper");
+    var e = cropper;
     e.parentElement.style.overflowX = 'hidden';
     src = 'data:' + format + ';base64,' + bin;
-    document.getElementById('dimg').setAttribute('src', src);
-    document.getElementById('oriimg').setAttribute('src', src);
+    dimg.setAttribute('src', src);
+    oriimg.setAttribute('src', src);
 }
 var serializeEvent = function (e) {
     if (e) {
@@ -139,7 +135,7 @@ var serializeEvent = function (e) {
     }
 };
 
-function setSrc(bin,id,type) {
+function setSrc(bin, id, type) {
     document.getElementById(id).src = URL.createObjectURL(
         new Blob([bin], { type: type })
     );
