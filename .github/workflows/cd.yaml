@@ -29,4 +29,3 @@ jobs:
         branch: gh-page # The branch the action should deploy to.
         folder: build/wwwroot # The folder the action should deploy.
         single-commit: true
-        repository-name: Chronostasys/chronostasys.github.io
