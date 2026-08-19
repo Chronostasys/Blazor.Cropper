@@ -1,0 +1,8 @@
+<Project>
+    <ItemGroup>
+        <!-- #66: force ImageSharp 2.x so the compiled API surface (e.g.
+             ImageFormatManager.FindFormatByFileExtension) matches the
+             ImageSharp version loaded at runtime by .NET 7 / ABP projects. -->
+        <PackageReference Update="SixLabors.ImageSharp" Version="2.1.3" />
+    </ItemGroup>
+</Project>
